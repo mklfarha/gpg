@@ -1,0 +1,133 @@
+import React, { Fragment } from 'react'
+// ** React Imports
+import { Link } from 'react-router-dom'
+
+// ** Reactstrap Imports
+import { Card, CardBody, CardTitle, CardText, Form, Label, Input, Button, FormFeedback } from 'reactstrap'
+
+import axios from 'axios'
+
+import '../bootstrap.min.css';
+
+class LoginBasic extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      email: "",
+      password: "",
+      invalidEmail: false,
+      invalidPassword: false
+    }
+  }
+  login() {
+
+    if (this.state.email === "" && this.state.password === "") {
+      this.state.invalidEmail = true
+      this.state.invalidPassword = true
+      this.setState(this.state)
+      return false
+    }
+
+    this.state.invalidEmail = false
+    this.state.invalidPassword = false
+    this.setState(this.state)
+
+    axios.post('{{.API.URL}}/signin', this.state)
+      .then(response => {        
+        if (response && response.data && response.data.Token) {
+          const token = response.data.Token
+          console.log(token)
+          console.log(this.props)
+          localStorage.setItem('token', token)          
+          window.location.href = "/"
+        } else {
+          console.log("no token")
+          this.state.invalidEmail = true
+          this.state.invalidPassword = true
+          this.setState(this.state)
+        }
+      })
+      .catch((error) => {
+        if (error.response) {
+          this.state.invalidEmail = true
+          this.state.invalidPassword = true
+          this.setState(this.state)
+        }
+      })
+  }
+  handleEmailChange(e) {
+    this.state.email = e.target.value
+    this.setState(this.state)
+  }
+  handlePasswordChange(e) {
+    this.state.password = e.target.value
+    this.setState(this.state)
+  }
+  render() {
+    return (
+    <div className='content-wrapper'>
+      <div className='auth-wrapper auth-basic px-2'>
+        <div className='auth-inner my-2'>
+          <Card className='mb-0'>
+            <CardBody>
+              <Link className='brand-logo' to='/' onClick={e => e.preventDefault()}>                
+                <h2 style={{"{{margin: '0px', padding: '0px'}}"}} className='brand-text text-primary ms-1'>{{.Render.Name}}</h2>
+              </Link>               
+              <Form className='auth-login-form mt-2' onSubmit={e => e.preventDefault()}>
+                <div className='mb-1'>
+                  <Label className='form-label' for='login-email'>
+                    Email
+                  </Label>
+                  <Input type='email'
+                    invalid={this.state.invalidEmail}
+                    value={this.state.email}
+                    onChange={(e) => { this.handleEmailChange(e) }}
+                    id='login-email' placeholder='john@example.com' autoFocus />
+                </div>
+                <div className='mb-1'>
+                  <div className='d-flex justify-content-between'>
+                    <Label className='form-label' for='login-password'>
+                      Password
+                    </Label>
+                    <Link to='/pages/forgot-password-basic'>
+                      <small>Forgot Password?</small>
+                    </Link>
+                  </div>
+                  <Input type='password'
+                    invalid={this.state.invalidPassword}
+                    value={this.state.password}
+                    onChange={(e) => { this.handlePasswordChange(e) }}
+                    className='input-group-merge' id='login-password' />
+                  {this.state.invalidPassword ? <FormFeedback>
+                    Error logging in
+                  </FormFeedback> : ""}
+                </div>
+                {/*<div className='form-check mb-1'>
+                <Input type='checkbox' id='remember-me' />
+                <Label className='form-check-label' for='remember-me'>
+                  Remember Me
+                </Label>
+              </div>*/}
+                <Button color='primary' block onClick={() => {
+                  this.login()
+                }}>
+                  Sign in
+                </Button>
+              </Form>
+              {/*<p className='text-center mt-2'>
+                <span className='me-25'>New on our platform?</span>
+                <Link to='/register'>
+                  <span>Create an account</span>
+                </Link>
+              </p>*/}
+            </CardBody>
+          </Card>
+        </div>
+      </div>
+      </div>
+    )
+  }
+}
+
+const Login = LoginBasic
+export default Login

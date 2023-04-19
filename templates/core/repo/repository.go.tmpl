@@ -1,0 +1,12 @@
+package repository
+
+import (
+	"database/sql"
+	
+	{{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"
+)
+
+func New(db sql.DB) *{{.ProjectName}}db.Queries {
+	return {{.ProjectName}}db.New(&db)
+}
+

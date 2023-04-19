@@ -1,0 +1,22 @@
+
+import './App.css';
+import { Link } from "react-router-dom";
+import Header from "./components/Header";
+import {StringToColour} from "./Utils";
+
+
+function App() {    
+  return (
+    <div id="app" className="App">
+      <Header />
+      {{range $entity := .Entities}}
+      <Link to="/{{$entity.Identifier}}">
+        <div className="entityList" style={{printf "{{borderTopColor:StringToColour('%s')}}" $entity.Identifier}}>
+          {{$entity.Identifier | ToCamelCase}}
+        </div>
+      </Link>{{end}}        
+    </div>
+  );
+}
+
+export default App;

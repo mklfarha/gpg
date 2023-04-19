@@ -1,0 +1,193 @@
+package mapper 
+
+{{$projectName := .ProjectName}}
+import (
+    "fmt"
+    "time"
+    "github.com/gofrs/uuid"
+    "{{.ProjectName}}/graph/model"
+    {{range $entity := .Entities}}
+    "{{$projectName}}/core/entity/{{$entity.Identifier}}"
+    {{$entity.Identifier}}module "{{$projectName}}/core/module/{{$entity.Identifier}}/types"
+    {{end}}	
+)
+
+{{range $entity := .Entities}}
+func Map{{$entity.EntityName}}(in []{{$entity.Identifier}}.{{$entity.EntityName}}) []*model.{{$entity.EntityName}} {
+    res := []*model.{{$entity.EntityName}}{}
+    for _, item := range in {
+        i := item
+        res = append(res, &model.{{$entity.EntityName}}{ {{range $field := $entity.OutFields}}
+            {{$field.GraphModelName}}: {{$field.GraphGenToMapper}},{{end}}           
+        })
+    }
+    return res
+}
+
+func Map{{$entity.EntityName}}Upsert(i model.{{$entity.EntityName}}Input) {{$entity.Identifier}}module.UpsertRequest {
+    return {{$entity.Identifier}}module.UpsertRequest{ {{range $field := $entity.OutFields}}
+        {{if eq $field.Required true}}
+        {{$field.Name}}: {{$field.GraphGenFromMapper}},{{else}}
+        {{$field.Name}}: {{$field.GraphGenFromMapperOptional}},{{end}}{{end}}
+
+    }
+}
+
+func Map{{$entity.EntityName}}UpsertPartial(i model.{{$entity.EntityName}}PartialInput) {{$entity.Identifier}}module.UpsertRequest {
+    return {{$entity.Identifier}}module.UpsertRequest{ {{range $field := $entity.OutFields}}
+        {{if eq $field.IsPrimary true}}
+        {{$field.Name}}: {{$field.GraphGenFromMapper}},
+        {{else}}
+        {{$field.Name}}: {{$field.GraphGenFromMapperOptional}},
+        {{end}}{{end}}
+    }
+}
+{{end}}
+
+{{range $entity := .JSONEntities}}
+{{$entityName := $entity.EntityName}}
+{{if eq $entity.JSONMany true}}
+func Map{{$entity.GraphGenType}}(items []{{$entity.ParentIdentifier}}.{{$entityName}}) []*model.{{$entity.GraphGenType}} {
+    res := []*model.{{$entity.GraphGenType}}{}
+    for _, item := range items {
+        i := item
+        res = append(res, &model.{{$entity.GraphGenType}}{ {{range $field := $entity.OutFields}}
+        {{$field.GraphModelName}}: {{$field.GraphGenToMapper}},{{end}}           
+        })
+    }
+    return res
+}
+func Map{{$entity.GraphGenType}}Input(items []{{if ne $entity.Required true}}*{{end}}model.{{$entity.GraphGenType}}Input) []{{$entity.ParentIdentifier}}.{{$entityName}} {
+    {{if ne $entity.Required true}}
+    if items == nil {
+        return []{{$entity.ParentIdentifier}}.{{$entityName}}{}
+    }
+    {{end}}
+    res := []{{$entity.ParentIdentifier}}.{{$entityName}}{}
+    for _, item := range items {
+        i := item
+        res = append(res, {{$entity.ParentIdentifier}}.{{$entityName}}{ {{range $field := $entity.OutFields}}
+        {{$field.Name}}: {{$field.GraphGenFromMapper}},{{end}}
+        })
+    }
+    return res     
+}
+{{else}}
+func Map{{$entity.GraphGenType}}(i {{$entity.ParentIdentifier}}.{{$entityName}}) *model.{{$entity.GraphGenType}} {
+    return &model.{{$entity.GraphGenType}}{ {{range $field := $entity.OutFields}}
+        {{$field.GraphModelName}}: {{$field.GraphGenToMapper}},{{end}}           
+    }
+}
+func Map{{$entity.GraphGenType}}Input(i {{if ne $entity.Required true}}*{{end}}model.{{$entity.GraphGenType}}Input) {{$entity.ParentIdentifier}}.{{$entityName}} {
+    {{if ne $entity.Required true}}
+    if i == nil {
+        return {{$entity.ParentIdentifier}}.{{$entityName}}{}
+    }
+    {{end}}
+    return {{$entity.ParentIdentifier}}.{{$entityName}}{ {{range $field := $entity.OutFields}}
+        {{if eq $field.Required true}}
+        {{$field.Name}}: {{$field.GraphGenFromMapper}},
+        {{else}}
+        {{$field.Name}}: {{$field.GraphGenFromMapperOptional}},
+        {{end}}{{end}}
+    }
+}
+{{end}}
+{{end}}
+
+func ParseTime(in string) time.Time {
+    t, err := time.Parse("2006-01-02 15:04:05", in)
+    if err != nil {
+        fmt.Printf("error parsing date %v", err)
+    }
+    return t
+}
+
+func ParseTimeFromPointer(in *string) time.Time {
+    if in == nil {
+        return time.Time{}
+    }
+    t, err := time.Parse("2006-01-02 15:04:05", *in)
+    if err != nil {
+        fmt.Printf("error parsing date %v", err)
+    }
+    return t
+}
+
+func ParseDate(in string) time.Time {
+    t, err := time.Parse("2006-01-02", in)
+    if err != nil {
+        fmt.Printf("error parsing date %v", err)
+    }
+    return t
+}
+
+func ParseDateFromPointer(in *string) time.Time {
+    if in == nil {
+        return time.Time{}
+    }
+    t, err := time.Parse("2006-01-02", *in)
+    if err != nil {
+        fmt.Printf("error parsing date %v", err)
+    }
+    return t
+}
+
+func FormatDateToPointer(date time.Time) *string {
+    str := date.Format("2006-01-02")
+    return &str
+}
+
+func FormatTimeToPointer(date time.Time) *string {
+    str := date.Format("2006-01-02 15:04:05")
+    return &str
+}
+
+func StringFromPointer(in *string) string {
+    if in == nil {
+        return ""
+    }
+    return *in
+}
+
+func IntFromPointer(in *int) int32 {
+    if in == nil {
+        return int32(0)
+    }
+    return int32(*in)
+}
+
+func IntPointer(in int32) *int {    
+    res := int(in)    
+    return &res
+}
+
+func FloatFromPointer(in *float64) float64 {
+    if in == nil {
+        return 0.0
+    }
+    return *in
+}
+
+func UuidToPointerString(u uuid.UUID) *string {
+    if u == uuid.Nil {
+        return nil
+    }
+    str := u.String()
+    return &str
+}
+
+func UuidFromPointerString(i *string) uuid.UUID {
+    if i == nil {
+        return uuid.Nil
+    }    
+    return uuid.FromStringOrNil(*i)
+}
+
+
+func BoolFromPointer(i *bool) bool {
+    if i == nil {
+        return false
+    }
+    return *i
+}

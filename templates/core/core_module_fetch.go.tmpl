@@ -1,0 +1,117 @@
+package {{.Package}}
+
+import (
+	"context"    
+    
+    "{{.ProjectName}}/core/module/{{.EntityIdentifier}}/types"
+    {{if ne .Select.IsPrimary true}}
+    "errors"
+    {{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"{{end}}    
+)
+
+func (m *module) Fetch{{.Select.Name}}(
+    ctx context.Context, 
+    req types.Fetch{{.Select.Name}}Request, 
+    opts ...Option,
+) (types.Fetch{{.Select.Name}}Response, error) {
+    {{if eq .Select.IsPrimary true}}
+    models, err := m.repository.Fetch{{.Select.Name}}(
+        ctx,{{range $field := .Select.Fields}}
+        req.{{$field.Field.Name}}{{$field.Field.RepoToMapper}},{{end}}
+    )
+    if err != nil {
+        return types.Fetch{{.Select.Name}}Response{}, err
+    }
+    return types.Fetch{{.Select.Name}}Response{
+        Results: mapModelsToEntities(models),
+    }, nil
+            
+    {{else}}
+    if req.OrderBy == "" {
+        models, err := m.repository.Fetch{{.Select.Name}}(
+            ctx,
+            {{.ProjectName}}db.Fetch{{.Select.Name}}Params{ {{range $field := .Select.Fields}}
+                {{$field.Field.Name}}: req.{{$field.Field.Name}}{{$field.Field.RepoToMapper}},{{end}}
+                Offset: req.Offset,
+                Limit: req.Limit,            
+            },
+        )
+        if err != nil {
+            return types.Fetch{{.Select.Name}}Response{}, err
+        }
+        return types.Fetch{{.Select.Name}}Response{
+            Results: mapModelsToEntities(models),
+        }, nil
+    }	
+
+    {{ $length := len .Select.TimeFields }} 
+    {{ if and (ne $length 0) (eq .Select.SortSupported true) }}
+    timeFields := []string{ 
+        {{range $timeField := .Select.TimeFields}} "{{$timeField.Identifier}}", {{end}} 
+    }
+
+    orderByFieldFound := false
+    for _, tf := range timeFields {
+        if tf == req.OrderBy {
+            orderByFieldFound = true
+            break 
+        }
+    }
+
+    if !orderByFieldFound {
+        return types.Fetch{{.Select.Name}}Response{}, errors.New("order by field not found")
+    }
+
+    sort := "ASC"
+    if req.Sort != "" {
+        if req.Sort == "ASC" || req.Sort == "DESC" {
+            sort = req.Sort
+        } else {
+            return types.Fetch{{.Select.Name}}Response{}, errors.New("invalid sort value only ASC or DESC are valid")
+        }
+    }
+
+    {{$select := .Select}}
+    {{$projectName := .ProjectName}}
+    switch req.OrderBy {
+        {{range $timeField := .Select.TimeFields}}
+        case "{{$timeField.Identifier}}":
+            if sort == "ASC" {
+                models, err := m.repository.Fetch{{$select.Name}}OrderedBy{{$timeField.Name}}ASC(
+                    ctx,
+                    {{$projectName}}db.Fetch{{$select.Name}}OrderedBy{{$timeField.Name}}ASCParams{ {{range $field := $select.Fields}}
+                        {{$field.Field.Name}}: req.{{$field.Field.Name}}{{$field.Field.RepoToMapper}},{{end}}
+                        Offset: req.Offset,
+                        Limit: req.Limit,            
+                    },
+                )
+                if err != nil {
+                    return types.Fetch{{$select.Name}}Response{}, err
+                }
+                return types.Fetch{{$select.Name}}Response{
+                    Results: mapModelsToEntities(models),
+                }, nil
+            } else {
+                models, err := m.repository.Fetch{{$select.Name}}OrderedBy{{$timeField.Name}}DESC(
+                    ctx,
+                    {{$projectName}}db.Fetch{{$select.Name}}OrderedBy{{$timeField.Name}}DESCParams{ {{range $field := $select.Fields}}
+                        {{$field.Field.Name}}: req.{{$field.Field.Name}}{{$field.Field.RepoToMapper}},{{end}}
+                        Offset: req.Offset,
+                        Limit: req.Limit,            
+                    },
+                )
+                if err != nil {
+                    return types.Fetch{{$select.Name}}Response{}, err
+                }
+                return types.Fetch{{$select.Name}}Response{
+                    Results: mapModelsToEntities(models),
+                }, nil
+            }            
+        {{end}}
+    }
+    {{end}} 
+
+
+    return types.Fetch{{.Select.Name}}Response{}, errors.New("could not process request")
+    {{end}}
+}

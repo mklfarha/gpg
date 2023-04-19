@@ -1,0 +1,383 @@
+import React from 'react'
+import { Formik } from 'formik';
+import { Card, CardBody, CardTitle, CardText, Form, Label, Input, Button, FormGroup } from 'reactstrap'
+import ImageUploading from 'react-images-uploading';
+import { GPGModal } from '../components/GPGModal';
+import { toast } from 'react-toastify';
+import axios from 'axios';
+import {StringToColour} from "../Utils";
+import FetchUser from '../FetchUser';
+import {SearchEntity} from '../components/SearchEntity'
+
+{{$entityIdentifier := .Entity.Identifier}}
+{{range $field := .Entity.Fields}}
+    {{if eq (printf "%s" $field.Type) "json"}}
+import {{$entityIdentifier | ToCamelCase}}{{$field.Identifier | ToCamelCase}}Form from '../forms/{{$entityIdentifier | ToCamelCase}}{{$field.Identifier | ToCamelCase}}Form';
+    {{end}}
+{{end}}
+
+class {{.Entity.Identifier | ToCamelCase}}Form extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            entity: props.entity
+        }           
+
+        {{range $field := .Entity.Fields}}
+            {{if eq $field.Required true}}                
+                {{if eq (printf "%s" $field.Type) "boolean"}}
+            if (this.state.entity.{{$field.Identifier}} === undefined) {
+            {{if eq ($field | IsGenerated) false}}
+                this.state.entity.{{$field.Identifier}} = false
+            {{end}}
+            }
+                {{end}}                
+            {{end}}
+        {{end}}
+    }
+
+    componentDidMount() {
+        FetchUser().then(res => {
+            if (res.status === 200) {
+                this.state.user = res.data
+                this.setState(this.state)
+            }
+        })
+    }
+
+    onImageChange(imageList, addUpdateIndex, fieldIdentifier) {
+        // data for submit
+        console.log(imageList)
+        if (imageList.length > 0) {
+            var imageFile = imageList[0]
+            var formData = new FormData();            
+            formData.append("file", imageFile.file);
+            axios.post('{{.Project.API.URL}}/upload', formData, {
+                headers: {
+                'Content-Type': 'multipart/form-data'
+                }
+            }).then(response => {                    
+                    if (response && response.data && response.data.file_path) {
+                        this.state.entity[fieldIdentifier] = response.data.file_path
+                        this.setState(this.state)
+                    }
+                }
+            )
+        }
+    };
+
+    render() {
+        return (
+            <div className="formWrapper"  style={{printf "{{borderTopColor:StringToColour('%s')}}" .Entity.Identifier}}> 
+                    <Formik    
+                        initialValues={ this.state.entity }                    
+                        validate={values => {
+                            const errors = {};   
+                            {{range $field := .Entity.Fields}}{{if eq $field.Required true}}{{if eq $field.StorageConfig.PrimaryKey false}}{{if ne (printf "%s" $field.Type) "boolean"}}
+                            if (!this.state.entity.{{$field.Identifier}}) {
+                            {{if eq ($field | IsGenerated) false}}
+                                errors.{{$field.Identifier}} = "Required";
+                            {{end}}
+                            }{{end}}{{end}}{{end}}{{end}}                                               
+                            return errors;
+                        }}  
+                        onSubmit={(values, actions) =>{                            
+                            this.props.onSubmit(this.state.entity)                                
+                        }}                      
+                        >
+                        {({                            
+                            errors,   
+                            handleBlur,
+                            handleSubmit,
+                            isValid,                                                                                 
+                        }) => {
+                        if (!isValid) {                                
+                            toast.error('Error validating form',{
+                                position: toast.POSITION.TOP_CENTER,
+                                toastId: "{{.Entity.Identifier}}-validation"
+                            });                                
+                        } else {
+                            toast.dismiss("{{.Entity.Identifier}}-validation");
+                        }
+                        return (                            
+                            <form onSubmit={handleSubmit}>
+                                
+                                {{range $field := .Entity.Fields}}                                
+                                <FormGroup className="inputWrapper">
+                                <span>{{if eq $field.Render.Name ""}}{{$field.Identifier}}{{else}}{{$field.Render.Name}}{{end}}{{if eq $field.Required true}}*{{end}}</span>
+                                {{if eq (printf "%s" $field.Type) "uuid"}}
+                                {{if eq $field.StorageConfig.PrimaryKey true}}
+                                <Input
+                                    type="text"
+                                    name="{{$field.Identifier}}"
+                                    onChange={(e) => {
+                                        this.state.entity.{{$field.Identifier}} = e.target.value
+                                        this.setState(this.state)
+                                    } }
+                                    onBlur={handleBlur}                                        
+                                    value={this.state.entity?.{{$field.Identifier}} ? this.state.entity?.{{$field.Identifier}} : '' }
+                                    disabled                                  
+                                />
+                                {{else if ne $field.Render.FieldType "logged_user_id"}}
+                                    {{if eq $field.EntityRef ""}}
+                                    <Input
+                                        type="text"
+                                        name="{{$field.Identifier}}"
+                                        onChange={(e) => {
+                                            this.state.entity.{{$field.Identifier}} = e.target.value
+                                            this.setState(this.state)
+                                        } }
+                                        onBlur={handleBlur}                                        
+                                        value={this.state.entity?.{{$field.Identifier}} ? this.state.entity?.{{$field.Identifier}} : '' }
+                                        {{ if eq ($field | IsGenerated) true}}disabled{{end}}
+                                    />
+                                    {{else}}
+                                        <SearchEntity 
+                                            entityIdentifier="{{$field.EntityRef}}" 
+                                            entityName="{{$field.EntityRef | ToCamelCase}}"
+                                            onChange={(e) => {
+                                                this.state.entity.{{$field.Identifier}} = e.value
+                                                this.setState(this.state)                                                
+                                            } }
+                                            value={ {value:this.state.entity?.{{$field.Identifier}}, label:this.state.entity?.{{$field.Identifier}} ? "Loading..." : "Search"} }
+                                             />
+                                    {{end}}
+                                {{else}}                                
+                                ({this.state.user?.name}) &nbsp;
+                                {this.state.entity.{{$field.Identifier}} = this.state.user?.id }
+                                {{end}}
+                                {{end}}
+                                {{if eq (printf "%s" $field.Type) "string"}}
+                                {{ if eq $field.Render.FieldType "image_upload"}}
+                                <div>
+                                <Input
+                                    disabled
+                                    type="text"
+                                    name="{{$field.Identifier}}"
+                                    onChange={(e) => {
+                                        this.state.entity.{{$field.Identifier}} = e.target.value
+                                        this.setState(this.state)
+                                    } }                                        
+                                    onBlur={handleBlur}
+                                    value={this.state.entity?.{{$field.Identifier}} ? this.state.entity?.{{$field.Identifier}} : '' }                                    
+                                />
+                                <ImageUploading                                    
+                                    value={ this.state.entity.{{$field.Identifier}} }
+                                    onChange={(imageList, addUpdateIndex) => this.onImageChange(imageList, addUpdateIndex, "{{$field.Identifier}}")}
+                                    onError={ (err) => {console.log(err)} }
+                                    maxNumber={1}
+                                    dataURLKey="data_url">
+                                    {({
+                                    imageList,
+                                    onImageUpload,
+                                    onImageRemoveAll,
+                                    onImageUpdate,
+                                    onImageRemove,
+                                    isDragging,
+                                    dragProps,
+                                    }) => (
+                                    // write your building UI
+                                    <div className="upload__image-wrapper">
+                                        <Button
+                                        style={isDragging ? { color: 'red' } : undefined}
+                                        onClick={onImageUpload}
+                                        {...dragProps}
+                                        >
+                                        Click or Drop here
+                                        </Button>
+                                        &nbsp; 
+                                        { this.state.entity.{{$field.Identifier}} ?                                        
+                                        <div className="image-item">
+                                            <img src={this.state.entity.{{$field.Identifier}}} alt="" width="100" />
+                                            <div className="image-item__btn-wrapper">                                                
+                                            <Button className="btn-danger" onClick={() => {
+                                                this.state.entity.{{$field.Identifier}} = undefined
+                                                this.setState(this.state)
+                                            }}>Remove</Button>
+                                            </div>
+                                        </div>
+                                        : '' }
+                                    </div>
+                                    )}
+                                </ImageUploading>
+                                </div>
+                                {{else}}
+                                <Input
+                                    type="text"
+                                    name="{{$field.Identifier}}"
+                                    onChange={(e) => {
+                                        this.state.entity.{{$field.Identifier}} = e.target.value
+                                        this.setState(this.state)
+                                    } }                                        
+                                    onBlur={handleBlur}
+                                    value={this.state.entity?.{{$field.Identifier}} ? this.state.entity?.{{$field.Identifier}} : '' }
+                                    {{ if eq ($field | IsGenerated) true}}disabled{{end}}
+                                />
+                                {{end}}
+                                {{end}}
+                                {{if eq (printf "%s" $field.Type) "large_string"}}
+                                <Input
+                                    type="textarea"
+                                    name="{{$field.Identifier}}"
+                                    onChange={(e) => {
+                                        this.state.entity.{{$field.Identifier}} = e.target.value
+                                        this.setState(this.state)
+                                    } }                                        
+                                    onBlur={handleBlur}
+                                    value={this.state.entity?.{{$field.Identifier}} ? this.state.entity?.{{$field.Identifier}} : '' }
+                                    {{ if eq ($field | IsGenerated) true}}disabled{{end}}
+                                />
+                                {{end}}
+                                {{if eq (printf "%s" $field.Type) "int"}}
+                                <Input
+                                    type="number"
+                                    name="{{$field.Identifier}}"
+                                    onChange={(e) => {
+                                        this.state.entity.{{$field.Identifier}} = e.target.value
+                                        this.setState(this.state)
+                                    } }                                        
+                                    onBlur={handleBlur}
+                                    value={this.state.entity?.{{$field.Identifier}} ? this.state.entity?.{{$field.Identifier}} : '' }
+                                />
+                                {{end}}                                    
+                                {{if eq (printf "%s" $field.Type) "float"}}
+                                <Input
+                                    type="number"
+                                    name="{{$field.Identifier}}"
+                                    onChange={(e) => {
+                                        this.state.entity.{{$field.Identifier}} = e.target.value
+                                        this.setState(this.state)
+                                    } }                                        
+                                    onBlur={handleBlur}
+                                    value={this.state.entity?.{{$field.Identifier}} ? this.state.entity?.{{$field.Identifier}} : '' }
+                                    {{ if eq ($field | IsGenerated) true}}disabled{{end}}
+                                />
+                                {{end}}
+                                {{if eq (printf "%s" $field.Type) "date"}}                                    
+                                <Input
+                                    type="date"
+                                    name="{{$field.Identifier}}"
+                                    onChange={(e) => {
+                                        this.state.entity.{{$field.Identifier}} = e.target.value
+                                        this.setState(this.state)
+                                    } }                                        
+                                    onBlur={handleBlur}
+                                    value={this.state.entity?.{{$field.Identifier}} ? this.state.entity?.{{$field.Identifier}} : '' }                                  
+                                    {{ if eq ($field | IsGenerated) true}}disabled{{end}}
+                                />                                    
+                                {{end}}
+                                {{if eq (printf "%s" $field.Type) "datetime"}}                                    
+                                <Input
+                                    type="text"
+                                    name="{{$field.Identifier}}"
+                                    onChange={(e) => {
+                                        this.state.entity.{{$field.Identifier}} = e.target.value
+                                        this.setState(this.state)
+                                    } }                                        
+                                    onBlur={handleBlur}
+                                    value={this.state.entity?.{{$field.Identifier}} ? this.state.entity?.{{$field.Identifier}} : '' }
+                                    {{ if eq ($field | IsGenerated) true}}disabled{{end}}
+                                />                                    
+                                {{end}}
+                                {{if eq (printf "%s" $field.Type) "options_single"}}
+                                <Input
+                                    type="select"                                    
+                                    name="{{$field.Identifier}}"
+                                    onChange={(e) => {
+                                        this.state.entity.{{$field.Identifier}} = e.target.value
+                                        this.setState(this.state)
+                                    } }                                        
+                                    onBlur={handleBlur}
+                                    value={this.state.entity?.{{$field.Identifier}} ? this.state.entity?.{{$field.Identifier}} : '' }
+                                    {{ if eq ($field | IsGenerated) true}}disabled{{end}}
+                                >
+                                    <option value=""></option>
+                                    {{range $value := $field.OptionValues}}
+                                    <option value="{{$value.Identifier}}">{{$value.Display}}</option>
+                                    {{end}}
+                                </Input>
+                                {{end}}
+                                {{if eq (printf "%s" $field.Type) "boolean"}}
+                                <Input
+                                    type="checkbox"
+                                    name="{{$field.Identifier}}"
+                                    onChange={(e) => {
+                                        this.state.entity.{{$field.Identifier}} = e.target.checked
+                                        this.setState(this.state)
+                                    } }                                        
+                                    onBlur={handleBlur}
+                                    value={this.state.entity?.{{$field.Identifier}} ? this.state.entity?.{{$field.Identifier}} : '' }
+                                    checked={this.state.entity?.{{$field.Identifier}} === true ? 'checked' : ''}                                    
+                                    {{ if eq ($field | IsGenerated) true}}disabled{{end}}
+                                />
+                                {{end}}
+
+                                {{if eq (printf "%s" $field.Type) "json"}}
+                                {{if eq (printf "%s" $field.JSONConfig.Type) "single" }}
+                                <Button>Edit</Button>
+                                {{else}}
+                                <div className="jsonFieldWrapper">
+                                <div className="jsonFieldItems">
+                                    { this.state.entity?.{{$field.Identifier}} !== undefined && this.state.entity?.{{$field.Identifier}} instanceof Array ? this.state.entity?.{{$field.Identifier}}.map((el, i) => {
+                                        return (<div key={JSON.stringify(el)} className="jsonFieldItem" 
+                                            onClick={() => {
+                                                this.props.popups.open(GPGModal, {
+                                                        title: <b>Edit {{$field.Render.Name}}</b>,
+                                                        content:<{{$entityIdentifier | ToCamelCase}}{{$field.Identifier | ToCamelCase}}Form 
+                                                            entity={ el } 
+                                                            onSubmit={(data) => {                                                                                                            
+                                                                this.state.entity.{{$field.Identifier}}[i] = data
+                                                                this.setState(this.state)
+                                                                this.props.popups.closeAll();                                                    
+                                                            } 
+                                                        }  />
+                                                    }
+                                                )
+                                            } }
+                                        >
+                                            {{range $jf := $field.JSONConfig.Fields}}
+                                            <div><span>{{if eq $jf.Render.Name ""}}{{$jf.Identifier}}{{else}}{{$jf.Render.Name}}{{end}}:</span> <b>{el.{{$jf.Identifier}}}</b></div>
+                                            {{end}}
+                                        </div>)
+                                    }) : undefined}
+                                </div>
+                                <Button onClick={() => {
+                                    this.props.popups.open(GPGModal, {
+                                                title: <b>Add {{$field.Render.Name}}</b>,
+                                                content: <{{$entityIdentifier | ToCamelCase}}{{$field.Identifier | ToCamelCase}}Form 
+                                                    entity={ {} } 
+                                                    onSubmit={(data) => {                                                    
+                                                        if (!this.state.entity.{{$field.Identifier}}) {
+                                                            this.state.entity.{{$field.Identifier}} = []
+                                                        }
+                                                        this.state.entity.{{$field.Identifier}}.push(data)
+                                                        this.setState(this.state)
+                                                        this.props.popups.closeAll();                                                    
+                                                    } 
+                                                }  />,
+                                                onClose: (...params) => {
+                                                }
+                                                }); 
+                                }}>Add</Button>
+                                </div>
+                                {{end}}
+                                {{end}}
+                                
+            
+                                { errors.{{$field.Identifier}} ? <span className="info">{errors.{{$field.Identifier}}}</span> : undefined }
+                                </FormGroup>
+                                {{end}}                                
+                                
+                                
+                                <Button type="submit">
+                                    Submit
+                                </Button>
+                            </form>
+                        )}}
+                        </Formik>                    
+                </div>
+        )
+    }
+}
+
+export default {{.Entity.Identifier | ToCamelCase}}Form

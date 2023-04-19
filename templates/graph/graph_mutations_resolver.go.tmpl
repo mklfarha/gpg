@@ -1,0 +1,74 @@
+package graph
+
+// This file will be automatically regenerated based on the schema, any resolver implementations
+// will be copied through when generating and any unknown code will be moved to the end.
+{{$projectName := .ProjectName}}
+import (
+	"context"
+    "errors"
+
+    "{{.ProjectName}}/graph/generated"
+	"{{.ProjectName}}/graph/model"
+    {{range $entity := .Entities}}
+    {{$entity.Identifier}} "{{$projectName}}/core/module/{{$entity.Identifier}}/types"    
+    {{end}}	     
+    "{{.ProjectName}}/graph/mapper"
+)
+{{range $entity := .Entities}}
+func (r *mutationResolver) Upsert{{$entity.EntityName}}(
+    ctx context.Context, 
+    input model.{{$entity.EntityName}}Input,
+) (*model.{{$entity.EntityName}}, error) {
+	res, err := r.Core.{{$entity.EntityName}}().Upsert(
+        ctx, 
+        mapper.Map{{$entity.EntityName}}Upsert(input),
+        false,
+    )
+	if err != nil {
+		return nil, err
+	}
+	read, err := r.Core.{{$entity.EntityName}}().
+        Fetch{{$entity.EntityName}}By{{$entity.PrimaryKey.Name}}(
+            ctx, 
+            {{$entity.Identifier}}.Fetch{{$entity.EntityName}}By{{$entity.PrimaryKey.Name}}Request{
+		        {{$entity.PrimaryKey.Name}}: res.{{$entity.PrimaryKey.Name}},
+	        },
+        )
+    if len(read.Results) == 0 {
+        return nil, errors.New("entity not found after upsert")
+    }
+	return mapper.Map{{$entity.EntityName}}(read.Results)[0], err
+    
+}
+
+func (r *mutationResolver) UpsertPartial{{$entity.EntityName}}(
+    ctx context.Context, 
+    input model.{{$entity.EntityName}}PartialInput,
+) (*model.{{$entity.EntityName}}, error) {
+	res, err := r.Core.{{$entity.EntityName}}().Upsert(
+        ctx, 
+        mapper.Map{{$entity.EntityName}}UpsertPartial(input),
+        true,
+    )
+	if err != nil {
+		return nil, err
+	}
+	read, err := r.Core.{{$entity.EntityName}}().
+        Fetch{{$entity.EntityName}}By{{$entity.PrimaryKey.Name}}(
+            ctx, 
+            {{$entity.Identifier}}.Fetch{{$entity.EntityName}}By{{$entity.PrimaryKey.Name}}Request{
+		        {{$entity.PrimaryKey.Name}}: res.{{$entity.PrimaryKey.Name}},
+	        },
+        )
+    if len(read.Results) == 0 {
+        return nil, errors.New("entity not found after upsert")
+    }
+	return mapper.Map{{$entity.EntityName}}(read.Results)[0], err
+    
+}
+{{end}}
+
+// Mutation returns generated.MutationResolver implementation.
+func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
+
+type mutationResolver struct{ *Resolver }

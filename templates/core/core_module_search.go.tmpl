@@ -1,0 +1,31 @@
+package {{.Package}}
+
+import (
+    "context"
+    "fmt"
+
+    "{{.ProjectName}}/core/module/{{.EntityIdentifier}}/types"
+    {{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"
+)
+
+func (m *module) Search(
+    ctx context.Context, 
+    query string, 
+    limit int32, 
+    offset int32,
+) (types.Search{{.EntityName}}Response, error) {
+    models, err := m.repository.Search{{.EntityName}}(
+        ctx,
+        {{.ProjectName}}db.Search{{.EntityName}}Params{ {{range $field := .SearchFields}}
+            {{$field.Name}}: fmt.Sprintf("%%%s%%", query),{{end}}
+            Offset: offset,
+            Limit: limit,            
+        },
+    )
+    if err != nil {
+        return types.Search{{.EntityName}}Response{}, err
+    }
+    return types.Search{{.EntityName}}Response{
+        Results: mapModelsToEntities(models),
+    }, nil	
+}

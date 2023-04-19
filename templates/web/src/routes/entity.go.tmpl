@@ -1,0 +1,367 @@
+import React,{useMemo} from 'react'
+import { useParams } from 'react-router-dom';
+import Header from '../components/Header'
+import DataTable from 'react-data-table-component';
+import { MdCreate,MdOutlineViewWeek } from "react-icons/md";
+import { Link } from "react-router-dom";
+import Client,{CachedClient} from '../client'
+import {gql} from '@apollo/client';
+import {StringToColour} from "../Utils";
+import { Input } from 'reactstrap'
+import {SearchEntity, queriesByID, searchFields} from '../components/SearchEntity'
+import { GPGModal } from '../components/GPGModal';
+import { usePopupManager } from "react-popup-manager";
+
+const columns = [
+    {{range $field := .Fields}}
+    {
+        name: '{{if eq $field.Render.Name ""}}{{$field.Identifier}}{{else}}{{$field.Render.Name}}{{end}}',        
+        {{if eq (printf "%s" $field.Type ) "json"}}
+        selector: row => "JSON Object",
+        {{else if and (eq (printf "%s" $field.Type ) "uuid") (ne $field.EntityRef "") }}
+        selector: row => {            
+            return row.{{$field.Identifier}}_desc ? row.{{$field.Identifier}}_desc : row.{{$field.Identifier}}
+        },
+        {{else}}
+        selector: row => row.{{$field.Identifier}},
+        {{end}}
+        {{if eq (printf "%s" $field.Type ) "uuid" }}
+        width: "350px",
+        {{else}}
+        width: "200px",
+        {{end}}
+        wrap: true,        
+        sortable: true,
+        sortField: "{{$field.Identifier}}",  
+        omit:false,      
+    },{{end}}    
+];
+
+var pressedKeys = {};
+
+class {{.Identifier | ToCamelCase}} extends React.Component {
+    constructor(props) {
+        super(props)        
+        this.state = { 
+            pending:true,           
+            items: [],
+            pageSize:14,
+            page:0,
+            total: 10000,
+            searchQuery:"",
+            selectRefs: {},
+            columns: [],            
+        }
+
+        {{range $field := (.Fields | UniqueFieldRefs)}}
+            {{if and (eq (printf "%s" $field.Type ) "uuid") (ne $field.EntityRef "")}}
+                this.state.selectRefs.{{$field.EntityRef}} = React.createRef();
+            {{end}}
+        {{end}}
+    }
+
+    componentDidMount() {        
+        this.fetchItems();
+
+        this.state.columns = [
+            {{range $field := .Fields}}
+            {
+                identifier: "{{$field.Identifier}}",
+                name: '{{if eq $field.Render.Name ""}}{{$field.Identifier}}{{else}}{{$field.Render.Name}}{{end}}',        
+                {{if eq (printf "%s" $field.Type ) "json"}}
+                selector: row => "JSON Object",
+                {{else if and (eq (printf "%s" $field.Type ) "uuid") (ne $field.EntityRef "") }}
+                selector: row => {            
+                    return row.{{$field.Identifier}}_desc ? row.{{$field.Identifier}}_desc : row.{{$field.Identifier}}
+                },
+                {{else}}
+                selector: row => row.{{$field.Identifier}},
+                {{end}}
+                {{if eq (printf "%s" $field.Type ) "uuid" }}
+                width: "350px",
+                {{else}}
+                width: "200px",
+                {{end}}
+                wrap: true,        
+                sortable: true,
+                sortField: "{{$field.Identifier}}",  
+                omit:false,      
+            },{{end}}    
+        ]   
+
+        var cachedColumns = localStorage.getItem("{{.Identifier}}_columns")     
+        var parsedCachedColumns = JSON.parse(cachedColumns)        
+        if (parsedCachedColumns !== undefined && parsedCachedColumns !== null) {            
+            this.state.columns.map((column, index) => {                
+                this.state.columns[index].omit = parsedCachedColumns[column.identifier]
+            })
+        }        
+        this.setState(this.state)
+
+        window.onkeyup = function(e) { pressedKeys[e.keyCode] = false; }
+        window.onkeydown = function(e) { pressedKeys[e.keyCode] = true; }
+
+    }
+
+    fetchItems() {        
+        const offset = this.state.page*this.state.pageSize        
+        Client
+            .query({
+                query: gql`
+                query {{.Identifier | ToCamelCase}}ByStatus($limit: Int, $offset: Int) {
+                    {{.Identifier | ToCamelCase}}ByStatus(status:"enabled",limit:$limit, offset:$offset){ {{range $field := .Fields}}
+                        {{if eq (printf "%s" $field.Type ) "json"}}{{$field.Identifier}}{
+                            {{range $nf := $field.JSONConfig.Fields}}{{$nf.Identifier}},{{end}}
+                        },{{else}}{{$field.Identifier}},{{end}}{{end}}
+                    }
+                }
+                `,
+                variables:{
+                    limit:this.state.pageSize,
+                    offset:offset
+                }
+            })
+            .then((result) => {
+                
+                const items = result.data.{{.Identifier | ToCamelCase}}ByStatus
+                if (items.length < this.state.pageSize){
+                    this.state.total = ((this.state.page)*this.state.pageSize)+items.length
+                }                
+                                       
+                Promise.allSettled(EntityRefPromises(items)).then(()=>{
+                    setTimeout(() => {                    
+                        this.state.pending = false
+                        this.state.items = items                        
+                        this.setState(this.state)
+                    }, 500)
+                })
+            });
+            
+    }
+
+    searchItems() {        
+        const offset = this.state.page*this.state.pageSize        
+        Client
+            .query({
+                query: gql`
+                query Search{{.Identifier | ToCamelCase}}($query:String!, $limit: Int, $offset: Int) {
+                    Search{{.Identifier | ToCamelCase}}(query:$query,limit:$limit, offset:$offset){ {{range $field := .Fields}}
+                        {{if eq (printf "%s" $field.Type ) "json"}}{{$field.Identifier}}{
+                            {{range $nf := $field.JSONConfig.Fields}}{{$nf.Identifier}},{{end}}
+                        },{{else}}{{$field.Identifier}},{{end}}{{end}}
+                    }
+                }
+                `,
+                variables:{
+                    query:this.state.searchQuery,
+                    limit:this.state.pageSize,
+                    offset:offset
+                }
+            })
+            .then((result) => {
+                
+                const items = result.data.Search{{.Identifier | ToCamelCase}}
+                if (items.length < this.state.pageSize){
+                    this.state.total = ((this.state.page)*this.state.pageSize)+items.length
+                }                
+                Promise.allSettled(EntityRefPromises(items)).then(()=>{
+                    setTimeout(() => {                    
+                        this.state.pending = false
+                        this.state.items = items                        
+                        this.setState(this.state)
+                    }, 500)
+                })
+            });
+    }
+
+    load(){
+        if (this.state.searchQuery !== "") {
+            this.searchItems()
+        } else {
+            this.fetchItems()
+        }
+    }
+
+    
+
+    render() {
+        return (
+            <div>
+                <Header />  
+                <div className="actionsBar">                     
+                    <div className="searchBar">                    
+                        <Input
+                            type="text"
+                            name="search"
+                            onChange={(e) => {
+                                this.state.searchQuery = e.target.value
+                                this.setState(this.state)
+                                this.load()
+                            } }
+                            placeholder="Search"                                   
+                            value={this.state.searchQuery}                                                          
+                        />   
+                    </div>                                
+                    <a onClick={() => {
+                                    this.props.popups.open(GPGModal, {
+                                                title: <b>Edit Columns</b>,
+                                                content: <Columns 
+                                                    columns={this.state.columns} 
+                                                    onChange={ (columns) => {
+                                                        this.state.columns = [ ...columns]
+                                                        const omit = {}
+                                                        columns.map((column) => {
+                                                            omit[column.identifier] = column.omit
+                                                        })
+                                                        localStorage.setItem("{{.Identifier}}_columns", JSON.stringify(omit))
+                                                        this.setState(this.state)
+                                                    } }
+                                                 />,
+                                                onClose: (...params) => {
+                                                }
+                                                }); 
+                                }}><MdOutlineViewWeek /> Columns</a>
+                    <Link to="/{{.Identifier}}/edit"><MdCreate /> Create</Link>                                                         
+                </div>
+                <div className="filters">
+                        {{range $field := (.Fields | UniqueFieldRefs)}}
+                            {{if and (eq (printf "%s" $field.Type ) "uuid") (ne $field.EntityRef "")}}
+                            <div className="filter">
+                                <SearchEntity 
+                                    entityIdentifier="{{$field.EntityRef}}" 
+                                    entityName="{{$field.EntityRef | ToCamelCase}}"
+                                    onChange={(e, entityIdentifier) => {   
+                                        for (const selectRef in this.state.selectRefs) { 
+                                            if (selectRef !== entityIdentifier){ 
+                                                this.state.selectRefs[selectRef].current.clearValue();
+                                            }
+                                        }                                        
+                                        if (e !== null) {                                   
+                                            this.state.searchQuery = e.value
+                                            this.setState(this.state)
+                                            this.load() 
+                                        } else {
+                                            this.state.searchQuery = ""
+                                            this.setState(this.state)
+                                            this.load()                                                                                         
+                                        }                                            
+                                    } }
+                                    placeholder={"Search {{$field.EntityRef | ToCamelCase}}"}
+                                    value={this.state.searchQuery}
+                                    ref={this.state.selectRefs.{{$field.EntityRef}}}
+                                    />
+                            </div>
+                            {{end}}
+                        {{end}}
+                        <div className="clear"></div>
+                    </div>
+                <div className="tableWrapper" style={{printf "{{borderTopColor:StringToColour('%s')}}" .Identifier}}>                                                             
+                <DataTable
+                    title="{{.Identifier | ToCamelCase}}"
+                    highlightOnHover="true"
+                    pointerOnHover="true"
+                    pagination="true"
+                    paginationServer="true"
+                    paginationPerPage={this.state.pageSize}
+                    columns={this.state.columns}
+                    data={this.state.items}
+                    pending={this.state.pending} 
+                    paginationTotalRows={this.state.total}                   
+			        onChangePage={(page) => {                            
+                            this.state.page = page-1 
+                            this.setState(this.state)	
+                            this.load()
+                        }
+                    }
+                    onChangeRowsPerPage={(size, page) => {
+                            this.state.page = page-1
+                            this.state.pageSize = size
+                            this.setState(this.state)  
+                            this.load()                        
+                        }
+                    }
+                    onRowClicked={(row) => {                             
+                            if (pressedKeys[91]) {
+                                var url = "/{{.Identifier}}/edit/"+row.id;
+                                window.open(url, '_blank', 'noopener,noreferrer').focus();
+                            } else {
+                                window.location.href = "/{{.Identifier}}/edit/"+row.id;                           
+                            }
+                        }
+                    }
+                />
+                </div>
+            </div>
+        )
+    }
+}
+
+
+
+export default (props) => <{{.Identifier | ToCamelCase}} {...props}
+            params={useParams()} popups={usePopupManager()} />
+
+class Columns extends React.Component {
+    constructor(props) {
+        super(props)        
+        this.state = {             
+            columns: props.columns
+        }
+    }
+
+    render() {
+        return (
+            <ul className="columnsEdit">
+                {this.state.columns.map((column, index) => 
+                    <li key={index} >                                                        
+                        <Input
+                            type="checkbox"
+                            name={column.name}
+                            onChange={(e) => {                                
+                                this.state.columns[index].omit = !e.target.checked
+                                this.setState(this.state)
+                                this.props.onChange(this.state.columns)
+                            } }                                                                                                    
+                            value={ !this.state.columns[index].omit }
+                            checked={ !this.state.columns[index].omit }                                                                                                
+                        />
+                        <span>{column.name}</span>
+                    </li>
+                )}
+            </ul>
+        )
+    }
+}
+
+
+function EntityRefPromises(items) {
+     return items.map((item, index) => { 
+        var res = [] 
+        {{range $field := .Fields}}
+        {{if and (eq (printf "%s" $field.Type ) "uuid") (ne $field.EntityRef "")}}
+            if (item.{{$field.Identifier}} !== "" && item.{{$field.Identifier}} !== null){
+                res.push(CachedClient
+                    .query({
+                        query: queriesByID.get("{{$field.EntityRef}}"),
+                        variables:{
+                            id:item.{{$field.Identifier}},                                       
+                        }
+                    })
+                    .then((result) => {  
+                        var data = result.data["{{$field.EntityRef | ToCamelCase}}ByID"]
+                        if (data.length > 0) {
+                            var fieldsFunc = searchFields.get("{{$field.EntityRef}}")
+                            const desc = fieldsFunc(data[0])
+                            items[index] = { ...items[index],
+                                    {{$field.Identifier}}_obj:data[0],
+                                    {{$field.Identifier}}_desc: desc,
+                                    }                                        
+                        }
+                    })
+                )
+            }
+        {{end}}
+        {{end}}
+        return res
+    })
+}

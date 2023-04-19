@@ -1,0 +1,95 @@
+package main 
+
+import (
+    "encoding/json"
+	"fmt"
+	"net/http"
+    "strings"
+
+    "{{.Identifier}}/config"
+
+    "github.com/aws/aws-sdk-go/aws"
+    "github.com/aws/aws-sdk-go/aws/credentials"
+    "github.com/aws/aws-sdk-go/aws/session"
+    "github.com/aws/aws-sdk-go/service/s3/s3manager"
+)
+
+func awsSession() (*session.Session, config.AWS) {
+    provider := config.New()
+    var awsConfigs []config.AWS
+    if err := provider.Get("aws").Populate(&awsConfigs); err != nil {
+        fmt.Printf("error reading aws config: %v\n", err)
+        return nil, config.AWS{}
+    }
+    if len(awsConfigs) == 0 {
+        fmt.Printf("aws config not found\n")
+        return nil, config.AWS{}
+    }
+
+    awsConfig := awsConfigs[0]
+    sess, err := session.NewSession(
+        &aws.Config{
+            Region: aws.String(awsConfig.Region),
+            Credentials: credentials.NewStaticCredentials(
+                awsConfig.KeyID,
+                awsConfig.Secret,
+                "", // a token will be created when the session it's used.
+            ),
+        },
+    )
+    if err != nil {
+        fmt.Printf("error creating aws sesion %v", err)
+        return nil, config.AWS{}
+    }
+    return sess, awsConfig
+}
+
+func (app *application) serverHandlerUploadFunc() http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        origin := r.Header.Get("origin")
+        origin = strings.ReplaceAll(origin, "api.", "admin.")
+        method := r.Method
+        fmt.Printf("method: %v\n", method)
+        w.Header().Set("Access-Control-Allow-Origin", origin)
+        w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+        w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+        w.Header().Set("Accept", "application/json, multipart/mixed")
+        w.Header().Set("Content-Type", "application/json")
+        if method == "OPTIONS" {
+            w.WriteHeader(http.StatusOK)
+            return
+        }
+        sess, awsConfig := awsSession();
+
+        uploader := s3manager.NewUploader(sess)
+        
+        file, header, err := r.FormFile("file")
+        if err != nil {
+            fmt.Printf("error reading file\n")
+            http.Error(w, "Internal Error", http.StatusInternalServerError)
+			return
+        }
+        bucket := awsConfig.Bucket
+        filename := "{{.Identifier}}/"+header.Filename
+        //upload to the s3 bucket
+        up, err := uploader.Upload(&s3manager.UploadInput{
+            Bucket: aws.String(bucket),
+            ACL:    aws.String("public-read"),
+            Key:    aws.String(filename),
+            Body:   file,
+        })
+        if err != nil {
+            fmt.Printf("error uploading file: %v, %v\n", err, up)
+            http.Error(w, "Internal Error", http.StatusInternalServerError)
+        }
+        
+        filepath := "https://" + bucket + "." + "s3-" + awsConfig.Region + ".amazonaws.com/" + filename
+        resJson, _ := json.Marshal(struct{
+                FilePath string `json:"file_path"`
+            }{
+                FilePath: filepath,
+            })
+	    w.Write(resJson)
+
+    })
+}

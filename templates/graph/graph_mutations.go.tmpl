@@ -1,0 +1,4 @@
+type Mutation { {{range $entity := .Entities}}
+    upsert{{.EntityName}}(input: {{.EntityName}}Input!): {{.EntityName}}   
+    upsertPartial{{.EntityName}}(input: {{.EntityName}}PartialInput!): {{.EntityName}}{{end}}    
+}

@@ -1,0 +1,7 @@
+{{range $entity := .Entities}}
+-- name: Update{{$entity.NameTitle}} :exec
+UPDATE {{$entity.Name}}
+SET
+{{range $field := $entity.Fields}}{{if ne $field.Name $entity.PrimaryKey }}{{$field.Name}} = ?{{if eq $field.HasComma true}}, {{end}}{{end}}{{end}}
+WHERE {{$entity.PrimaryKey}} = ?;
+{{end}}

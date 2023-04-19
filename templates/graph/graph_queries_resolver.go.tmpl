@@ -1,0 +1,113 @@
+package graph
+
+// This file will be automatically regenerated based on the schema, any resolver implementations
+// will be copied through when generating and any unknown code will be moved to the end.
+{{$projectName := .ProjectName}}
+import (
+	"context"
+	"{{.ProjectName}}/graph/generated"
+	"{{.ProjectName}}/graph/model"
+    {{range $entity := .Entities}}
+    {{$entity.Identifier}} "{{$projectName}}/core/module/{{$entity.Identifier}}/types"
+    {{$entity.Identifier}}entity "{{$projectName}}/core/entity/{{$entity.Identifier}}"
+    {{end}}	 
+    "github.com/gofrs/uuid"  
+    "{{.ProjectName}}/graph/mapper" 	
+)
+{{range $entity := .Entities}}
+{{range $select := $entity.Selects}}
+func (r *queryResolver) {{$select.Name}}(
+    ctx context.Context, {{range $field := $select.Fields}}
+    {{$field.Field.Identifier}} {{$field.Field.GraphGenType}},{{end}}
+    {{if ne $select.IsPrimary true}}
+    limit *int,
+    offset *int,
+    orderBy *string,
+    sort *string,
+    {{end}}
+) ([]*model.{{$entity.EntityName}}, error) {
+	res, err := r.Core.{{$entity.EntityName}}().
+    Fetch{{$select.Name}}(
+        ctx, 
+        {{$entity.Identifier}}.Fetch{{$select.Name}}Request{ {{range $field := $select.Fields}}
+            {{$field.Field.Name}}: {{$field.Field.GraphGenFromMapperParam}},{{end}}
+            {{if ne $select.IsPrimary true}}
+            Limit: resolveLimit(limit),
+            Offset: resolveOffset(offset),
+            OrderBy: stringPointerToString(orderBy),
+            Sort: stringPointerToString(sort),
+            {{end}}
+	    },
+    )
+	return mapper.Map{{$entity.EntityName}}(res.Results), err
+}
+{{end}}
+
+{{if eq $entity.Search true}}
+func (r *queryResolver) Search{{$entity.EntityName}}(
+    ctx context.Context,
+    query string,
+    limit *int, 
+    offset *int,
+) ([]*model.{{$entity.EntityName}}, error) {
+    res, err := r.Core.{{$entity.EntityName}}().
+        Search(
+            ctx, 
+            query,
+            resolveLimit(limit),
+            resolveOffset(offset),
+        )
+	return mapper.Map{{$entity.EntityName}}(res.Results), err
+}
+{{end}}
+
+{{range $cq := $entity.CustomQueries}}
+func (r *queryResolver) {{$cq.Name}}(
+    {{$inputFields := ($cq | CustomQueryInputFields)}}
+    ctx context.Context, {{range $field := $inputFields}}
+    {{$field.Identifier}} {{$field.GraphGenType}},{{end}}   
+    limit *int,
+    offset *int,    
+) ([]*model.{{$entity.EntityName}}, error) {
+	res, err := r.Core.{{$entity.EntityName}}().
+    {{$cq.Name}}(
+        ctx, 
+        {{$entity.Identifier}}.{{$cq.Name}}Request{ {{range $field := $inputFields}}
+            {{$field.Name}}: {{$field.GraphGenFromMapperParam}},{{end}}            
+            Limit: resolveLimit(limit),
+            Offset: resolveOffset(offset),            
+	    },
+    )
+	return mapper.Map{{$entity.EntityName}}(res.Results), err
+}
+{{end}}
+
+
+
+{{end}}
+
+// Query returns generated.QueryResolver implementation.
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
+
+type queryResolver struct{ *Resolver }
+
+func resolveLimit(limit *int) int32 {
+    if limit == nil {
+        return int32(10)
+    }
+    return int32(*limit)
+}
+
+func resolveOffset(offset *int) int32 {
+    if offset == nil {
+        return int32(0)
+    }
+    return int32(*offset)
+}
+
+func stringPointerToString(in *string) string {
+    if in == nil {
+        return ""
+    }
+    return *in
+}

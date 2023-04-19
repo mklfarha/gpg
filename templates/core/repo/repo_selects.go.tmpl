@@ -1,0 +1,60 @@
+{{range $entity := .Entities}}
+
+{{range $select := $entity.SelectStatements}}
+-- name: Fetch{{$select.Name}} :many
+SELECT * FROM {{$entity.Name}}
+WHERE 
+    {{range $field := $select.Fields}} {{$field.Name}} = ? {{if ne $field.IsLast true}}AND{{end}}{{end}} 
+    {{if eq $select.IsPrimary false}}LIMIT ?, ?{{end}};
+{{end}}
+
+{{range $select := $entity.SelectStatements}}
+    {{if eq $select.SortSupported true}}
+    {{range $timeField := $select.TimeFields}}
+-- name: Fetch{{$select.Name}}OrderedBy{{$timeField.Name}}ASC :many
+SELECT * FROM {{$entity.Name}}
+WHERE 
+    {{range $field := $select.Fields}} {{$field.Name}} = ? {{if ne $field.IsLast true}}AND{{end}}{{end}} 
+    ORDER BY {{$timeField.Identifier}} ASC
+    LIMIT ?, ?;
+
+-- name: Fetch{{$select.Name}}OrderedBy{{$timeField.Name}}DESC :many
+SELECT * FROM {{$entity.Name}}
+WHERE 
+    {{range $field := $select.Fields}} {{$field.Name}} = ? {{if ne $field.IsLast true}}AND{{end}}{{end}} 
+    ORDER BY {{$timeField.Identifier}} DESC
+    LIMIT ?, ?;
+
+        {{end}}
+    {{end}}
+{{end}}
+
+{{ if ne (len $entity.Search) 0 }}
+-- name: Search{{$entity.NameTitle}} :many
+SELECT * FROM {{$entity.Name}}
+WHERE {{range $field := $entity.Search}}
+    {{$field.Name}} like ? {{if ne $field.IsLast true}}OR{{end}}
+    {{end}}LIMIT ?, ?;
+{{end}}
+
+{{range $cq := $entity.CustomQueries}}
+-- name: {{$cq.Name}} :many
+SELECT {{$entity.Name}}.* FROM {{$entity.Name}}
+    {{if ne $cq.ExtraFrom ""}}
+    , {{$cq.ExtraFrom}}
+    {{end}}
+    {{range $join := $cq.Joins}}
+    JOIN {{$join.EntityIdentifier}} on {{$join.Condition | ToSQL}}
+    {{end}}    
+    WHERE {{$cq.Condition | ToSQL}}
+    {{if ne $cq.Group ""}}
+    GROUP BY{{$cq.Group}}
+    {{end}}
+    {{if ne $cq.Order ""}}
+    ORDER BY{{$cq.Order}}
+    {{end}}
+    LIMIT ?, ?;
+{{end}}
+
+
+{{end}}

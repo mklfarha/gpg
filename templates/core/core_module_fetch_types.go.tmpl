@@ -1,0 +1,21 @@
+package types
+
+import (
+    entity "{{.ProjectName}}/core/entity/{{.Package}}"
+	{{range $import := .Imports}}
+    "{{$import}}" {{end}}	
+)
+
+type Fetch{{.Select.Name}}Request struct { {{range $field := .Select.Fields}} 
+    {{$field.Field.Name}} {{if eq $field.Field.Custom true}}entity.{{end}}{{$field.Field.Type}}{{end}}    
+    {{if ne .Select.IsPrimary true}}
+    Offset int32
+    Limit int32
+    OrderBy string
+    Sort string
+    {{end}}
+}
+
+type Fetch{{.Select.Name}}Response struct {
+	Results []entity.{{.EntityName}}
+}

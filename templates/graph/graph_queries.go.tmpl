@@ -1,0 +1,21 @@
+type Query { {{range $entity := .Entities}}
+
+    #{{$entity.EntityName}} {{range $select := $entity.Selects}}
+    {{if eq $select.IsPrimary true}}
+    {{$select.GraphName}}({{range $field := $select.Fields}}{{$field.Field.GraphName}}:{{$field.Field.GraphInType}}{{if eq $field.IsLast false}}, {{end}}{{end}}): [{{$entity.EntityName}}]
+    {{else}}
+    {{$select.GraphName}}({{range $field := $select.Fields}}{{$field.Field.GraphName}}:{{$field.Field.GraphInType}},{{end}} limit:Int, offset:Int, orderBy:String, sort:String): [{{$entity.EntityName}}]    
+    {{end}}{{end}}
+    
+    {{ if eq $entity.Search true}}
+    # Search {{$entity.EntityName}}
+    Search{{$entity.EntityName}}(query:String!, limit:Int, offset:Int): [{{$entity.EntityName}}]
+    {{end}}
+
+    {{range $cq := $entity.CustomQueries}}
+    {{$inputFields := ($cq | CustomQueryInputFields)}}
+    {{$cq.Name}}({{range $field := $inputFields}}{{$field.GraphName}}:{{$field.GraphInType}},{{end}} limit:Int, offset:Int): [{{$entity.EntityName}}]
+    {{end}}
+    
+    {{end}}    
+}

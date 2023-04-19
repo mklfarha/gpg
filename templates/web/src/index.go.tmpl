@@ -1,0 +1,32 @@
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import Login from './pages/Login';
+import {
+  BrowserRouter,
+  Routes,
+  Route,  
+} from "react-router-dom";
+import { PopupProvider } from "react-popup-manager";
+
+{{range $entity := .Entities}}
+import {{$entity.Identifier | ToCamelCase}} from "./routes/{{$entity.Identifier | ToCamelCase}}";
+import {{$entity.Identifier | ToCamelCase}}Edit from "./routes/{{$entity.Identifier | ToCamelCase}}Edit";
+{{end}}
+
+const root = ReactDOM.createRoot(document.getElementById('root')); 
+root.render(   
+    <PopupProvider>    
+    <BrowserRouter>
+        <Routes>
+            <Route path="/" element={<App />} />
+            <Route path="/login" element={<Login />} />
+            {{range $entity := .Entities}}
+            <Route path="{{$entity.Identifier}}" element={<{{$entity.Identifier | ToCamelCase}} />} />
+            <Route path="{{$entity.Identifier}}/edit" element={<{{$entity.Identifier | ToCamelCase}}Edit />} />
+            <Route path="{{$entity.Identifier}}/edit/:id" element={<{{$entity.Identifier | ToCamelCase}}Edit />} />
+            {{end}}        
+        </Routes>
+    </BrowserRouter>
+    </PopupProvider>
+);

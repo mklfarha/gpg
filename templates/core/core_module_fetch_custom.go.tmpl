@@ -1,0 +1,32 @@
+package {{.Package}}
+
+import (
+	"context"    
+    
+    "{{.ProjectName}}/core/module/{{.EntityIdentifier}}/types"
+    {{if ne .Select.IsPrimary true}}    
+    {{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"{{end}}    
+)
+
+func (m *module) {{.CustomQuery.Name}}(
+    ctx context.Context, 
+    req types.{{.CustomQuery.Name}}Request, 
+    opts ...Option,
+) (types.{{.CustomQuery.Name}}Response, error) {
+    
+    models, err := m.repository.{{.CustomQuery.Name}}(
+        ctx,
+        {{.ProjectName}}db.{{.CustomQuery.Name}}Params{ {{range $field := (.CustomQuery | Fields )}}
+            {{$inputField := ($field | MapToInput ) }}
+            {{$field.Name}}: req.{{$inputField.Name}}{{$inputField.RepoToMapper}},{{end}}
+            Offset: req.Offset,
+            Limit: req.Limit,            
+        },
+    )
+    if err != nil {
+        return types.{{.CustomQuery.Name}}Response{}, err
+    }
+    return types.{{.CustomQuery.Name}}Response{
+        Results: mapModelsToEntities(models),
+    }, nil
+}

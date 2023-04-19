@@ -1,0 +1,485 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+.App {    
+  display:block;
+  width: 100%;
+  height: 100%;  
+}
+
+html, body, #root {margin:0;padding:0;height:100%;min-width:100%;}
+
+.panel{
+  overflow: hidden;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+body{
+  background-color:#FFF;
+}
+#scrollable-canvas-container {
+  background-image: radial-gradient(#EEE 20%, transparent 20%),
+      radial-gradient(#d5d5d5 5%, transparent 5%);
+  background-color: #FDFDFD;
+  background-position: 0 0, 20px 20px;
+  background-size: 20px 20px;
+  font-size: 1.2em;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+input,select {
+  background-color:#FFF;
+  height: 1.5em;  
+  line-height: 1.5em;
+  font-size: 20px;
+  border:1px solid #999
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+h2.pageTitle {
+  font-size:28px;
+  color:#666;
+  padding:10px;
+  margin-top:10px;
+}
+
+.projectName:hover{
+  text-decoration: underline;
+}
+
+.fieldCard {
+  width: 92%;
+  padding: 4% 4%;
+  background-color:#FEFEFE;
+  border-bottom:2px solid #CCC;
+  text-align:left;
+  font-size:14px;
+  cursor:pointer;
+}
+
+.fieldCard:hover{
+  background-color:#EFEFEF;
+}
+
+.headerButton {
+  background-color: #0681d6;
+  color: #FFF;
+  padding: 10px 20px;
+  display: inline-block;
+  cursor: pointer;
+  font-weight:300;
+  border-right:1px solid #0b4f82;
+}
+
+.headerButton:hover{
+  background-color: #0a66a8;
+}
+.fieldsTable {
+  width: 100%;
+  display: block;
+}
+.fieldsTable tr th{
+  padding: 10px;
+  background-color: #DDD;
+  border:none;  
+}
+
+.fieldsTable tr td{
+  padding: 5px;
+  background-color: #EEE;
+  border-bottom:1px solid #CCC;
+  text-align:center;
+}
+
+.editorButton {
+  display:inline-block;
+  padding:10px;
+  background-color:#DDD;
+  cursor:pointer;  
+  border-radius: 5px;
+}
+
+.editorButton:hover {  
+  background-color:#CCC;  
+}
+
+.deprecated {
+  text-decoration: line-through;
+}
+
+.modalPanel{
+  background-color: #FFF;
+}
+
+.entityCard{
+  -webkit-box-shadow: 1px 1px 12px 1px rgba(0,0,0,0.35); 
+  box-shadow: 1px 1px 12px 1px rgba(0,0,0,0.35); 
+  position: relative;
+  z-index: 2; 
+}
+
+.entity-relationship{
+  -webkit-box-shadow: 1px 1px 20px 1px rgba(0,0,0,0.10); 
+  box-shadow: 1px 1px 20px 1px rgba(0,0,0,0.10); 
+}
+
+.inputLabel{
+  font-size: 18px;
+  padding-right: 5px;
+  display: inline-block;
+  min-width: 95px;  
+  text-align: right;
+}
+
+.panel{
+  -webkit-box-shadow: -1px 4px 14px 3px rgba(0,0,0,0.54); 
+  box-shadow: -1px 4px 14px 3px rgba(0,0,0,0.54);
+  border-bottom:1px solid #CCC   
+}
+
+.entityList{
+  display:inline-block;
+  text-align:center;
+  font-size:25px;
+  padding:50px;
+  margin:20px;
+  width:300px;
+  border:1px solid #CCC;
+  -webkit-box-shadow: -1px 4px 14px 3px rgba(0,0,0,0.1); 
+  box-shadow: -1px 4px 14px 3px rgba(0,0,0,0.1);  
+  background-color:#FEFEFE;  
+  color:#333;
+  border-top:20px solid #EEE;
+}
+
+.entityList:hover{
+  background-color:#EEE;    
+}
+
+.header{  
+  width: 100%;
+  display: inline-block;
+  text-align: right;
+  background-color:#4ab6ac;
+  padding:10px 2%;
+  text-decoration:none;
+}
+
+
+.headerName{
+  color:#FFF;
+  font-size:25px;
+  font-weight:bold;
+  float:left;
+  padding:8px;
+  display:inline-block;
+  text-decoration:none;
+}
+
+.headerName:hover {
+  color:#FFF;
+  text-decoration:none;
+}
+
+.headerName span {
+  font-weight:150;
+}
+
+a.headerBtn{
+  display:inline-block;
+  padding:5px 10px; 
+  background-color:#2b6c66;
+  margin-right:10px;
+  border-radius:5px;
+  border:1px solid #64fff4;
+  color:#FFF;
+  cursor:pointer;
+  font-weight:bold;
+  margin-top:10px;
+}
+
+a.headerBtn:hover{
+  color:#FFF;
+  text-decoration:none;
+  background-color:#1e4945;
+}
+
+.headerBtn span {
+  font-weight:300;
+}
+
+.tableWrapper{
+  width:96%;
+  margin:20px 2%;
+  border:1px solid #EEE;
+  -webkit-box-shadow: -1px 4px 14px 3px rgba(0,0,0,0.1); 
+  box-shadow: -1px 4px 14px 3px rgba(0,0,0,0.1);  
+  margin-top:5px;
+  border-top: 20px solid #EEE;
+}
+
+
+.auth-wrapper.auth-basic {
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    display:inline-block;
+    min-width:400px;
+    height:30%;
+    margin-top:15%;
+}
+
+.auth-wrapper.auth-basic .auth-inner {
+    max-width: 400px;
+}
+.auth-wrapper.auth-basic .auth-inner {
+    position: relative;
+}
+.auth-wrapper .auth-inner {
+    width: 100%;
+}
+
+.form-label{
+  text-align:left;
+  float:left;
+}
+
+.content-wrapper {
+    padding: 0 !important;
+    text-align:center;
+}
+
+.brand-logo, .brand-logo h2{
+  text-decoration:none;
+  color:#4ab6ac;
+}
+
+.logout{
+  color:#FFF;
+  text-decoration:none;
+}
+
+.actionsBar{
+  display:inline-block;
+  width:96%;
+  margin:10px 2%;
+  padding-bottom:0px;
+  margin-bottom:0px;
+  padding-top:10px;
+}
+
+.actionsBar a{
+  display:inline-block;
+  float:right;
+  padding:10px;
+  background-color:#EEE;
+  margin-left:10px;
+  cursor:pointer;  
+}
+
+.actionsBar a:hover{
+  background-color:#DDD;
+  text-decoration:none;
+}
+
+.actionsBar h2 {
+  display:inline-block;
+  float:left;
+  margin-top: 0px;
+  padding-top: 0px;
+}
+
+.searchBar{
+  display:inline-block;
+  float:left;
+  width:50%;
+}
+
+.searchBar span{
+  display:inline-block;
+  float:left;
+}
+
+.filters {
+  display:block;
+  border-top:1px solid #EEE;
+  margin:10px 2%;
+  padding-top:15px;
+  padding-bottom:10px;
+}
+
+.filters .filter {
+  display:inline-block;  
+  width:25%;    
+  margin-right:10px;
+}
+
+.clear{
+  display:block;
+  clear:both;
+}
+
+.inputWrapper{
+  display:inline-block;
+  width:94%;
+  padding:15px;
+  margin:5px 3%;
+  background-color:#f2ffea;
+  border-radius:3px;
+  border:1px solid #EFEFEF;
+  border-bottom: 1px solid #EEE;
+  border-right: 1px solid #EEE;
+}
+
+.inputWrapper input {
+  font-size:20px;
+  border:1px solid #DDD;
+}
+
+.inputWrapper input[type=checkbox]{
+  margin-top:-3px;
+}
+
+.inputWrapper span {
+  display:inline-block;
+  font-size:16px;
+  min-width:100px;
+  text-align:left;
+}
+
+.inputWrapper span.info{
+  width:100%;
+  text-align:right;
+  padding:5px;
+  font-weight:200;
+}
+
+.formWrapper{
+  display:inline-block;
+  width:96%;
+  margin:20px 2%;
+  border:1px solid #EEE;
+  -webkit-box-shadow: -1px 4px 14px 3px rgba(0,0,0,0.1); 
+  box-shadow: -1px 4px 14px 3px rgba(0,0,0,0.1);  
+  margin-top:5px;
+  padding:10px;
+  padding-top:3%;
+  border-top:20px solid #EEE;
+}
+
+.formWrapper button {
+  float:right;
+  margin:10px;
+}
+
+.form-select {
+    height: calc(1.5em + 0.75rem + 2px);
+    display: block;
+    width: 100%;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.jsonFieldItem{
+  display:block;
+  padding:5px;
+  color:#333;
+  border:1px solid #CCC;
+  background-color:#FEFEFE;
+  margin:5px 0px;
+  cursor:pointer;
+  border-radius:3px;
+}
+
+.jsonFieldItem:hover{
+  background-color:#FCFCFC;
+}
+
+.jsonFieldItem div {
+   display:block;
+   padding:10px;
+   border-bottom: 1px solid #DDD;
+   font-size:16px;
+}
+
+.jsonFieldItem div:last-child {
+  border-bottom: none;
+}
+
+.jsonFieldItem div span {
+   display:inline-block;
+   min-width:150px;
+   text-align:right;
+   font-weight:150;
+}
+
+.columnsEdit {
+
+}
+
+.columnsEdit li {
+  display:inline-block;
+  padding:10px 0px;
+  border-bottom:1px solid #EEE;
+  width:45%;
+}
+
+.columnsEdit li input, .columnsEdit li span {
+  display:inline;
+  float:left;
+}
+
+.columnsEdit li span {
+  padding:5px;
+}

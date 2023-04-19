@@ -1,0 +1,61 @@
+package core
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"fmt"
+
+	_ "github.com/go-sql-driver/mysql"
+	"go.uber.org/config"
+	{{.Identifier}}config "{{.Identifier}}/config"
+    {{$projectName := .Identifier}}
+    {{range $entity := .Entities}}
+    "{{$projectName}}/core/module/{{$entity.Identifier}}"
+    {{end}}	
+	"{{.Identifier}}/core/repository"
+	{{.Identifier}}db "{{.Identifier}}/core/repository/gen"
+)
+
+type Implementation struct {
+	repository     {{.Identifier}}db.Queries
+    {{range $entity := .Entities}}
+    {{$entity.Identifier}}       {{$entity.Identifier}}.Module
+    {{end}}	
+}
+
+func New(ctx context.Context, provider config.Provider) (*Implementation, error) {
+
+	var dbs {{.Identifier}}config.DBs
+	if err := provider.Get("db").Populate(&dbs); err != nil {
+		return nil, err
+	}
+
+	if len(dbs) == 0 {
+		return nil, errors.New("db configuration not found")
+	}
+
+	dbconfig := dbs[0]
+	db, err := sql.Open(dbconfig.Driver, dbconfig.Path())
+	if err != nil {
+		return nil, fmt.Errorf("error connecting to DB: %v", err)
+	}
+	defer db.Close()
+	db.SetConnMaxLifetime(0)
+	db.SetMaxIdleConns(10)
+	db.SetMaxOpenConns(0)
+	repository := repository.New(*db)
+
+	return &Implementation{
+		repository: *repository,
+	}, nil
+}
+
+{{range $entity := .Entities}}
+func (i Implementation) {{$entity.Identifier | ToCamelCase}}() {{$entity.Identifier}}.Module {
+	if i.{{$entity.Identifier}} == nil {
+		i.{{$entity.Identifier}} = {{$entity.Identifier}}.New(&i.repository)
+	}
+	return i.{{$entity.Identifier}}
+}
+{{end}}

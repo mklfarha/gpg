@@ -1,0 +1,50 @@
+package config
+
+import (
+	"fmt"
+	"os"
+
+	"go.uber.org/config"
+)
+
+type DBs []DB
+
+type DB struct {
+	Name     string `yaml:"name"`
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	User     string `yaml:"user"`
+	Password string `yaml:"pswd"`
+	Params   string `yaml:"params"`
+	Driver   string `yaml:"driver"`
+}
+
+type AWS struct {
+	Region string `yaml:"region"`
+	KeyID  string `yaml:"key_id"`
+	Secret string `yaml:"secret"`
+	Bucket string `yaml:"bucket"`
+}
+
+func (db DB) Path() string {
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?%s",
+		db.User,
+		db.Password,
+		db.Host,
+		db.Port,
+		db.Name,
+		db.Params)
+}
+
+func New() config.Provider {
+	yaml, err := config.NewYAML(config.File(os.Getenv("CONFIG")))
+	if err != nil {
+		fmt.Printf("error loading config: %v", err)
+		provider, err := config.NewYAMLProviderFromBytes([]byte(configDev))
+		if err != nil {
+			fmt.Printf("error loading config 2: %v", err)
+		}
+		return provider
+	}
+	return yaml
+}

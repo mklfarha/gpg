@@ -1,0 +1,9 @@
+generator=skeema:1.8.1-community
+schema={{.Identifier}}
+
+[production]
+flavor={{.Database.Driver}}:{{.Database.Version}}
+host={{.Database.Host}}
+socket=/tmp/mysql.sock
+user={{.Database.User}}
+password={{.Database.Password}}

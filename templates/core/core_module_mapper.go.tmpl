@@ -1,0 +1,21 @@
+package {{.Package}}
+
+import (
+    "github.com/gofrs/uuid"
+    entity "{{.ProjectName}}/core/entity/{{.Package}}"
+    {{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"  
+)
+
+func mapModelsToEntities(models []{{.ProjectName}}db.{{.EntityName}}) []entity.{{.EntityName}} {
+	result := []entity.{{.EntityName}}{}
+	for _, p := range models {
+		result = append(result, mapModelToEntity(p))
+	}
+	return result
+}
+
+func mapModelToEntity(model {{.ProjectName}}db.{{.EntityName}}) entity.{{.EntityName}} {	
+	return entity.{{.EntityName}}{ {{range $field := .Fields}}
+        {{$field.Name}}: {{$field.RepoFromMapper}},{{end}}	
+	}
+}

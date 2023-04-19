@@ -1,0 +1,6 @@
+{{$entity := .Entity}}
+CREATE TABLE IF NOT EXISTS `{{$entity.Name}}` ( {{range $field := $entity.Fields}}
+  `{{$field.Name}}` {{$field.Type}} {{$field.Null}} {{$field.Unique}} {{$field.Default}},{{end}}  
+  PRIMARY KEY (`{{$entity.PrimaryKey}}`),{{range $index := $entity.Indexes}}
+  INDEX `{{$index.Name}}` (`{{$index.FieldName}}` ASC){{if eq $index.HasComma true }},{{end}}{{end}})  
+ENGINE = InnoDB;

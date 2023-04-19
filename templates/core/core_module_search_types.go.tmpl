@@ -1,0 +1,9 @@
+package types
+
+import (
+    entity "{{.ProjectName}}/core/entity/{{.Package}}"
+)
+
+type Search{{.EntityName}}Response struct {
+    Results []entity.{{.EntityName}}
+}

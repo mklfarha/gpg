@@ -1,0 +1,26 @@
+package types
+
+{{$projectName := .ProjectName}}
+{{$package := .Package}}
+import (
+    {{ $first := true}}
+    {{range $field := .Fields}}
+        {{if eq $field.Custom true}}
+            {{if eq $first true}}
+            entity "{{$projectName}}/core/entity/{{$package}}"	
+            {{$first = false}}
+            {{end}}		
+        {{end}}
+    {{end}}
+    {{range $import := .Imports}}
+    "{{$import}}" {{end}}
+)
+
+type UpsertRequest struct {
+	{{range $field := .Fields}}
+    {{$field.Name}} {{if eq $field.Custom true}}entity.{{end}}{{$field.Type}}{{end}}
+}
+
+type UpsertResponse struct {
+	{{.PrimaryKey.Name}} uuid.UUID
+}

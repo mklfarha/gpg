@@ -1,0 +1,55 @@
+package main
+
+import (
+	"context"
+
+	"github.com/99designs/gqlgen/graphql/handler"
+	"{{.Identifier}}/auth"
+	"{{.Identifier}}/config"
+	"{{.Identifier}}/graph"
+	"{{.Identifier}}/graph/generated"
+	"{{.Identifier}}/core"
+)
+
+type basicAuthCredentials struct {
+	username string
+	password string
+}
+
+type application struct {
+	core   *core.Implementation
+	auth   auth.Interface
+	server *handler.Server
+	bac    basicAuthCredentials
+}
+
+func New() (application, error) {
+	ctx := context.Background()
+	config := config.New()
+	c, err := core.New(ctx, config)
+	if err != nil {
+		return application{}, err
+	}
+
+	auth, err := auth.New(ctx, c)
+	if err != nil {
+		return application{}, err
+	}
+
+	srv := handler.NewDefaultServer(
+		generated.NewExecutableSchema(
+			generated.Config{
+				Resolvers: &graph.Resolver{
+					Core: *c,
+				}}))
+
+	return application{
+		core:    c,
+		auth:   auth,
+		server: srv,
+		bac: basicAuthCredentials{
+			username: "{{.Auth.BasicUsername}}",
+			password: "{{.Auth.BasicPassword}}",
+		},
+	}, nil
+}

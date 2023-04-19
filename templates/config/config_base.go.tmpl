@@ -1,0 +1,14 @@
+db:
+  - name: {{.Database.Name}} 
+    host: {{.Database.Host}}
+    port: {{.Database.Port}}
+    user: {{.Database.User}}
+    pswd: {{.Database.Password}}
+    params: parseTime=true&loc=UTC&charset=utf8mb4&collation=utf8mb4_unicode_ci
+    driver: "{{.Database.Driver}}"
+
+aws:
+  - region: {{.AWS.Region}}
+    key_id: {{.AWS.Key}}
+    secret: {{.AWS.Secret}}
+    bucket: {{.AWS.Bucket}}

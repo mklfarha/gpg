@@ -1,0 +1,7 @@
+{{range $entity := .Entities}}
+-- name: Insert{{$entity.NameTitle}} :execresult
+INSERT INTO {{$entity.Name}}
+({{range $field := $entity.Fields}}{{$field.Name}}{{if eq $field.HasComma true}},{{end}}{{end}})
+VALUES
+({{range $field := $entity.Fields}}?{{if eq $field.HasComma true}},{{end}}{{end}});
+{{end}}

@@ -1,0 +1,51 @@
+package {{.Package}}
+
+import (
+    
+    "encoding/json"
+    {{range $import := .Imports}}
+    "{{$import}}" {{end}}
+    {{if eq .JSON true}}
+    "fmt"
+    {{end}}
+)
+
+type {{.EntityName}} struct { {{range $field := .Fields}}
+    {{$field.Name}} {{$field.Type}} {{$field.Tags}}{{end}}
+}
+
+func (e {{.EntityName}}) String() string {
+    res, _ := json.Marshal(e)
+    return string(res)
+}
+
+{{if eq .JSON true}}
+{{if eq .JSONField.JSONMany true}}
+type {{.EntityName}}Collection []{{.EntityName}}
+{{end}}
+func {{.EntityName}}FromJSON(data json.RawMessage) {{.EntityName}}{{if eq .JSONField.JSONMany true}}Collection{{end}} {
+    entity := {{if eq .JSONField.JSONMany true}}[]{{end}}{{.EntityName}}{}
+    if err := json.Unmarshal(data, &entity); err != nil {
+        fmt.Println("unmarshal error", err)
+    }
+    return entity
+}
+
+func (e {{.EntityName}}) {{.EntityName}}ToJSON() json.RawMessage {
+    res, err := json.Marshal(e)
+    if err != nil {
+        fmt.Println("marshal error", err)
+    }
+    return res
+}
+
+{{if eq .JSONField.JSONMany true}}
+func (e {{.EntityName}}Collection) {{.EntityName}}ToJSON() json.RawMessage {
+    res, err := json.Marshal(e)
+    if err != nil {
+        fmt.Println("marshal error", err)
+    }
+    return res
+}
+{{end}}
+{{end}}

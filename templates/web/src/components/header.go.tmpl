@@ -1,0 +1,37 @@
+import React from 'react'
+import FetchUser from '../FetchUser'
+
+class Header extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = {}   
+        var token = localStorage.getItem('token')        
+        if (token === undefined || token === null || token === ''){                
+            window.location.href = "/login"            
+        }            
+    }
+
+    componentDidMount() {
+        FetchUser().then(res => {
+            if (res.status === 200) {
+                this.state.user = res.data
+                this.setState(this.state)
+            }
+        })
+    }
+
+    render() {
+        return (
+            <div className="header">
+                <a className="headerName" href="/">{{.Render.Name}} <span> | {{.Render.Description}}</span></a>
+                <a className="headerUser, headerBtn" href={"/user/edit/" + this.state.user?.id }><span>Welcome,</span> {this.state.user?.name}</a>
+                <a className="logout, headerBtn" href="#" onClick={() => {
+                    localStorage.setItem('token', '')
+                    window.location.href = "/login"
+                }}>Logout</a>
+            </div>
+        )
+    }
+}
+
+export default Header

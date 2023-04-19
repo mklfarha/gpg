@@ -1,0 +1,44 @@
+package {{.Package}}
+
+//go:generate go run github.com/dmarkham/enumer -type={{.EnumName}} -json
+type {{.EnumName}} int
+
+const (
+	{{.EnumNameUpper}}_INVALID {{.EnumName}} = iota {{range $value := .Values}}
+    {{$value}}{{end}}
+)
+
+func (e {{.EnumName}}) ToInt32() int32 {
+    return int32(e)
+}
+
+{{$values := .Values}}
+func {{.EnumName}}FromString(in string) {{.EnumName}} {
+	switch in { {{range $i, $option := .Options}}
+	case "{{$option.Identifier}}":
+		return {{index $values $i}} {{end}}	
+	}
+	return {{.EnumNameUpper}}_INVALID
+}
+
+func {{.EnumName}}FromPointerString(in *string) {{.EnumName}} {
+	if in == nil {
+		return {{.EnumNameUpper}}_INVALID
+	}
+	return {{.EnumName}}FromString(*in)
+}
+
+{{$options := .Options}}
+func (e {{.EnumName}}) String() string {
+	switch e { {{range $i, $value := .Values}}
+	case {{$value}}:
+		return "{{(index $options $i).Identifier}}" {{end}}	
+	}
+
+	return "invalid"
+}
+
+func (e {{.EnumName}}) StringPtr() *string {
+	val := e.String()
+	return &val
+}

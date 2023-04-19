@@ -1,0 +1,108 @@
+package {{.Package}}
+
+{{$projectName := .ProjectName}}
+import (
+	"context"
+    "errors"
+	
+	"github.com/gofrs/uuid"
+	"{{.ProjectName}}/core/module/{{.EntityIdentifier}}/types"	
+	{{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"   
+	{{$first := true}}
+	{{range $field := .Fields}}	
+		{{if eq $first true}}
+			{{ if eq $field.Generated true}}
+				"{{$projectName}}/custom"
+				{{$first = false}}
+			{{end}}
+		{{end}}		
+	{{end}}
+)
+
+func (m *module) Upsert(
+	ctx context.Context, 
+	req types.UpsertRequest, 
+	partial bool, 
+	opts ...Option,
+) (types.UpsertResponse, error) {
+	if req.{{.PrimaryKey.Name}} == uuid.Nil {		
+		params := mapUpsertRequestToInsertParams(req)
+		_, err := m.repository.Insert{{.EntityName}}(
+			ctx,
+			params,
+		)
+		if err != nil {
+			return types.UpsertResponse{}, err
+		}
+
+		return types.UpsertResponse{
+			{{.PrimaryKey.Name}}: uuid.FromStringOrNil(params.{{.PrimaryKey.Name}}),
+		}, nil
+	}
+
+	existing, err := m.repository.Fetch{{.EntityName}}By{{.PrimaryKey.Name}}(ctx, req.{{.PrimaryKey.Name}}.String())
+	if err != nil {
+		return types.UpsertResponse{}, err
+	}
+
+	if len(existing) == 0 {
+		return types.UpsertResponse{}, errors.New("entity not found")
+	}
+	err = m.repository.Update{{.EntityName}}(
+		ctx,
+		mapUpsertRequestToUpdateParams(req, existing[0], partial),
+	)
+	if err != nil {
+		return types.UpsertResponse{}, err
+	}
+
+	return types.UpsertResponse{
+		{{.PrimaryKey.Name}}: req.{{.PrimaryKey.Name}},
+	}, nil
+}
+
+
+func mapUpsertRequestToInsertParams(req types.UpsertRequest) {{.ProjectName}}db.Insert{{.EntityName}}Params {	
+	return {{.ProjectName}}db.Insert{{.EntityName}}Params{ {{range $field := .Fields}}		
+		{{ if eq $field.Generated true}} 
+		{{$field.Name}}: {{$field.GeneratedFuncInsert}}{{$field.RepoToMapper}},
+		{{else}}
+        {{$field.Name}}: req.{{$field.Name}}{{$field.RepoToMapper}}, {{end}}	
+		{{end}}
+	}
+}
+
+func mapUpsertRequestToUpdateParams(req types.UpsertRequest, existing {{.ProjectName}}db.{{.EntityName}}, partial bool) {{.ProjectName}}db.Update{{.EntityName}}Params {	
+	if !partial {
+		return {{.ProjectName}}db.Update{{.EntityName}}Params{ {{range $field := .Fields}}
+			{{ if eq $field.Generated true}} 
+			{{$field.Name}}: {{$field.GeneratedFuncUpdate}}{{$field.RepoToMapper}},
+			{{else}}
+			{{$field.Name}}: req.{{$field.Name}}{{$field.RepoToMapper}}, {{end}}	
+			{{end}}
+		}
+	}
+
+	res := {{.ProjectName}}db.Update{{.EntityName}}Params{}
+	emptyReq := types.UpsertRequest{}
+
+	{{range $field := .Fields}}
+	{{if eq $field.JSONMany true}}
+	if len(req.{{$field.Name}}) == 0 {
+	{{else}}
+	if req.{{$field.Name}} == emptyReq.{{$field.Name}} {
+	{{end}}
+		res.{{$field.Name}} = existing.{{$field.Name}}
+	} else {
+		{{ if eq $field.Generated true}} 
+		res.{{$field.Name}} = {{$field.GeneratedFuncUpdate}}{{$field.RepoToMapper}}
+		{{else}}
+		res.{{$field.Name}} = req.{{$field.Name}}{{$field.RepoToMapper}}
+		{{end}}
+	}
+	{{end}}
+
+	return res
+
+}
+

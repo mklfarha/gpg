@@ -1,0 +1,17 @@
+package types
+
+import (
+    entity "{{.ProjectName}}/core/entity/{{.Package}}"
+	{{range $import := .Imports}}
+    "{{$import}}" {{end}}	
+)
+
+type {{.CustomQuery.Name}}Request struct { {{range $field := (.CustomQuery | UniqueFields)}} 
+    {{$field.Name}} {{$field.Type}}{{end}}        
+    Offset int32
+    Limit int32    
+}
+
+type {{.CustomQuery.Name}}Response struct {
+	Results []entity.{{.EntityName}}
+}
