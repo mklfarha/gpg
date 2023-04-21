@@ -7,7 +7,7 @@ GPG is a tool to generate a GraphQL API, Auth Server (JWT) and Web Management To
 
 ## What you get from the generator
 
-![GPG What you get](./docs/imgs/gpg-architecture.png | height=400)
+![GPG What you get](./docs/imgs/gpg-architecture.png){:height="400px"}
 
 
 
