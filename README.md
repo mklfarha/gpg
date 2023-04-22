@@ -14,11 +14,13 @@ The generator will take care of creating the code and the tables in MySQL and it
 
 This generator is great for small projects, prototyping, and capturing structured data, you can have the project up and running in a few minutes.
 
+Checkout the [CA Parks demo project](https://github.com/mklfarha/gpg-demo-ca-parks) to see the generated code.
+
 ## Getting Started 
 
 ### Step 1 - Model your project
 
-GPG takes in a JSON file that holds the configuration of the project, a list of the entities, with the corresponding fields and relationships. 
+GPG takes in a [JSON file](https://github.com/mklfarha/gpg-demo-ca-parks/blob/master/gpg_project_ca_parks_config.json) that holds the configuration of the project, a list of the entities, with the corresponding fields and relationships. 
 
 You can generate this config file using the [GPG Web Editor](https://gpg.maykelfarha.com/).
 
