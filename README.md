@@ -25,6 +25,7 @@ You can generate this config file using the [GPG Web Editor](https://gpg.maykelf
 <img src="./docs/imgs/gpg-web-editor.png" height="300px" alt="GPG Web Editor" title="GPG Web Editor">
 
 - Make sure to include a user entity in your design this is needed for authentication and to access the web app.
+    - The email and password fields are required 
 - Follow the naming conventions to avoid unusual errors.
 
 ### Step 2 - Setup your database
@@ -76,9 +77,78 @@ This should run your API locally, you should see something like this
 
 ### Step 5 - Create a user 
 
+You can use the CLI tool in the generated code to create the first user, afterwards you can use the CMS
+
+To use the CLI, follow these steps:
+
+```
+cd {generate target path}/{project identifer}/cli
+
+go build .
+
+go run . create-user
+```
+
+Follow the interactive steps to create the user.
+
 ### Step 6 - Run the CMS 
 
+The CMS web tool uses React, make sure you have node installed
+
+Follow these steps to run it:
+
+```
+cd {generate target path}/{project identifer}/web
+
+npm install
+
+npm start
+```
+
+The web app should start on port 3000 
+
+<img src="./docs/imgs/gpg-crm.png" height="200px" alt="GPG CRM" title="GPG CRM">
+
+
 ### [Bonus] Generate an token and use the GraphQL Playground
+
+To generate token, you need to create a user first 
+
+You can use the CLI tool in the generated code to create a user token,
+
+To use the CLI, follow these steps:
+
+```
+cd {generate target path}/{project identifer}/cli
+
+go build .
+
+go run . create-token
+```
+
+Follow the interactive steps to create the token.
+
+Once you have the token, open the plaground
+
+```
+http://localhost:8080/gplay 
+```
+
+Enter the username and password added in the project settings:
+
+<img src="./docs/imgs/gpg-auth.png" height="100px" alt="GPG Auth" title="GPG Auth">
+
+(if prompted again, cancel, at this point you should see the playground)
+
+Add the token just generate in the headers and reload
+
+```
+{
+  "authorization":"bearer {your token here}"
+}
+```
+<img src="./docs/imgs/gpg-gplay.png" height="200px" alt="GPG Auth" title="GPG Auth">
+
 
 
 
