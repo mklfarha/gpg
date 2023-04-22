@@ -37,7 +37,16 @@ func (db DB) Path() string {
 }
 
 func New() config.Provider {
-	yaml, err := config.NewYAML(config.File(os.Getenv("CONFIG")))
+	return NewWithPath("")
+}
+
+func NewWithPath(path string) config.Provider {
+	envPath := os.Getenv("CONFIG")
+
+	if envPath == "" {		
+		envPath = path
+	}
+	yaml, err := config.NewYAML(config.File(envPath))
 	if err != nil {
 		fmt.Printf("error loading config: %v", err)
 		provider, err := config.NewYAMLProviderFromBytes([]byte(configDev))

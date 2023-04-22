@@ -13,6 +13,7 @@ import (
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/files"
 	"github.com/maykel/gpg/generator"
+	gcli "github.com/maykel/gpg/generator/cli"
 	"github.com/maykel/gpg/generator/core"
 	"github.com/maykel/gpg/generator/graph"
 	"github.com/maykel/gpg/generator/web"
@@ -48,6 +49,7 @@ func main() {
 				generator.GenerateAPIModule(ctx, targetDir, project)
 				generator.GenerateCustom(ctx, targetDir, project)
 				generator.GoModTidy(context.Background(), targetDir, project)
+				gcli.GenerateCLIModule(ctx, targetDir, project)
 
 				web.GenerateBaseWeb(ctx, targetDir, project)
 				return nil
@@ -92,6 +94,7 @@ func main() {
 				generator.GenerateAPIModule(ctx, targetDir, project)
 				generator.GenerateCustom(ctx, targetDir, project)
 				generator.GoModTidy(context.Background(), targetDir, project)
+				gcli.GenerateCLIModule(ctx, targetDir, project)
 				return nil
 			},
 		},

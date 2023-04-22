@@ -26,6 +26,7 @@ var (
 	CORE_TOOLS                = "tools"
 	WEB_DIR                   = "web"
 	CUSTOM_DIR                = "custom"
+	CLI_DIR                   = "cli"
 )
 
 var projectStructure = []string{

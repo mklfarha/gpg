@@ -75,8 +75,7 @@ func (i *Implementation) ClaimsFromHeader(w http.ResponseWriter, r *http.Request
 
 
 func (i *Implementation) TokenFromHeader(r *http.Request) (string, error) {
-	reqToken := r.Header.Get("Authorization")
-	fmt.Printf("Request Token: %v\n", reqToken)
+	reqToken := r.Header.Get("Authorization")	
 	splitToken := strings.Split(reqToken, "bearer ")
 	if len(splitToken) < 2 {		
 		return "", errors.New("invalid token len")
