@@ -85,18 +85,18 @@ func initModule(ctx context.Context, rootPath string, project entity.Project) {
 	fmt.Printf("--[GPG] go version: %v\n", out.String())
 
 	// install sqlc
-	cmd = exec.Command("go", "get", "github.com/kyleconroy/sqlc/cmd/sqlc")
+	cmd = exec.Command("go", "get", "github.com/sqlc-dev/sqlc/cmd/sqlc")
 	cmd.Dir = projectDir
 	err := cmd.Run()
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
 	if err != nil {
-		fmt.Printf("error running go insall sqlc -o: %v\n", out.String())
-		fmt.Printf("error running go insall sqlc -err: %v\n", stderr.String())
+		fmt.Printf("error running go install sqlc -o: %v\n", out.String())
+		fmt.Printf("error running go install sqlc -err: %v\n", stderr.String())
 	}
 
 	// install sqlc
-	cmd = exec.Command("go", "get", "golang.org/x/sync/errgroup")
+	cmd = exec.Command("go", "install", "golang.org/x/sync/errgroup")
 	cmd.Dir = projectDir
 	err = cmd.Run()
 	if err != nil {
@@ -104,7 +104,7 @@ func initModule(ctx context.Context, rootPath string, project entity.Project) {
 	}
 
 	// install gqlgen
-	cmd = exec.Command("go", "get", "github.com/99designs/gqlgen")
+	cmd = exec.Command("go", "install", "github.com/99designs/gqlgen")
 	cmd.Dir = projectDir
 	err = cmd.Run()
 	if err != nil {

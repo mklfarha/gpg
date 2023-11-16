@@ -158,7 +158,7 @@ func generateSQLSchemas(ctx context.Context, repoDir string, project entity.Proj
 	})
 
 	fmt.Printf("----[GPG] SQLC Generate\n")
-	cmd := exec.Command("go", "run", "github.com/kyleconroy/sqlc/cmd/sqlc", "generate")
+	cmd := exec.Command("go", "run", "github.com/sqlc-dev/sqlc/cmd/sqlc", "generate")
 	cmd.Dir = repoDir
 	var out bytes.Buffer
 	var stderr bytes.Buffer
