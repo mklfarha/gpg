@@ -18,6 +18,8 @@ func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, prefix *string)
 		graphRequired = "!"
 		graphGenToMapper = fmt.Sprintf("i.%s.String()", helpers.ToCamelCase(f.Identifier))
 	}
+
+	protoType := helpers.ToCamelCase(fmt.Sprintf("%s_%s", e.Identifier, f.Identifier))
 	return Template{
 		Identifier:                 f.Identifier,
 		Name:                       helpers.ToCamelCase(f.Identifier),
@@ -43,5 +45,8 @@ func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, prefix *string)
 		GraphGenFromMapperParam:    fmt.Sprintf("%sentity.%sFromString(%s)", e.Identifier, helpers.ToCamelCase(f.Identifier), f.Identifier),
 		GraphGenFromMapper:         fmt.Sprintf("%s.%sFromString(i.%s)", e.Identifier, helpers.ToCamelCase(name), helpers.ToCamelCase(f.Identifier)),
 		GraphGenFromMapperOptional: fmt.Sprintf("%s.%sFromPointerString(i.%s)", e.Identifier, helpers.ToCamelCase(name), helpers.ToCamelCase(f.Identifier)),
+		ProtoType:                  protoType,
+		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
+		ProtoEnumOptions:           helpers.ProtoEnumOptions(protoType, f.OptionValues),
 	}
 }

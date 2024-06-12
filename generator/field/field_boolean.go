@@ -40,5 +40,7 @@ func BooleanFieldTemplate(f entity.Field, e entity.Entity) Template {
 		GraphGenFromMapperParam:    f.Identifier,
 		GraphGenFromMapper:         graphGenFromMapper,
 		GraphGenFromMapperOptional: GraphGenFromMapperOptional,
+		ProtoType:                  "bool",
+		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
 	}
 }

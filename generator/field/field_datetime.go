@@ -47,5 +47,7 @@ func DatetimeFieldTemplate(f entity.Field, e entity.Entity) Template {
 		GraphGenToMapper:           graphGenToMapper,
 		GraphGenFromMapper:         graphGenFromMapper,
 		GraphGenFromMapperOptional: graphGenFromMapperOptional,
+		ProtoType:                  "google.protobuf.Timestamp",
+		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/iancoleman/strcase"
 	"github.com/maykel/gpg/entity"
 )
 
@@ -65,4 +66,25 @@ func ProjectHasUserEntity(project entity.Project) bool {
 
 func StringContains(haystack, needle string) bool {
 	return strings.Contains(haystack, needle)
+}
+
+func EntityContainsOperation(ops []entity.Operation, op entity.Operation) bool {
+	for _, o := range ops {
+		if o == op {
+			return true
+		}
+	}
+	return false
+}
+
+func Inc(i int) int {
+	return i + 1
+}
+
+func ProtoEnumOptions(protoType string, opts []entity.OptionValue) []string {
+	res := []string{}
+	for _, opt := range opts {
+		res = append(res, strcase.ToScreamingSnake(fmt.Sprintf("%s_%s", protoType, opt.Identifier)))
+	}
+	return res
 }

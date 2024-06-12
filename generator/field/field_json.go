@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gertd/go-pluralize"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator/helpers"
 )
 
 func JSONFieldTemplate(f entity.Field, e entity.Entity, prefix *string) Template {
+	pl := pluralize.NewClient()
 	name := f.Identifier
 	if prefix != nil {
 		name = fmt.Sprintf("%s_%s", *prefix, f.Identifier)
@@ -22,10 +24,12 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, prefix *string) Template
 	fieldType := helpers.ToCamelCase(name)
 	graphInTypeOptional := fmt.Sprintf("%s%sInput", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier))
 	graphOutType := fmt.Sprintf("%s%s", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier))
+	protoType := helpers.ToCamelCase(pl.Singular(f.Identifier))
 	if jsonMany {
 		fieldType = fmt.Sprintf("%sCollection", fieldType)
 		graphInTypeOptional = fmt.Sprintf("[%s]", graphInTypeOptional)
 		graphOutType = fmt.Sprintf("[%s]", graphOutType)
+		protoType = fmt.Sprintf("repeated %s", pl.Singular(helpers.ToCamelCase(f.Identifier)))
 	}
 
 	graphInType := fmt.Sprintf("%s%s", graphInTypeOptional, graphRequired)
@@ -66,5 +70,7 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, prefix *string) Template
 		GraphGenFromMapperParam:    "",
 		GraphGenFromMapper:         fmt.Sprintf("Map%s%sInput(i.%s)", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier), helpers.ToCamelCase(f.Identifier)),
 		GraphGenFromMapperOptional: fmt.Sprintf("Map%s%sInput(i.%s)", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier), helpers.ToCamelCase(f.Identifier)),
+		ProtoType:                  protoType,
+		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
 	}
 }

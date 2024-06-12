@@ -17,6 +17,7 @@ var (
 	AUTH_DIR                  = "auth"
 	CONFIG_DIR                = "config"
 	GRAPH_DIR                 = "graph"
+	PROTO_DIR                 = "proto"
 	CORE_DIR                  = "core"
 	CORE_ENTITY_DIR           = path.Join(CORE_DIR, "entity")
 	CORE_MODULE_DIR           = path.Join(CORE_DIR, "module")
@@ -33,7 +34,6 @@ var projectStructure = []string{
 	API_DIR,
 	AUTH_DIR,
 	CONFIG_DIR,
-	GRAPH_DIR,
 	CORE_ENTITY_DIR,
 	CORE_MODULE_DIR,
 	CORE_REPO_DIR,

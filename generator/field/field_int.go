@@ -43,5 +43,7 @@ func IntFieldTemplate(f entity.Field, e entity.Entity) Template {
 		GraphGenFromMapperParam:    f.Identifier,
 		GraphGenFromMapper:         graphGenFromMapper,
 		GraphGenFromMapperOptional: graphGenFromMapperOptional,
+		ProtoType:                  "int64",
+		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
 	}
 }

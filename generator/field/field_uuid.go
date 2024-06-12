@@ -62,5 +62,7 @@ func UUIDFieldTemplate(f entity.Field, e entity.Entity) Template {
 		GraphGenFromMapperParam:    graphGenFromMapperParam,
 		GraphGenFromMapper:         graphGenFromMapper,
 		GraphGenFromMapperOptional: graphGenFromMapperOptional,
+		ProtoType:                  "string",
+		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
 	}
 }

@@ -27,4 +27,7 @@ type Template struct {
 	GraphGenFromMapperParam    string
 	GraphGenFromMapper         string
 	GraphGenFromMapperOptional string
+	ProtoType                  string
+	ProtoName                  string
+	ProtoEnumOptions           []string
 }

@@ -17,6 +17,8 @@ func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, prefix *string) T
 		graphRequired = "!"
 	}
 
+	protoType := helpers.ToCamelCase(fmt.Sprintf("%s_%s", e.Identifier, f.Identifier))
+
 	return Template{
 		Identifier:          f.Identifier,
 		Name:                helpers.ToCamelCase(f.Identifier),
@@ -36,5 +38,8 @@ func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, prefix *string) T
 		GraphInTypeOptional: "[String]",
 		GraphOutType:        fmt.Sprintf("[String]%s", graphRequired),
 		GraphGenType:        "[]string",
+		ProtoType:           fmt.Sprintf("repeated %s", protoType),
+		ProtoName:           helpers.ToSnakeCase(f.Identifier),
+		ProtoEnumOptions:    helpers.ProtoEnumOptions(protoType, f.OptionValues),
 	}
 }

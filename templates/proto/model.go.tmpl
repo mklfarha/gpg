@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option go_package = "proto/";
+option java_multiple_files = true;
+option java_package = "{{.ProjectIdentifier}}";
+option java_outer_classname = "{{.EntityName}}";
+
+package {{.ProjectIdentifier}};
+
+import "google/protobuf/timestamp.proto";
+import "enviorment.proto";
+import "review_config.proto";
+import "subscription.proto";
+import "store.proto";
+import "connection.proto";
+import "entity.proto";
+
+message {{.EntityName}} {  {{range $index, $field := .Fields}}
+    {{$field.ProtoType}} {{$field.ProtoName}} = {{Inc $index}};{{end}}    
+}
+
+enum TeamStatus {
+    TEAM_STATUS_INVALID = 0;
+    TEAM_STATUS_ACTIVE = 1;
+    TEAM_STATUS_DISABLED = 2;
+}

@@ -39,7 +39,7 @@ type GraphQueriesTemplate struct {
 }
 
 func GenerateGraph(ctx context.Context, rootPath string, project entity.Project) error {
-	fmt.Printf("--[GPG] Generating GraphQL\n")
+	fmt.Printf("--[GPG][GraphQL] Generating GraphQL\n")
 	projectDir := generator.ProjectDir(ctx, rootPath, project)
 	graphDir := path.Join(projectDir, generator.GRAPH_DIR)
 
@@ -51,17 +51,17 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 
 	entityTemplates := []GraphEntityTemplate{}
 	jsonEntityTemplates := []GraphEntityTemplate{}
-	fmt.Printf("----[GPG] Generating gqls\n")
+	fmt.Printf("----[GPG][GraphQL] Generating gqls\n")
 	for _, e := range project.Entities {
 		inFields := []field.Template{}
 		outFields := []field.Template{}
 		searchable := false
 		for _, f := range e.Fields {
 			fieldTemplate := field.ResolveFieldType(f, e, nil)
-			if !containsOperation(f.Hidden.API, entity.SelectOperation) {
+			if !helpers.EntityContainsOperation(f.Hidden.API, entity.SelectOperation) {
 				outFields = append(outFields, fieldTemplate)
 			}
-			if !containsOperation(f.Hidden.API, entity.UpsertOperation) {
+			if !helpers.EntityContainsOperation(f.Hidden.API, entity.UpsertOperation) {
 				inFields = append(inFields, fieldTemplate)
 			}
 
@@ -138,7 +138,7 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 		DisableGoFormat: true,
 	})
 
-	fmt.Printf("----[GPG] GQLGEN generate\n")
+	fmt.Printf("----[GPG][GraphQL] GQLGEN generate\n")
 	cmd := exec.Command("go", "run", "github.com/99designs/gqlgen", "generate")
 	cmd.Dir = graphDir
 	var out bytes.Buffer
@@ -151,14 +151,14 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 		fmt.Println("gqlgen result: " + out.String())
 	}
 
-	fmt.Printf("----[GPG] Override resolver\n")
+	fmt.Printf("----[GPG][GraphQL] Override resolver\n")
 	generator.GenerateFile(ctx, generator.FileRequest{
 		OutputFile:   path.Join(graphDir, "resolver.go"),
 		TemplateName: path.Join("graph", "graph_resolver"),
 		Data:         project,
 	})
 
-	fmt.Printf("----[GPG] Mapper\n")
+	fmt.Printf("----[GPG][GraphQL] Mapper\n")
 	generator.GenerateFile(ctx, generator.FileRequest{
 		OutputFile:   path.Join(graphDir, "mapper", "mapper.go"),
 		TemplateName: path.Join("graph", "graph_mapper"),
@@ -169,7 +169,7 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 		},
 	})
 
-	fmt.Printf("----[GPG] Override queries resolvers\n")
+	fmt.Printf("----[GPG][GraphQL] Override queries resolvers\n")
 	generator.GenerateFile(ctx, generator.FileRequest{
 		OutputFile:   path.Join(graphDir, "queries.resolvers.go"),
 		TemplateName: path.Join("graph", "graph_queries_resolver"),
@@ -186,7 +186,7 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 		DisableGoFormat: true,
 	})
 
-	fmt.Printf("----[GPG] Override mutations resolvers\n")
+	fmt.Printf("----[GPG][GraphQL] Override mutations resolvers\n")
 	generator.GenerateFile(ctx, generator.FileRequest{
 		OutputFile:   path.Join(graphDir, "mutations.resolvers.go"),
 		TemplateName: path.Join("graph", "graph_mutations_resolver"),
@@ -197,13 +197,4 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 	})
 
 	return nil
-}
-
-func containsOperation(ops []entity.Operation, op entity.Operation) bool {
-	for _, o := range ops {
-		if o == op {
-			return true
-		}
-	}
-	return false
 }

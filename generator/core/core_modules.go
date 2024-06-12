@@ -167,7 +167,7 @@ func GenerateCoreModules(ctx context.Context, rootPath string, project entity.Pr
 						return allFields
 					},
 					"MapToInput": func(in field.Template) field.Template {
-						return mapping[in]
+						return mapping[in.Identifier]
 					},
 				},
 			})
@@ -232,15 +232,15 @@ func GenerateCoreModules(ctx context.Context, rootPath string, project entity.Pr
 	})
 }
 
-func GetCustomQueryFields(cond entity.QueryCondition, project entity.Project) (inputFields map[string]field.Template, allFields map[string]field.Template, mapping map[field.Template]field.Template) {
+func GetCustomQueryFields(cond entity.QueryCondition, project entity.Project) (inputFields map[string]field.Template, allFields map[string]field.Template, mapping map[string]field.Template) {
 	inputFields = map[string]field.Template{}
 	allFields = map[string]field.Template{}
-	mapping = map[field.Template]field.Template{}
+	mapping = map[string]field.Template{}
 	GetCustomQueryFieldsRecursive(cond, project, inputFields, allFields, mapping)
 	return
 }
 
-func GetCustomQueryFieldsRecursive(cond entity.QueryCondition, project entity.Project, inputFields map[string]field.Template, allFields map[string]field.Template, mapping map[field.Template]field.Template) {
+func GetCustomQueryFieldsRecursive(cond entity.QueryCondition, project entity.Project, inputFields map[string]field.Template, allFields map[string]field.Template, mapping map[string]field.Template) {
 	for _, comp := range cond.Comparisons {
 		if comp.FieldOne.InputField {
 			fullField, entity, found := FieldFromProject(project, comp.FieldTwo.ParentIdentifier, comp.FieldTwo.Identifier)
@@ -248,7 +248,7 @@ func GetCustomQueryFieldsRecursive(cond entity.QueryCondition, project entity.Pr
 				allFields[comp.FieldTwo.Identifier] = field.ResolveFieldType(fullField, entity, nil)
 				fullField.Identifier = comp.FieldOne.Identifier
 				inputFields[comp.FieldOne.Identifier] = field.ResolveFieldType(fullField, entity, nil)
-				mapping[allFields[comp.FieldTwo.Identifier]] = inputFields[comp.FieldOne.Identifier]
+				mapping[comp.FieldTwo.Identifier] = inputFields[comp.FieldOne.Identifier]
 			}
 		}
 		if comp.FieldTwo.InputField {
@@ -257,7 +257,7 @@ func GetCustomQueryFieldsRecursive(cond entity.QueryCondition, project entity.Pr
 				allFields[fullField.Identifier] = field.ResolveFieldType(fullField, entity, nil)
 				fullField.Identifier = comp.FieldTwo.Identifier
 				inputFields[comp.FieldTwo.Identifier] = field.ResolveFieldType(fullField, entity, nil)
-				mapping[allFields[comp.FieldOne.Identifier]] = inputFields[comp.FieldTwo.Identifier]
+				mapping[comp.FieldOne.Identifier] = inputFields[comp.FieldTwo.Identifier]
 			}
 		}
 	}
