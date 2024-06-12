@@ -21,14 +21,16 @@ func (app *application) serverHandlerFunc() http.HandlerFunc {
 			return
 		}
 
+		{{ if eq .Auth.Enabled true}}
 		claims, err := app.auth.ClaimsFromHeader(w, r)
 		if err != nil {
 			fmt.Printf("auth err: %v\n", err)
 			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		}
-
+		}		
 		fmt.Printf("claims: %v\n", claims)
+		{{end}}
+		
 		app.server.ServeHTTP(w, r)
 	})
 

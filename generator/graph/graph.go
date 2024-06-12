@@ -66,26 +66,28 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 			}
 
 			if f.Type == entity.JSONFieldType {
-				fields, _ := field.ResolveFieldsAndImports(f.JSONConfig.Fields, e, &f.Identifier)
-				jsonEntityTemplate := GraphEntityTemplate{
-					Identifier:       f.Identifier,
-					EntityName:       helpers.ToCamelCase(f.Identifier),
-					JSON:             true,
-					JSONMany:         f.JSONConfig.Type == entity.ManyJSONConfigType,
-					Required:         f.Required,
-					GraphGenType:     fmt.Sprintf("%s%s", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier)),
-					ParentIdentifier: e.Identifier,
-					ParentEntityName: helpers.ToCamelCase(e.Identifier),
-					InFields:         fields,
-					OutFields:        fields,
+				if len(f.JSONConfig.Fields) > 0 {
+					fields, _ := field.ResolveFieldsAndImports(f.JSONConfig.Fields, e, &f.Identifier)
+					jsonEntityTemplate := GraphEntityTemplate{
+						Identifier:       f.Identifier,
+						EntityName:       helpers.ToCamelCase(f.Identifier),
+						JSON:             true,
+						JSONMany:         f.JSONConfig.Type == entity.ManyJSONConfigType,
+						Required:         f.Required,
+						GraphGenType:     fmt.Sprintf("%s%s", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier)),
+						ParentIdentifier: e.Identifier,
+						ParentEntityName: helpers.ToCamelCase(e.Identifier),
+						InFields:         fields,
+						OutFields:        fields,
+					}
+					generator.GenerateFile(ctx, generator.FileRequest{
+						OutputFile:      path.Join(graphDir, "gqls", fmt.Sprintf("model_%s_%s.graphqls", e.Identifier, f.Identifier)),
+						TemplateName:    path.Join("graph", "graph_entity"),
+						Data:            jsonEntityTemplate,
+						DisableGoFormat: true,
+					})
+					jsonEntityTemplates = append(jsonEntityTemplates, jsonEntityTemplate)
 				}
-				generator.GenerateFile(ctx, generator.FileRequest{
-					OutputFile:      path.Join(graphDir, "gqls", fmt.Sprintf("model_%s_%s.graphqls", e.Identifier, f.Identifier)),
-					TemplateName:    path.Join("graph", "graph_entity"),
-					Data:            jsonEntityTemplate,
-					DisableGoFormat: true,
-				})
-				jsonEntityTemplates = append(jsonEntityTemplates, jsonEntityTemplate)
 			}
 
 			if f.StorageConfig.Search {

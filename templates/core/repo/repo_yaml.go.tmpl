@@ -1,9 +1,14 @@
-version: 1
-packages:
-  - path: "gen"
-    name: "{{.ProjectName}}db"
-    engine: "mysql"
+version: "2"
+sql:
+  - engine: "mysql"
     schema: "sql/schemas/"
-    queries: "sql/queries/" 
-    emit_interface: true
-    emit_json_tags: true
+    queries: "sql/queries/"
+    gen:
+      go:
+        package: "{{.ProjectName}}db"
+        out: "gen"
+        emit_interface: true
+        emit_json_tags: true
+        rename:{{range $identifier, $camelCase := .Fields}}
+          {{$identifier}}: {{ $camelCase }}{{end}}
+          

@@ -1,4 +1,5 @@
 {{$parentEntityName := .ParentEntityName}}
+
 type {{if eq .JSON true}}{{.ParentEntityName}}{{end}}{{.EntityName}} { {{range $field := .OutFields}}
     {{$field.GraphName}}: {{$field.GraphOutType}}{{end}}   
 }

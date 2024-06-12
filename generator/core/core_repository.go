@@ -14,6 +14,19 @@ import (
 	"github.com/maykel/gpg/generator/helpers"
 )
 
+func FieldsToCamelCase(entities []entity.Entity) map[string]string {
+	res := map[string]string{}
+	for _, e := range entities {
+		for _, f := range e.Fields {
+			_, found := res[f.Identifier]
+			if !found {
+				res[f.Identifier] = helpers.ToCamelCase(f.Identifier)
+			}
+		}
+	}
+	return res
+}
+
 func GenerateCoreRepository(ctx context.Context, rootPath string, project entity.Project) {
 	fmt.Printf("--[GPG] Generating core repository\n")
 	projectDir := generator.ProjectDir(ctx, rootPath, project)
@@ -26,10 +39,16 @@ func GenerateCoreRepository(ctx context.Context, rootPath string, project entity
 			TemplateName: path.Join("core", "repo", "repo_yaml"),
 			Data: struct {
 				ProjectName string
+				Fields      map[string]string
 			}{
 				ProjectName: project.Identifier,
+				Fields:      FieldsToCamelCase(project.Entities),
 			},
 			DisableGoFormat: true,
+			Funcs: template.FuncMap{
+				"StringContains": helpers.StringContains,
+				"ToCamelCase":    helpers.ToCamelCase,
+			},
 		},
 	)
 	generateSQLSchemas(ctx, repoDir, project)

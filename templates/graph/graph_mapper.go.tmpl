@@ -5,6 +5,7 @@ import (
     "fmt"
     "time"
     "github.com/gofrs/uuid"
+    "encoding/json"
     "{{.ProjectName}}/graph/model"
     {{range $entity := .Entities}}
     "{{$projectName}}/core/entity/{{$entity.Identifier}}"
@@ -191,3 +192,15 @@ func BoolFromPointer(i *bool) bool {
     }
     return *i
 }
+
+func StringFromJsonRaw(in *json.RawMessage) *string {
+	res, _ := in.MarshalJSON()
+	resStr := string(res)
+	return &resStr
+}
+
+func JsonRawFromString(in *string) json.RawMessage {
+	res, _ := json.Marshal(in)
+	return res
+}
+

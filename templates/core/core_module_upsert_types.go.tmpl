@@ -4,13 +4,21 @@ package types
 {{$package := .Package}}
 import (
     {{ $first := true}}
+    {{ $firstJson := true}}
     {{range $field := .Fields}}
+        {{if eq $firstJson true}}
+            {{ if eq $field.Type "json.RawMessage"}}            
+            "encoding/json"
+            {{$firstJson = false}}
+            {{end}}
+        {{end}}
         {{if eq $field.Custom true}}
             {{if eq $first true}}
             entity "{{$projectName}}/core/entity/{{$package}}"	
             {{$first = false}}
             {{end}}		
         {{end}}
+        
     {{end}}
     {{range $import := .Imports}}
     "{{$import}}" {{end}}

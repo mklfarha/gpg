@@ -22,9 +22,11 @@ func main() {
 	}
 
 	http.Handle("/gplay", app.basicAuth(playground.Handler("GraphQL playground", "/query")))
+	{{ if eq .Auth.Enabled true}}
 	http.HandleFunc("/signin", app.auth.SignIn)
 	http.HandleFunc("/validate", app.auth.Validate)
 	http.HandleFunc("/refresh", app.auth.Refresh)
+	{{end}}
 	http.Handle("/query", app.serverHandlerFunc())
 	http.Handle("/upload", app.serverHandlerUploadFunc())	
 

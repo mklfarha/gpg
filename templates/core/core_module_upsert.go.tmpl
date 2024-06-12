@@ -87,19 +87,27 @@ func mapUpsertRequestToUpdateParams(req types.UpsertRequest, existing {{.Project
 	emptyReq := types.UpsertRequest{}
 
 	{{range $field := .Fields}}
-	{{if eq $field.JSONMany true}}
-	if len(req.{{$field.Name}}) == 0 {
-	{{else}}
-	if req.{{$field.Name}} == emptyReq.{{$field.Name}} {
-	{{end}}
-		res.{{$field.Name}} = existing.{{$field.Name}}
-	} else {
-		{{ if eq $field.Generated true}} 
-		res.{{$field.Name}} = {{$field.GeneratedFuncUpdate}}{{$field.RepoToMapper}}
-		{{else}}
-		res.{{$field.Name}} = req.{{$field.Name}}{{$field.RepoToMapper}}
+		
+		{{if eq $field.JSONMany true}}
+			// json array
+			if len(req.{{$field.Name}}) == 0 {
+		{{else}}		    
+			{{if ne $field.Type "json.RawMessage"}}
+				// regular field
+				if req.{{$field.Name}} == emptyReq.{{$field.Name}} {
+			{{else}}
+				// raw json is a pointer
+				if req.{{$field.Name}} != nil {
+			{{end}}
 		{{end}}
-	}
+			res.{{$field.Name}} = existing.{{$field.Name}}
+		} else {
+			{{ if eq $field.Generated true}} 
+			res.{{$field.Name}} = {{$field.GeneratedFuncUpdate}}{{$field.RepoToMapper}}
+			{{else}}
+			res.{{$field.Name}} = req.{{$field.Name}}{{$field.RepoToMapper}}
+			{{end}}
+		}
 	{{end}}
 
 	return res

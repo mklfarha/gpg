@@ -2,6 +2,7 @@ package field
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator/helpers"
@@ -29,6 +30,15 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, prefix *string) Template
 
 	graphInType := fmt.Sprintf("%s%s", graphInTypeOptional, graphRequired)
 	graphOutType = fmt.Sprintf("%s%s", graphOutType, graphRequired)
+
+	if len(f.JSONConfig.Fields) == 0 {
+		stringTemplate := StringFieldTemplate(f, e)
+		stringTemplate.Type = "json.RawMessage"
+		stringTemplate.GraphGenToMapper = fmt.Sprintf("StringFromJsonRaw(%s)", stringTemplate.GraphGenToMapper)
+		stringTemplate.GraphGenFromMapper = strings.ReplaceAll(stringTemplate.GraphGenFromMapper, "StringFromPointer", "JsonRawFromString")
+		stringTemplate.GraphGenFromMapperOptional = strings.ReplaceAll(stringTemplate.GraphGenFromMapperOptional, "StringFromPointer", "JsonRawFromString")
+		return stringTemplate
+	}
 
 	return Template{
 		Identifier:                 f.Identifier,

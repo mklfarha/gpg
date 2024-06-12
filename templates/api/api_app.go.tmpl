@@ -4,7 +4,9 @@ import (
 	"context"
 
 	"github.com/99designs/gqlgen/graphql/handler"
+	{{ if eq .Auth.Enabled true}}
 	"{{.Identifier}}/auth"
+	{{ end }}
 	"{{.Identifier}}/config"
 	"{{.Identifier}}/graph"
 	"{{.Identifier}}/graph/generated"
@@ -18,7 +20,9 @@ type basicAuthCredentials struct {
 
 type application struct {
 	core   *core.Implementation
+	{{ if eq .Auth.Enabled true}}
 	auth   auth.Interface
+	{{ end }}
 	server *handler.Server
 	bac    basicAuthCredentials
 }
@@ -31,10 +35,12 @@ func New() (application, error) {
 		return application{}, err
 	}
 
+	{{ if eq .Auth.Enabled true}}
 	auth, err := auth.New(ctx, c)
 	if err != nil {
 		return application{}, err
 	}
+	{{end}}
 
 	srv := handler.NewDefaultServer(
 		generated.NewExecutableSchema(
@@ -45,7 +51,9 @@ func New() (application, error) {
 
 	return application{
 		core:    c,
+		{{ if eq .Auth.Enabled true}}
 		auth:   auth,
+		{{end}}
 		server: srv,
 		bac: basicAuthCredentials{
 			username: "{{.Auth.BasicUsername}}",

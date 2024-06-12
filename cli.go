@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"sort"
+	"strings"
 
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/files"
@@ -16,6 +17,7 @@ import (
 	gcli "github.com/maykel/gpg/generator/cli"
 	"github.com/maykel/gpg/generator/core"
 	"github.com/maykel/gpg/generator/graph"
+	"github.com/maykel/gpg/generator/helpers"
 	"github.com/maykel/gpg/generator/web"
 	"github.com/urfave/cli"
 )
@@ -136,5 +138,10 @@ func loadProject(configPath string) (entity.Project, error) {
 	}
 
 	fmt.Printf("--[GPG] Project Loaded \n")
+	project.Identifier = strings.ReplaceAll(project.Identifier, "-", "_")
+	if helpers.ProjectHasUserEntity(project) {
+		// in the future add a flag
+		project.Auth.Enabled = true
+	}
 	return project, nil
 }
