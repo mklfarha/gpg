@@ -15,6 +15,7 @@ type Template struct {
 	GeneratedFuncInsert        string
 	GeneratedFuncUpdate        string
 	Enum                       bool
+	EnumMany                   bool
 	RepoToMapper               string
 	RepoFromMapper             string
 	GraphName                  string

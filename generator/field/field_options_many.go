@@ -3,6 +3,7 @@ package field
 import (
 	"fmt"
 
+	"github.com/gertd/go-pluralize"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator/helpers"
 )
@@ -17,7 +18,8 @@ func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, prefix *string) T
 		graphRequired = "!"
 	}
 
-	protoType := helpers.ToCamelCase(fmt.Sprintf("%s_%s", e.Identifier, f.Identifier))
+	pl := pluralize.NewClient()
+	protoType := helpers.ToCamelCase(fmt.Sprintf("%s_%s", e.Identifier, pl.Singular(f.Identifier)))
 
 	return Template{
 		Identifier:          f.Identifier,
@@ -32,13 +34,14 @@ func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, prefix *string) T
 		GeneratedFuncInsert: resolveGeneratedFuncInsert(e, f),
 		GeneratedFuncUpdate: resolveGeneratedFuncUpdate(e, f),
 		Enum:                true,
+		EnumMany:            true,
 		GraphName:           f.Identifier,
 		GraphModelName:      helpers.ToCamelCase(f.Identifier),
 		GraphInType:         fmt.Sprintf("[String]%s", graphRequired),
 		GraphInTypeOptional: "[String]",
 		GraphOutType:        fmt.Sprintf("[String]%s", graphRequired),
 		GraphGenType:        "[]string",
-		ProtoType:           fmt.Sprintf("repeated %s", protoType),
+		ProtoType:           protoType,
 		ProtoName:           helpers.ToSnakeCase(f.Identifier),
 		ProtoEnumOptions:    helpers.ProtoEnumOptions(protoType, f.OptionValues),
 	}

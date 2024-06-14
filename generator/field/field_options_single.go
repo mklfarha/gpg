@@ -3,6 +3,7 @@ package field
 import (
 	"fmt"
 
+	"github.com/gertd/go-pluralize"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator/helpers"
 )
@@ -18,8 +19,8 @@ func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, prefix *string)
 		graphRequired = "!"
 		graphGenToMapper = fmt.Sprintf("i.%s.String()", helpers.ToCamelCase(f.Identifier))
 	}
-
-	protoType := helpers.ToCamelCase(fmt.Sprintf("%s_%s", e.Identifier, f.Identifier))
+	pl := pluralize.NewClient()
+	protoType := helpers.ToCamelCase(fmt.Sprintf("%s_%s", e.Identifier, pl.Singular(f.Identifier)))
 	return Template{
 		Identifier:                 f.Identifier,
 		Name:                       helpers.ToCamelCase(f.Identifier),

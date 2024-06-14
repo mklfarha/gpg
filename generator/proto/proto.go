@@ -91,59 +91,35 @@ func Generate(ctx context.Context, rootPath string, project entity.Project) erro
 	generator.CreateDir(fullDir)
 
 	fmt.Printf("--[GPG][Proto] Generating Go code\n")
-	// delete existing go files
-	cmd := exec.Command("find", "./gen", "-name", "\"*.go\"", "-type", "f", "-delete")
-	cmd.Dir = protoDir
+	// create gen.sh file
+	err = generator.GenerateFile(ctx, generator.FileRequest{
+		OutputFile:   path.Join(protoDir, "proto", "gen.sh"),
+		TemplateName: path.Join("proto", "gen"),
+		Data: ProtoServiceTemplate{
+			Identifier: project.Identifier,
+			Name:       helpers.ToCamelCase(project.Identifier),
+			Entities:   entityTemplates,
+		},
+		DisableGoFormat: true,
+	})
+
+	if err != nil {
+		return err
+	}
+
 	var out bytes.Buffer
 	var stderr bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
-	err = cmd.Run()
-	if err != nil {
-		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		fmt.Println("find delete: " + out.String())
-	}
-
-	cmd = exec.Command("go", "install", "google.golang.org/protobuf/cmd/protoc-gen-go@latest")
-	cmd.Dir = projectDir
-	err = cmd.Run()
-	if err != nil {
-		fmt.Printf("error running go get proto-gen-go\n")
-	}
-
-	cmd = exec.Command("go", "install", "google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest")
-	cmd.Dir = projectDir
-	err = cmd.Run()
-	if err != nil {
-		fmt.Printf("error running go get proto-gen-go-grpc\n")
-	}
-
-	cmd = exec.Command("sh", "-c", "export PATH=\"$PATH:$(go env GOPATH)/bin\"")
-	cmd.Dir = projectDir
-	cmd.Stdout = &out
-	err = cmd.Run()
-	fmt.Println("export: " + out.String())
-	if err != nil {
-		fmt.Printf("error running export\n")
-	}
-
-	/*cmd = exec.Command("sh", "-c", "echo $(go env GOPATH)")
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
-	cmd.Run()
-	fmt.Println("echo: " + out.String())*/
-
-	// generate go code
-	// protoc --go_out=./../go --go-grpc_out=./../go ./*.proto
-	cmd = exec.Command("protoc", "--go_out=./idl/gen", "--go-grpc_out=./idl/gen", "./idl/proto/*.proto")
-	cmd.Dir = projectDir
+	// run bash file
+	cmd := exec.Command("/bin/sh", "./gen.sh")
+	cmd.Dir = path.Join(protoDir, "proto")
 	cmd.Env = os.Environ()
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		fmt.Println("protoc out: " + out.String())
+	} else {
+		fmt.Println("--[GPG][Proto] Proto Go code generated! " + out.String())
 	}
 
 	return err

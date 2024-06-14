@@ -11,7 +11,7 @@ package {{.ProjectIdentifier}};
 import "{{$imp}}";{{end}}
 
 message {{.EntityName}} {  {{range $index, $field := .Fields}}
-    {{$field.ProtoType}} {{$field.ProtoName}} = {{Inc $index}};{{end}}    
+    {{if eq $field.EnumMany true}}repeated {{end}}{{$field.ProtoType}} {{$field.ProtoName}} = {{Inc $index}};{{end}}    
 }
 {{range $enum := .Enums }}
 enum {{$enum.Field.ProtoType}} { {{range $index, $option := $enum.Options}}

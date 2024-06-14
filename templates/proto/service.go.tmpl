@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-option go_package = "protogo/";
+option go_package = "gen/";
 option java_multiple_files = true;
 option java_package = "{{.Identifier}}";
 option java_outer_classname = "{{.Name}}";
 
-package nuzur;
+package {{.Identifier}};
 
 import "google/protobuf/field_mask.proto";
 {{range $entity := .Entities}}
