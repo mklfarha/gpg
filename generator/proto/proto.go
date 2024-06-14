@@ -18,10 +18,11 @@ import (
 
 type ProtoEntityTemplate struct {
 	ProjectIdentifier string
+	ParentIdentifier  string
 	Identifier        string
 	IdentifierPlural  string
-	EntityName        string
-	EntityNamePlural  string
+	Name              string
+	NamePlural        string
 	Fields            []field.Template
 	Search            bool
 	Enums             map[string]ProtoEnumTemplate
@@ -30,6 +31,7 @@ type ProtoEntityTemplate struct {
 
 type ProtoEnumTemplate struct {
 	Field   field.Template
+	Many    bool
 	Options []string
 }
 
@@ -47,24 +49,28 @@ func Generate(ctx context.Context, rootPath string, project entity.Project) erro
 	pl := pluralize.NewClient()
 
 	entityTemplates := []ProtoEntityTemplate{}
+	entityNestedTemplates := map[string][]ProtoEntityTemplate{}
 
 	//generate entities/models
 	fmt.Printf("--[GPG][Proto] Generating Entities\n")
 	for _, e := range project.Entities {
-		template, nested, err := handleEntity(ctx, protoDir, project, e)
+		template, nested, err := handleEntity(ctx, protoDir, project, e, e.Identifier)
 		if err != nil {
 			return err
 		}
 		entityTemplates = append(entityTemplates, template)
+		nestedTemplates := []ProtoEntityTemplate{}
 		for _, n := range nested {
-			_, _, err := handleEntity(ctx, protoDir, project, entity.Entity{
+			nestedTemplate, _, err := handleEntity(ctx, protoDir, project, entity.Entity{
 				Identifier: pl.Singular(n.Identifier),
 				Fields:     n.JSONConfig.Fields,
-			})
+			}, e.Identifier)
 			if err != nil {
 				return err
 			}
+			nestedTemplates = append(nestedTemplates, nestedTemplate)
 		}
+		entityNestedTemplates[e.Identifier] = nestedTemplates
 	}
 
 	//generate project service definition
@@ -118,14 +124,41 @@ func Generate(ctx context.Context, rootPath string, project entity.Project) erro
 	err = cmd.Run()
 	if err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		return err
 	} else {
 		fmt.Println("--[GPG][Proto] Proto Go code generated! " + out.String())
+	}
+
+	fmt.Printf("--[GPG][Proto] Generating mappers\n")
+	err = generator.GenerateFile(ctx, generator.FileRequest{
+		OutputFile:      path.Join(protoDir, "mapper", "json.go"),
+		TemplateName:    path.Join("proto", "mapper_json"),
+		DisableGoFormat: false,
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, et := range entityTemplates {
+		dir := path.Join(protoDir, "mapper", et.Identifier)
+		err := handleEntityMapper(ctx, dir, et)
+		if err != nil {
+			return err
+		}
+
+		nestedTemplates := entityNestedTemplates[et.Identifier]
+		for _, net := range nestedTemplates {
+			err := handleEntityMapper(ctx, dir, net)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	return err
 }
 
-func handleEntity(ctx context.Context, protoDir string, project entity.Project, e entity.Entity) (ProtoEntityTemplate, []entity.Field, error) {
+func handleEntity(ctx context.Context, protoDir string, project entity.Project, e entity.Entity, parentIdentifier string) (ProtoEntityTemplate, []entity.Field, error) {
 	fields := []field.Template{}
 	searchable := false
 	enums := map[string]ProtoEnumTemplate{}
@@ -143,13 +176,14 @@ func handleEntity(ctx context.Context, protoDir string, project entity.Project, 
 					if _, found := enums[field.ProtoType]; !found {
 						enums[field.ProtoType] = ProtoEnumTemplate{
 							Field:   field,
+							Many:    field.EnumMany,
 							Options: field.ProtoEnumOptions,
 						}
 					}
 				}
 				if f.Type == entity.JSONFieldType {
-					nested = append(nested, f)
 					if len(f.JSONConfig.Fields) > 0 {
+						nested = append(nested, f)
 						imports[fmt.Sprintf("%s.proto", pl.Singular(f.Identifier))] = nil
 					}
 				}
@@ -164,10 +198,11 @@ func handleEntity(ctx context.Context, protoDir string, project entity.Project, 
 		}
 		entityTemplate = ProtoEntityTemplate{
 			ProjectIdentifier: project.Identifier,
+			ParentIdentifier:  parentIdentifier,
 			Identifier:        e.Identifier,
 			IdentifierPlural:  pl.Plural(e.Identifier),
-			EntityName:        helpers.ToCamelCase(e.Identifier),
-			EntityNamePlural:  pl.Plural(helpers.ToCamelCase(e.Identifier)),
+			Name:              helpers.ToCamelCase(e.Identifier),
+			NamePlural:        pl.Plural(helpers.ToCamelCase(e.Identifier)),
 			Fields:            fields,
 			Search:            searchable,
 			Enums:             enums,
@@ -184,4 +219,21 @@ func handleEntity(ctx context.Context, protoDir string, project entity.Project, 
 		})
 	}
 	return entityTemplate, nested, err
+}
+
+func handleEntityMapper(ctx context.Context, dir string, et ProtoEntityTemplate) error {
+	err := generator.GenerateFile(ctx, generator.FileRequest{
+		OutputFile:      path.Join(dir, fmt.Sprintf("%s.go", et.Identifier)),
+		TemplateName:    path.Join("proto", "model_mapper"),
+		Data:            et,
+		DisableGoFormat: false,
+		Funcs: template.FuncMap{
+			"Inc": helpers.Inc,
+		},
+	})
+
+	if err != nil {
+		return err
+	}
+	return nil
 }

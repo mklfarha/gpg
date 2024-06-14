@@ -3,6 +3,7 @@ package field
 import (
 	"fmt"
 
+	"github.com/iancoleman/strcase"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator/helpers"
 )
@@ -50,5 +51,6 @@ func DateFieldTemplate(f entity.Field, e entity.Entity) Template {
 		GraphGenFromMapperOptional: graphGenFromMapperOptional,
 		ProtoType:                  "google.protobuf.Timestamp",
 		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
+		ProtoGenName:               strcase.ToCamel(f.Identifier),
 	}
 }

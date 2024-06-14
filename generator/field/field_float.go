@@ -3,6 +3,7 @@ package field
 import (
 	"fmt"
 
+	"github.com/iancoleman/strcase"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator/helpers"
 )
@@ -50,5 +51,6 @@ func FloatFieldTemplate(f entity.Field, e entity.Entity) Template {
 		GraphGenFromMapperOptional: graphGenFromMapperOptional,
 		ProtoType:                  "double",
 		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
+		ProtoGenName:               strcase.ToCamel(f.Identifier),
 	}
 }

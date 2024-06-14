@@ -6,6 +6,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/gertd/go-pluralize"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator"
 	"github.com/maykel/gpg/generator/helpers"
@@ -32,9 +33,10 @@ func generateEnum(ctx context.Context,
 	f entity.Field,
 	prefix *string) {
 
-	name := f.Identifier
+	pl := pluralize.NewClient()
+	name := pl.Singular(f.Identifier)
 	if prefix != nil {
-		name = fmt.Sprintf("%s_%s", *prefix, f.Identifier)
+		name = fmt.Sprintf("%s_%s", pl.Singular(*prefix), name)
 	}
 	fmt.Printf("----[GPG] Generating enum: %s\n", name)
 

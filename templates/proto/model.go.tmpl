@@ -3,15 +3,15 @@ syntax = "proto3";
 option go_package = "gen/";
 option java_multiple_files = true;
 option java_package = "{{.ProjectIdentifier}}";
-option java_outer_classname = "{{.EntityName}}";
+option java_outer_classname = "{{.Name}}";
 
 package {{.ProjectIdentifier}};
 
 {{range $imp, $empty := .Imports}}
 import "{{$imp}}";{{end}}
 
-message {{.EntityName}} {  {{range $index, $field := .Fields}}
-    {{if eq $field.EnumMany true}}repeated {{end}}{{$field.ProtoType}} {{$field.ProtoName}} = {{Inc $index}};{{end}}    
+message {{.Name}} {  {{range $index, $field := .Fields}}
+    {{if or (eq $field.EnumMany true) (eq $field.JSONMany true)}}repeated {{end}}{{$field.ProtoType}} {{$field.ProtoName}} = {{Inc $index}};{{end}}    
 }
 {{range $enum := .Enums }}
 enum {{$enum.Field.ProtoType}} { {{range $index, $option := $enum.Options}}

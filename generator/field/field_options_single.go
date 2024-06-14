@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gertd/go-pluralize"
+	"github.com/iancoleman/strcase"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator/helpers"
 )
@@ -23,8 +24,8 @@ func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, prefix *string)
 	protoType := helpers.ToCamelCase(fmt.Sprintf("%s_%s", e.Identifier, pl.Singular(f.Identifier)))
 	return Template{
 		Identifier:                 f.Identifier,
-		Name:                       helpers.ToCamelCase(f.Identifier),
-		Type:                       helpers.ToCamelCase(name),
+		Name:                       pl.Singular(helpers.ToCamelCase(f.Identifier)),
+		Type:                       pl.Singular(helpers.ToCamelCase(name)),
 		IsPrimary:                  f.StorageConfig.PrimaryKey,
 		Required:                   f.Required,
 		Tags:                       helpers.ResolveTags(f),
@@ -49,5 +50,7 @@ func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, prefix *string)
 		ProtoType:                  protoType,
 		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
 		ProtoEnumOptions:           helpers.ProtoEnumOptions(protoType, f.OptionValues),
+		ProtoToMapper:              fmt.Sprintf("pb.%s(e.%s)", protoType, helpers.ToCamelCase(name)),
+		ProtoGenName:               strcase.ToCamel(f.Identifier),
 	}
 }

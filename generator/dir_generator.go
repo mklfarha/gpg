@@ -124,7 +124,7 @@ func GoModTidy(ctx context.Context, rootPath string, project entity.Project) {
 	cmd.Dir = projectDir
 	err := cmd.Run()
 	if err != nil {
-		fmt.Printf("error running go mod tidy\n")
+		fmt.Printf("error running go mod tidy: %v\n", err)
 	}
 }
 

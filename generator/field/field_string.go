@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/iancoleman/strcase"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator/helpers"
 )
@@ -51,5 +52,7 @@ func StringFieldTemplate(f entity.Field, e entity.Entity) Template {
 		GraphGenFromMapperOptional: graphGenFromMapperOptional,
 		ProtoType:                  "string",
 		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
+		ProtoToMapper:              fmt.Sprintf("e.%s", helpers.ToCamelCase(f.Identifier)),
+		ProtoGenName:               strcase.ToCamel(f.Identifier),
 	}
 }

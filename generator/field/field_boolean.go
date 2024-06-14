@@ -3,6 +3,7 @@ package field
 import (
 	"fmt"
 
+	"github.com/iancoleman/strcase"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator/helpers"
 )
@@ -42,5 +43,7 @@ func BooleanFieldTemplate(f entity.Field, e entity.Entity) Template {
 		GraphGenFromMapperOptional: GraphGenFromMapperOptional,
 		ProtoType:                  "bool",
 		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
+		ProtoToMapper:              fmt.Sprintf("e.%s", helpers.ToCamelCase(f.Identifier)),
+		ProtoGenName:               strcase.ToCamel(f.Identifier),
 	}
 }

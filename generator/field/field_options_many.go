@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gertd/go-pluralize"
+	"github.com/iancoleman/strcase"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator/helpers"
 )
@@ -24,7 +25,7 @@ func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, prefix *string) T
 	return Template{
 		Identifier:          f.Identifier,
 		Name:                helpers.ToCamelCase(f.Identifier),
-		Type:                fmt.Sprintf("[]%s", helpers.ToCamelCase(name)),
+		Type:                pl.Singular(helpers.ToCamelCase(name)),
 		IsPrimary:           f.StorageConfig.PrimaryKey,
 		Required:            f.Required,
 		Tags:                helpers.ResolveTags(f),
@@ -44,5 +45,7 @@ func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, prefix *string) T
 		ProtoType:           protoType,
 		ProtoName:           helpers.ToSnakeCase(f.Identifier),
 		ProtoEnumOptions:    helpers.ProtoEnumOptions(protoType, f.OptionValues),
+		ProtoGenName:        strcase.ToCamel(f.Identifier),
+		ProtoToMapper:       fmt.Sprintf("%sSliceToProto(e.%s)", protoType, helpers.ToCamelCase(name)),
 	}
 }

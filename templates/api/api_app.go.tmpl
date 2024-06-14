@@ -8,8 +8,10 @@ import (
 	"{{.Identifier}}/auth"
 	{{ end }}
 	"{{.Identifier}}/config"
+	{{ if eq .Protocol "graphql"}}
 	"{{.Identifier}}/graph"
 	"{{.Identifier}}/graph/generated"
+	{{end}}
 	"{{.Identifier}}/core"
 )
 
@@ -42,19 +44,23 @@ func New() (application, error) {
 	}
 	{{end}}
 
+	{{ if eq .Protocol "graphql"}}
 	srv := handler.NewDefaultServer(
 		generated.NewExecutableSchema(
 			generated.Config{
 				Resolvers: &graph.Resolver{
 					Core: *c,
 				}}))
+	{{end}}
 
 	return application{
 		core:    c,
 		{{ if eq .Auth.Enabled true}}
 		auth:   auth,
 		{{end}}
+		{{ if eq .Protocol "graphql"}}
 		server: srv,
+		{{end}}
 		bac: basicAuthCredentials{
 			username: "{{.Auth.BasicUsername}}",
 			password: "{{.Auth.BasicPassword}}",

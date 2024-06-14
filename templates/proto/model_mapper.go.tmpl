@@ -1,0 +1,44 @@
+package {{.ParentIdentifier}} 
+
+{{$pi := .ProjectIdentifier}}
+{{$timestampImport := false}}
+
+import (
+    entity "{{.ProjectIdentifier}}/core/entity/{{.ParentIdentifier}}"
+    pb "{{.ProjectIdentifier}}/idl/gen"
+    {{range $field := .Fields}}{{if and (eq $field.Type "time.Time") (eq $timestampImport false)}}
+    "google.golang.org/protobuf/types/known/timestamppb" {{$timestampImport = true}} {{end}}
+    {{if eq $field.JSONRaw true}}
+    "{{$pi}}/idl/mapper"{{end}}
+    {{end}}
+)
+
+func {{.Name}}EntityToProto(e entity.{{.Name}}) *pb.{{.Name}} {
+    return &pb.{{.Name}}{ {{range $field := .Fields}}
+        {{$field.ProtoGenName}}: {{$field.ProtoToMapper}},{{end}}	      
+    }
+}
+
+func {{.Name}}ProtoToEntity(m *pb.{{.Name}}) entity.{{.Name}} {
+    return entity.{{.Name}}{}
+}
+{{range $enum := .Enums}}{{if eq $enum.Many true}}
+func {{$enum.Field.ProtoType}}SliceToProto(s []entity.{{$enum.Field.ProtoType}}) []pb.{{$enum.Field.ProtoType}}{
+    res := []pb.{{$enum.Field.ProtoType}}{}
+    for _, e := range s {
+        res = append(res, pb.{{$enum.Field.ProtoType}}(e))
+    }
+    return res
+}{{end}}
+{{end}}
+
+{{range $field := .Fields}}{{if and (eq $field.JSON true) (eq $field.JSONMany true)}}
+func {{$field.Name}}SliceToProto(s entity.{{$field.Type}}) []*pb.{{$field.ProtoType}} {
+    res := []*pb.{{$field.ProtoType}}{}
+    for _, e := range s {
+        res = append(res, {{$field.ProtoType}}EntityToProto(e))
+    }
+    return res
+}{{end}}
+{{end}}
+

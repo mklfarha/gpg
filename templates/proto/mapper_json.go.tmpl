@@ -1,0 +1,13 @@
+package mapper 
+
+import (
+    "encoding/json"
+)
+
+func JSONRawToString(raw json.RawMessage) string {
+    j, err := json.Marshal(&raw)
+    if err != nil {
+        return ""
+    }
+    return string(j)    
+}

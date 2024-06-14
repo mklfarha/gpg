@@ -10,6 +10,7 @@ type Template struct {
 	Import                     *string
 	JSON                       bool
 	JSONMany                   bool
+	JSONRaw                    bool
 	Custom                     bool
 	Generated                  bool
 	GeneratedFuncInsert        string
@@ -28,7 +29,10 @@ type Template struct {
 	GraphGenFromMapperParam    string
 	GraphGenFromMapper         string
 	GraphGenFromMapperOptional string
-	ProtoType                  string
-	ProtoName                  string
-	ProtoEnumOptions           []string
+	ProtoType                  string   // the type in the proto file
+	ProtoName                  string   // the field name in the proto file
+	ProtoEnumOptions           []string // enum options
+	ProtoToMapper              string   // used in mapper to map from entity to proto
+	ProtoFromMapper            string   // user in mapper tp map from proto to entity
+	ProtoGenName               string   // field name in generated code by protoc
 }

@@ -146,8 +146,10 @@ func generateAPI(targetDir string, protocol string, project entity.Project) {
 	switch protocol {
 	case API_PROTOCOL_GRAPHQL:
 		graph.GenerateGraph(ctx, targetDir, project)
+		project.Protocol = entity.ProjectProtocolGraphQL
 	case API_PROTOCOL_PROTOBUF:
 		proto.Generate(ctx, targetDir, project)
+		project.Protocol = entity.ProjectProtocolProtobuf
 	}
 	generator.GenerateAuth(ctx, targetDir, project)
 	generator.GenerateAPIModule(ctx, targetDir, project)

@@ -3,6 +3,7 @@ package field
 import (
 	"fmt"
 
+	"github.com/iancoleman/strcase"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator/helpers"
 )
@@ -45,5 +46,7 @@ func IntFieldTemplate(f entity.Field, e entity.Entity) Template {
 		GraphGenFromMapperOptional: graphGenFromMapperOptional,
 		ProtoType:                  "int64",
 		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
+		ProtoGenName:               strcase.ToCamel(f.Identifier),
+		ProtoToMapper:              fmt.Sprintf("int64(e.%s)", helpers.ToCamelCase(f.Identifier)),
 	}
 }
