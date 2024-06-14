@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+option go_package = "protogo/";
+option java_multiple_files = true;
+option java_package = "{{.Identifier}}";
+option java_outer_classname = "{{.Name}}";
+
+package nuzur;
+
+import "google/protobuf/field_mask.proto";
+{{range $entity := .Entities}}
+import "{{$entity.Identifier}}.proto";
+{{end}}
+
+service {{.Name}} {    
+    {{range $entity := .Entities}}
+    // {{$entity.Identifier}} start
+    rpc List{{$entity.EntityNamePlural}}(List{{$entity.EntityNamePlural}}Request) returns (List{{$entity.EntityNamePlural}}Response){}
+    rpc Create{{$entity.EntityName}}(Create{{$entity.EntityName}}Request) returns ({{$entity.EntityName}}) {}
+    rpc Update{{$entity.EntityName}}(Update{{$entity.EntityName}}Request) returns ({{$entity.EntityName}}) {}
+    // {{$entity.Identifier}} end
+    {{end}}
+}
+
+{{range $entity := .Entities}}
+// {{$entity.Identifier}} start
+message List{{$entity.EntityNamePlural}}Request {
+    // The maximum number of records to return. The service may return fewer than
+    // this value.
+    int32 page_size = 1;
+
+    // A page token, received from a previous call.
+    // Provide this to retrieve the subsequent page.    
+    string page_token = 2;
+
+    // https://google.aip.dev/160
+    // https://pkg.go.dev/go.einride.tech/aip@v0.67.1
+    // https://github.com/einride/aip-go    
+    string filter = 3;
+    string order_by = 4;
+    bool show_deleted = 5;
+}
+
+message List{{$entity.EntityNamePlural}}Response {
+    repeated {{$entity.EntityName}} {{$entity.IdentifierPlural}} = 1;
+
+    // A token that can be sent as `page_token` to retrieve the next page.
+    // If this field is omitted, there are no subsequent pages.
+    string next_page_token = 2;
+}
+
+message Create{{$entity.EntityName}}Request {
+    {{$entity.EntityName}} {{$entity.Identifier}} = 1;
+}
+
+message Update{{$entity.EntityName}}Request {
+   
+    {{$entity.EntityName}} {{$entity.Identifier}} = 1;
+  
+    // The list of fields to update.
+    google.protobuf.FieldMask update_mask = 2;
+}
+// {{$entity.Identifier}} end
+{{end}}

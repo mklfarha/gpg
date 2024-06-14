@@ -17,7 +17,7 @@ var (
 	AUTH_DIR                  = "auth"
 	CONFIG_DIR                = "config"
 	GRAPH_DIR                 = "graph"
-	PROTO_DIR                 = "proto"
+	PROTO_DIR                 = "idl"
 	CORE_DIR                  = "core"
 	CORE_ENTITY_DIR           = path.Join(CORE_DIR, "entity")
 	CORE_MODULE_DIR           = path.Join(CORE_DIR, "module")
@@ -47,7 +47,7 @@ func GenerateProjectDirectories(ctx context.Context, rootPath string, project en
 	projectDir := ProjectDir(ctx, rootPath, project)
 	for _, dir := range projectStructure {
 		fullDir := path.Join(projectDir, dir)
-		createDir(fullDir)
+		CreateDir(fullDir)
 	}
 
 	initModule(ctx, rootPath, project)
@@ -132,7 +132,7 @@ func ProjectDir(ctx context.Context, rootPath string, project entity.Project) st
 	return path.Join(rootPath, project.Identifier)
 }
 
-func createDir(fullDir string) {
+func CreateDir(fullDir string) {
 	err := os.MkdirAll(fullDir, 0o755)
 	if err != nil {
 		fmt.Printf("failed to create directory: %v", err)
