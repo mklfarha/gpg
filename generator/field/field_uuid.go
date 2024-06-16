@@ -66,6 +66,7 @@ func UUIDFieldTemplate(f entity.Field, e entity.Entity) Template {
 		ProtoType:                  "string",
 		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
 		ProtoToMapper:              fmt.Sprintf("e.%s.String()", helpers.ToCamelCase(f.Identifier)),
+		ProtoFromMapper:            fmt.Sprintf("uuid.FromStringOrNil(m.Get%s())", strcase.ToCamel(f.Identifier)),
 		ProtoGenName:               strcase.ToCamel(f.Identifier),
 	}
 }

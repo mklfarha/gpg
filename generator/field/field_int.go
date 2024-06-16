@@ -48,5 +48,6 @@ func IntFieldTemplate(f entity.Field, e entity.Entity) Template {
 		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
 		ProtoGenName:               strcase.ToCamel(f.Identifier),
 		ProtoToMapper:              fmt.Sprintf("int64(e.%s)", helpers.ToCamelCase(f.Identifier)),
+		ProtoFromMapper:            fmt.Sprintf("int32(m.Get%s())", strcase.ToCamel(f.Identifier)),
 	}
 }

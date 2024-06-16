@@ -2,6 +2,7 @@ package {{.ParentIdentifier}}
 
 {{$pi := .ProjectIdentifier}}
 {{$timestampImport := false}}
+{{$uuidImport := false}}
 
 import (
     entity "{{.ProjectIdentifier}}/core/entity/{{.ParentIdentifier}}"
@@ -10,23 +11,34 @@ import (
     "google.golang.org/protobuf/types/known/timestamppb" {{$timestampImport = true}} {{end}}
     {{if eq $field.JSONRaw true}}
     "{{$pi}}/idl/mapper"{{end}}
+    {{if and (eq $field.Type "uuid.UUID") (eq $uuidImport false)}}
+    "github.com/gofrs/uuid" {{$uuidImport = true}}{{end}}
     {{end}}
 )
 
 func {{.Name}}EntityToProto(e entity.{{.Name}}) *pb.{{.Name}} {
     return &pb.{{.Name}}{ {{range $field := .Fields}}
-        {{$field.ProtoGenName}}: {{$field.ProtoToMapper}},{{end}}	      
+        {{$field.ProtoGenName}}: {{$field.ProtoToMapper}},{{end}}
     }
 }
 
 func {{.Name}}ProtoToEntity(m *pb.{{.Name}}) entity.{{.Name}} {
-    return entity.{{.Name}}{}
+    return entity.{{.Name}}{ {{range $field := .Fields}}
+        {{$field.Name}}: {{$field.ProtoFromMapper}},{{end}}
+    }
 }
 {{range $enum := .Enums}}{{if eq $enum.Many true}}
 func {{$enum.Field.ProtoType}}SliceToProto(s []entity.{{$enum.Field.ProtoType}}) []pb.{{$enum.Field.ProtoType}}{
     res := []pb.{{$enum.Field.ProtoType}}{}
     for _, e := range s {
         res = append(res, pb.{{$enum.Field.ProtoType}}(e))
+    }
+    return res
+}
+func {{$enum.Field.ProtoType}}SliceFromProto(s []pb.{{$enum.Field.ProtoType}}) []entity.{{$enum.Field.ProtoType}}{
+    res := []entity.{{$enum.Field.ProtoType}}{}
+    for _, e := range s {
+        res = append(res, entity.{{$enum.Field.ProtoType}}(e))
     }
     return res
 }{{end}}
@@ -37,6 +49,13 @@ func {{$field.Name}}SliceToProto(s entity.{{$field.Type}}) []*pb.{{$field.ProtoT
     res := []*pb.{{$field.ProtoType}}{}
     for _, e := range s {
         res = append(res, {{$field.ProtoType}}EntityToProto(e))
+    }
+    return res
+}
+func {{$field.Name}}SliceFromProto(s []*pb.{{$field.ProtoType}}) entity.{{$field.Type}} {
+    res := entity.{{$field.Type}}{}
+    for _, e := range s {
+        res = append(res, {{$field.ProtoType}}ProtoToEntity(e))
     }
     return res
 }{{end}}

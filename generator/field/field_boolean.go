@@ -44,6 +44,7 @@ func BooleanFieldTemplate(f entity.Field, e entity.Entity) Template {
 		ProtoType:                  "bool",
 		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
 		ProtoToMapper:              fmt.Sprintf("e.%s", helpers.ToCamelCase(f.Identifier)),
+		ProtoFromMapper:            fmt.Sprintf("m.Get%s()", strcase.ToCamel(f.Identifier)),
 		ProtoGenName:               strcase.ToCamel(f.Identifier),
 	}
 }

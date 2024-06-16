@@ -51,6 +51,8 @@ func DateFieldTemplate(f entity.Field, e entity.Entity) Template {
 		GraphGenFromMapperOptional: graphGenFromMapperOptional,
 		ProtoType:                  "google.protobuf.Timestamp",
 		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
+		ProtoToMapper:              fmt.Sprintf("timestamppb.New(e.%s)", helpers.ToCamelCase(f.Identifier)),
+		ProtoFromMapper:            fmt.Sprintf("m.Get%s().AsTime()", strcase.ToCamel(f.Identifier)),
 		ProtoGenName:               strcase.ToCamel(f.Identifier),
 	}
 }

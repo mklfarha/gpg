@@ -50,7 +50,8 @@ func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, prefix *string)
 		ProtoType:                  protoType,
 		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
 		ProtoEnumOptions:           helpers.ProtoEnumOptions(protoType, f.OptionValues),
-		ProtoToMapper:              fmt.Sprintf("pb.%s(e.%s)", protoType, helpers.ToCamelCase(name)),
+		ProtoToMapper:              fmt.Sprintf("pb.%s(e.%s)", protoType, pl.Singular(helpers.ToCamelCase(f.Identifier))),
+		ProtoFromMapper:            fmt.Sprintf("entity.%s(m.Get%s())", pl.Singular(helpers.ToCamelCase(name)), strcase.ToCamel(f.Identifier)),
 		ProtoGenName:               strcase.ToCamel(f.Identifier),
 	}
 }

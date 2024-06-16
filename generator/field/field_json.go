@@ -43,6 +43,7 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, prefix *string) Template
 		stringTemplate.GraphGenFromMapper = strings.ReplaceAll(stringTemplate.GraphGenFromMapper, "StringFromPointer", "JsonRawFromString")
 		stringTemplate.GraphGenFromMapperOptional = strings.ReplaceAll(stringTemplate.GraphGenFromMapperOptional, "StringFromPointer", "JsonRawFromString")
 		stringTemplate.ProtoToMapper = fmt.Sprintf("mapper.JSONRawToString(%s)", stringTemplate.ProtoToMapper)
+		stringTemplate.ProtoFromMapper = fmt.Sprintf("mapper.StringToJSONRaw(%s)", stringTemplate.ProtoFromMapper)
 		return stringTemplate
 	}
 
@@ -76,5 +77,6 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, prefix *string) Template
 		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
 		ProtoGenName:               strcase.ToCamel(f.Identifier),
 		ProtoToMapper:              fmt.Sprintf("%sSliceToProto(e.%s)", helpers.ToCamelCase(f.Identifier), helpers.ToCamelCase(f.Identifier)),
+		ProtoFromMapper:            fmt.Sprintf("%sSliceFromProto(m.Get%s())", helpers.ToCamelCase(f.Identifier), strcase.ToCamel(f.Identifier)),
 	}
 }

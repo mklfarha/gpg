@@ -53,6 +53,7 @@ func StringFieldTemplate(f entity.Field, e entity.Entity) Template {
 		ProtoType:                  "string",
 		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
 		ProtoToMapper:              fmt.Sprintf("e.%s", helpers.ToCamelCase(f.Identifier)),
+		ProtoFromMapper:            fmt.Sprintf("m.Get%s()", strcase.ToCamel(f.Identifier)),
 		ProtoGenName:               strcase.ToCamel(f.Identifier),
 	}
 }

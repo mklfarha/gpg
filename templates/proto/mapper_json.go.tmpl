@@ -11,3 +11,12 @@ func JSONRawToString(raw json.RawMessage) string {
     }
     return string(j)    
 }
+
+func StringToJSONRaw(s string) json.RawMessage {
+	var r json.RawMessage
+	err := json.Unmarshal([]byte(s), &r)
+	if err != nil {
+		return json.RawMessage{}
+	}
+	return r
+}

@@ -54,17 +54,18 @@ func Generate(ctx context.Context, rootPath string, project entity.Project) erro
 	//generate entities/models
 	fmt.Printf("--[GPG][Proto] Generating Entities\n")
 	for _, e := range project.Entities {
-		template, nested, err := handleEntity(ctx, protoDir, project, e, e.Identifier)
+		template, nested, err := handleEntity(ctx, protoDir, project, e, e.Identifier, nil)
 		if err != nil {
 			return err
 		}
 		entityTemplates = append(entityTemplates, template)
 		nestedTemplates := []ProtoEntityTemplate{}
 		for _, n := range nested {
+			prefix := pl.Singular(n.Identifier)
 			nestedTemplate, _, err := handleEntity(ctx, protoDir, project, entity.Entity{
 				Identifier: pl.Singular(n.Identifier),
 				Fields:     n.JSONConfig.Fields,
-			}, e.Identifier)
+			}, e.Identifier, &prefix)
 			if err != nil {
 				return err
 			}
@@ -158,7 +159,7 @@ func Generate(ctx context.Context, rootPath string, project entity.Project) erro
 	return err
 }
 
-func handleEntity(ctx context.Context, protoDir string, project entity.Project, e entity.Entity, parentIdentifier string) (ProtoEntityTemplate, []entity.Field, error) {
+func handleEntity(ctx context.Context, protoDir string, project entity.Project, e entity.Entity, parentIdentifier string, prefix *string) (ProtoEntityTemplate, []entity.Field, error) {
 	fields := []field.Template{}
 	searchable := false
 	enums := map[string]ProtoEnumTemplate{}
@@ -169,7 +170,7 @@ func handleEntity(ctx context.Context, protoDir string, project entity.Project, 
 	imports := map[string]interface{}{}
 	if len(e.Fields) > 0 {
 		for _, f := range e.Fields {
-			fieldTemplate := field.ResolveFieldType(f, e, nil)
+			fieldTemplate := field.ResolveFieldType(f, e, prefix)
 			fields = append(fields, fieldTemplate)
 			for _, field := range fields {
 				if field.Enum {

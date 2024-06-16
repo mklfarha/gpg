@@ -46,6 +46,7 @@ func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, prefix *string) T
 		ProtoName:           helpers.ToSnakeCase(f.Identifier),
 		ProtoEnumOptions:    helpers.ProtoEnumOptions(protoType, f.OptionValues),
 		ProtoGenName:        strcase.ToCamel(f.Identifier),
-		ProtoToMapper:       fmt.Sprintf("%sSliceToProto(e.%s)", protoType, helpers.ToCamelCase(name)),
+		ProtoToMapper:       fmt.Sprintf("%sSliceToProto(e.%s)", protoType, helpers.ToCamelCase(f.Identifier)),
+		ProtoFromMapper:     fmt.Sprintf("%sSliceFromProto(m.Get%s())", protoType, strcase.ToCamel(f.Identifier)),
 	}
 }
