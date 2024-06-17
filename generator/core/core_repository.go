@@ -109,7 +109,7 @@ func generateSQLSchemas(ctx context.Context, repoDir string, project entity.Proj
 	entities := make([]RepoSchemaEntity, len(project.Entities))
 	for i, e := range project.Entities {
 		fields, indexes, search := resolveSchemaFieldsAndIndexes(e)
-		selects := ResolveSelectStatements(e)
+		selects := ResolveSelectStatements(project, e)
 		entityTemplate := RepoSchemaEntity{
 			Name:             e.Identifier,
 			NameTitle:        helpers.ToCamelCase(e.Identifier),
@@ -326,7 +326,7 @@ func ResolveSearchFields(e entity.Entity) []field.Template {
 	return fields
 }
 
-func ResolveSelectStatements(e entity.Entity) []RepoSchemaSelectStatement {
+func ResolveSelectStatements(project entity.Project, e entity.Entity) []RepoSchemaSelectStatement {
 	selects := []RepoSchemaSelectStatement{}
 	primaryKey := EntityPrimaryKey(e)
 	resolvedField := field.ResolveFieldType(primaryKey, e, nil)
@@ -344,6 +344,11 @@ func ResolveSelectStatements(e entity.Entity) []RepoSchemaSelectStatement {
 		IsPrimary:     true,
 		SortSupported: false,
 	})
+
+	if project.Protocol == entity.ProjectProtocolProtobuf {
+		return selects
+	}
+
 	indexes := []string{}
 	indexFields := map[string]entity.Field{}
 

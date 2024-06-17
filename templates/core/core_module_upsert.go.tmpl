@@ -1,5 +1,6 @@
 package {{.Package}}
 
+{{$entityName := .EntityName}}
 {{$projectName := .ProjectName}}
 import (
 	"context"
@@ -25,7 +26,7 @@ func (m *module) Upsert(
 	partial bool, 
 	opts ...Option,
 ) (types.UpsertResponse, error) {
-	if req.{{.PrimaryKey.Name}} == uuid.Nil {		
+	if req.{{.EntityName}}.{{.PrimaryKey.Name}} == uuid.Nil {		
 		params := mapUpsertRequestToInsertParams(req)
 		_, err := m.repository.Insert{{.EntityName}}(
 			ctx,
@@ -40,7 +41,7 @@ func (m *module) Upsert(
 		}, nil
 	}
 
-	existing, err := m.repository.Fetch{{.EntityName}}By{{.PrimaryKey.Name}}(ctx, req.{{.PrimaryKey.Name}}.String())
+	existing, err := m.repository.Fetch{{.EntityName}}By{{.PrimaryKey.Name}}(ctx, req.{{.EntityName}}.{{.PrimaryKey.Name}}.String())
 	if err != nil {
 		return types.UpsertResponse{}, err
 	}
@@ -57,7 +58,7 @@ func (m *module) Upsert(
 	}
 
 	return types.UpsertResponse{
-		{{.PrimaryKey.Name}}: req.{{.PrimaryKey.Name}},
+		{{.PrimaryKey.Name}}: req.{{.EntityName}}.{{.PrimaryKey.Name}},
 	}, nil
 }
 
@@ -67,7 +68,7 @@ func mapUpsertRequestToInsertParams(req types.UpsertRequest) {{.ProjectName}}db.
 		{{ if eq $field.Generated true}} 
 		{{$field.Name}}: {{$field.GeneratedFuncInsert}}{{$field.RepoToMapper}},
 		{{else}}
-        {{$field.Name}}: req.{{$field.Name}}{{$field.RepoToMapper}}, {{end}}	
+        {{$field.Name}}: req.{{$entityName}}.{{$field.Name}}{{$field.RepoToMapper}}, {{end}}	
 		{{end}}
 	}
 }
@@ -78,7 +79,7 @@ func mapUpsertRequestToUpdateParams(req types.UpsertRequest, existing {{.Project
 			{{ if eq $field.Generated true}} 
 			{{$field.Name}}: {{$field.GeneratedFuncUpdate}}{{$field.RepoToMapper}},
 			{{else}}
-			{{$field.Name}}: req.{{$field.Name}}{{$field.RepoToMapper}}, {{end}}	
+			{{$field.Name}}: req.{{$entityName}}.{{$field.Name}}{{$field.RepoToMapper}}, {{end}}	
 			{{end}}
 		}
 	}
@@ -90,14 +91,14 @@ func mapUpsertRequestToUpdateParams(req types.UpsertRequest, existing {{.Project
 		
 		{{if eq $field.JSONMany true}}
 			// json array
-			if len(req.{{$field.Name}}) == 0 {
+			if len(req.{{$entityName}}.{{$field.Name}}) == 0 {
 		{{else}}		    
 			{{if ne $field.Type "json.RawMessage"}}
 				// regular field
-				if req.{{$field.Name}} == emptyReq.{{$field.Name}} {
+				if req.{{$entityName}}.{{$field.Name}} == emptyReq.{{$entityName}}.{{$field.Name}} {
 			{{else}}
 				// raw json is a pointer
-				if req.{{$field.Name}} != nil {
+				if req.{{$entityName}}.{{$field.Name}} != nil {
 			{{end}}
 		{{end}}
 			res.{{$field.Name}} = existing.{{$field.Name}}
@@ -105,7 +106,7 @@ func mapUpsertRequestToUpdateParams(req types.UpsertRequest, existing {{.Project
 			{{ if eq $field.Generated true}} 
 			res.{{$field.Name}} = {{$field.GeneratedFuncUpdate}}{{$field.RepoToMapper}}
 			{{else}}
-			res.{{$field.Name}} = req.{{$field.Name}}{{$field.RepoToMapper}}
+			res.{{$field.Name}} = req.{{$entityName}}.{{$field.Name}}{{$field.RepoToMapper}}
 			{{end}}
 		}
 	{{end}}

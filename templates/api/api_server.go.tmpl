@@ -21,7 +21,7 @@ func (app *application) serverHandlerFunc() http.HandlerFunc {
 			return
 		}
 
-		{{ if eq .Auth.Enabled true}}
+		{{ if eq .Auth.Enabled true }}
 		claims, err := app.auth.ClaimsFromHeader(w, r)
 		if err != nil {
 			fmt.Printf("auth err: %v\n", err)
@@ -29,9 +29,11 @@ func (app *application) serverHandlerFunc() http.HandlerFunc {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		}		
 		fmt.Printf("claims: %v\n", claims)
-		{{end}}
+		{{ end }}
 		
+		{{ if eq .Protocol "graphql" }}
 		app.server.ServeHTTP(w, r)
+		{{ end }}
 	})
 
 }

@@ -138,6 +138,12 @@ func loadProject(configPath string) (entity.Project, error) {
 
 func generateAPI(targetDir string, protocol string, project entity.Project) {
 	ctx := context.Background()
+	switch protocol {
+	case API_PROTOCOL_GRAPHQL:
+		project.Protocol = entity.ProjectProtocolGraphQL
+	case API_PROTOCOL_PROTOBUF:
+		project.Protocol = entity.ProjectProtocolProtobuf
+	}
 	generator.GenerateProjectDirectories(ctx, targetDir, project)
 	generator.GenerateConfig(ctx, targetDir, project)
 	core.GenerateCoreEntities(ctx, targetDir, project)
@@ -146,10 +152,8 @@ func generateAPI(targetDir string, protocol string, project entity.Project) {
 	switch protocol {
 	case API_PROTOCOL_GRAPHQL:
 		graph.GenerateGraph(ctx, targetDir, project)
-		project.Protocol = entity.ProjectProtocolGraphQL
 	case API_PROTOCOL_PROTOBUF:
 		proto.Generate(ctx, targetDir, project)
-		project.Protocol = entity.ProjectProtocolProtobuf
 	}
 	generator.GenerateAuth(ctx, targetDir, project)
 	generator.GenerateAPIModule(ctx, targetDir, project)

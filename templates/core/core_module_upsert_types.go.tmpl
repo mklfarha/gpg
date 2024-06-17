@@ -3,30 +3,12 @@ package types
 {{$projectName := .ProjectName}}
 {{$package := .Package}}
 import (
-    {{ $first := true}}
-    {{ $firstJson := true}}
-    {{range $field := .Fields}}
-        {{if eq $firstJson true}}
-            {{ if eq $field.Type "json.RawMessage"}}            
-            "encoding/json"
-            {{$firstJson = false}}
-            {{end}}
-        {{end}}
-        {{if eq $field.Custom true}}
-            {{if eq $first true}}
-            entity "{{$projectName}}/core/entity/{{$package}}"	
-            {{$first = false}}
-            {{end}}		
-        {{end}}
-        
-    {{end}}
-    {{range $import := .Imports}}
-    "{{$import}}" {{end}}
+    entity "{{$projectName}}/core/entity/{{.EntityIdentifier}}"	    
+    "github.com/gofrs/uuid"
 )
 
 type UpsertRequest struct {
-	{{range $field := .Fields}}
-    {{$field.Name}} {{if eq $field.Custom true}}entity.{{end}}{{$field.Type}}{{end}}
+    {{.EntityName}} entity.{{.EntityName}}
 }
 
 type UpsertResponse struct {

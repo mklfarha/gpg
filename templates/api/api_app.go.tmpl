@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 
-	"github.com/99designs/gqlgen/graphql/handler"
+	
 	{{ if eq .Auth.Enabled true}}
 	"{{.Identifier}}/auth"
 	{{ end }}
 	"{{.Identifier}}/config"
 	{{ if eq .Protocol "graphql"}}
+	"github.com/99designs/gqlgen/graphql/handler"
 	"{{.Identifier}}/graph"
 	"{{.Identifier}}/graph/generated"
 	{{end}}
@@ -25,7 +26,9 @@ type application struct {
 	{{ if eq .Auth.Enabled true}}
 	auth   auth.Interface
 	{{ end }}
+	{{ if eq .Protocol "graphql"}}
 	server *handler.Server
+	{{ end }}
 	bac    basicAuthCredentials
 }
 
@@ -57,10 +60,10 @@ func New() (application, error) {
 		core:    c,
 		{{ if eq .Auth.Enabled true}}
 		auth:   auth,
-		{{end}}
+		{{ end }}
 		{{ if eq .Protocol "graphql"}}
 		server: srv,
-		{{end}}
+		{{ end }}
 		bac: basicAuthCredentials{
 			username: "{{.Auth.BasicUsername}}",
 			password: "{{.Auth.BasicPassword}}",

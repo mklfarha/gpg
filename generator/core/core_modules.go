@@ -65,7 +65,7 @@ func GenerateCoreModules(ctx context.Context, rootPath string, project entity.Pr
 
 	for _, e := range project.Entities {
 		fmt.Printf("--[GPG] Generating core module: %s\n", e.Identifier)
-		selects := ResolveSelectStatements(e)
+		selects := ResolveSelectStatements(project, e)
 		searchFields := ResolveSearchFields(e)
 		moduleTemplate := CoreModuleTemplate{
 			Package:          e.Identifier,

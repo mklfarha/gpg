@@ -1,0 +1,29 @@
+package server
+
+import (
+	"context"
+	"errors"
+	"{{.ProjectIdentifier}}/core/module/{{.Identifier}}/types"
+	pb "{{.ProjectIdentifier}}/idl/gen"
+	pbmapper "{{.ProjectIdentifier}}/idl/mapper/{{.Identifier}}"
+)
+
+func (s *server) Update{{.Name}}(ctx context.Context, req *pb.Update{{.Name}}Request) (*pb.{{.Name}}, error) {
+	res, err := s.Core.{{.Name}}().Upsert(ctx, types.UpsertRequest{
+		{{.Name}}: pbmapper.{{.Name}}ProtoToEntity(req.Get{{.Name}}()),
+	}, false)
+	if err != nil {
+		return nil, err
+	}
+
+	fetchRes, err := s.Core.{{.Name}}().Fetch{{.Name}}By{{.PrimaryKey.Name}}(ctx, types.Fetch{{.Name}}By{{.PrimaryKey.Name}}Request(res))
+	if err != nil {
+		return nil, err
+	}
+
+	if len(fetchRes.Results) == 0 {
+		return nil, errors.New("error fetching entity")
+	}
+
+	return pbmapper.{{.Name}}EntityToProto(fetchRes.Results[0]), nil
+}

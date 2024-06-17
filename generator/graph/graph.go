@@ -110,7 +110,7 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 			DisableGoFormat: true,
 		})
 
-		selects := core.ResolveSelectStatements(e)
+		selects := core.ResolveSelectStatements(project, e)
 		entityTemplate.Selects = selects
 		entityTemplates = append(entityTemplates, entityTemplate)
 	}

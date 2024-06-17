@@ -4,8 +4,9 @@ import (
 	"log"
 	"net/http"
 	"os"
-
+	{{ if eq .Protocol "graphql" }}
 	"github.com/99designs/gqlgen/graphql/playground"
+	{{end}}
 )
 
 const defaultPort = "8080"
@@ -21,21 +22,23 @@ func main() {
 		panic(err)
 	}
 
-	http.Handle("/gplay", app.basicAuth(playground.Handler("GraphQL playground", "/query")))
-	{{ if eq .Auth.Enabled true}}
+	{{ if eq .Auth.Enabled true }}
 	http.HandleFunc("/signin", app.auth.SignIn)
 	http.HandleFunc("/validate", app.auth.Validate)
 	http.HandleFunc("/refresh", app.auth.Refresh)
-	{{end}}
+	{{ end }}
+	{{ if eq .Protocol "graphql" }}
+	http.Handle("/gplay", app.basicAuth(playground.Handler("GraphQL playground", "/query")))	
 	http.Handle("/query", app.serverHandlerFunc())
+	{{ end }}
 	http.Handle("/upload", app.serverHandlerUploadFunc())	
 
 	log.Printf(`
-		Port: %s
-			/gplay
-			/signin
-			/refresh
-			/query
+		Port: %s			
+			{{if eq .Auth.Enabled true}}/signin
+			/refresh{{end}}
+			{{if eq .Protocol "graphql"}}/gplay
+			/query{{end}}
 			/upload
 			`, port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
