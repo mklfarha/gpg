@@ -10,7 +10,9 @@ import (
 type Module interface {
     {{range $select := .SelectStatements}}
     Fetch{{$select.Name}}(ctx context.Context, req types.Fetch{{$select.Name}}Request, opts ...Option) (types.Fetch{{$select.Name}}Response, error){{end}}	
+	
 	Upsert(ctx context.Context, req types.UpsertRequest, partial bool, opts ...Option) (types.UpsertResponse, error)
+	List(ctx context.Context, req types.ListRequest, opts ...Option) (types.ListResponse, error)
 	{{if ne (len .SearchFields) 0}}
 	Search(ctx context.Context, query string, limit int32, offset int32) (types.Search{{.EntityName}}Response, error)
 	{{end}}	

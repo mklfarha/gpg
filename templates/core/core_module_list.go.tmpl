@@ -1,0 +1,12 @@
+package {{.EntityIdentifier}}
+
+import (
+	"context"
+	"{{.ProjectIdentifier}}/core/module/{{.EntityIdentifier}}/types"
+)
+
+func (m *module) List(ctx context.Context,
+	request types.ListRequest,
+	opts ...Option) (types.ListResponse, error) {
+	return types.ListResponse{}, nil
+}

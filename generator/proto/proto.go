@@ -22,6 +22,7 @@ type ProtoEntityTemplate struct {
 	Search            bool
 	Enums             map[string]ProtoEnumTemplate
 	Imports           map[string]interface{}
+	Declarations      map[string]string
 }
 
 type ProtoEnumTemplate struct {
@@ -62,7 +63,7 @@ func Generate(ctx context.Context, rootPath string, project entity.Project) erro
 		return err
 	}
 
-	err = generateServer(ctx, protoDir, project, standaloneEntities)
+	err = generateServer(ctx, protoDir, project, standaloneEntities, dependantEntities)
 	if err != nil {
 		return err
 	}

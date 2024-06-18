@@ -1,0 +1,21 @@
+package types
+
+import (
+	entity "{{.ProjectIdentifier}}/core/entity/{{.EntityIdentifier}}"
+
+	"go.einride.tech/aip/filtering"
+	"go.einride.tech/aip/ordering"
+)
+
+type ListRequest struct {
+	PageSize    int32
+	Offset      int64
+	Filter      filtering.Filter
+	OrderBy     ordering.OrderBy
+	ShowDeleted bool
+}
+
+type ListResponse struct {
+	{{.EntityNamePlural}} []entity.{{.EntityName}}
+	HasNextPage bool
+}

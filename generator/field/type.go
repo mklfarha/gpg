@@ -1,9 +1,12 @@
 package field
 
+import "github.com/maykel/gpg/entity"
+
 type Template struct {
 	Identifier                 string
 	Name                       string
 	Type                       string
+	InternalType               entity.FieldType
 	IsPrimary                  bool
 	Required                   bool
 	Tags                       string

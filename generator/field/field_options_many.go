@@ -26,6 +26,7 @@ func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, prefix *string) T
 		Identifier:          f.Identifier,
 		Name:                helpers.ToCamelCase(f.Identifier),
 		Type:                pl.Singular(helpers.ToCamelCase(name)),
+		InternalType:        entity.OptionsManyFieldType,
 		IsPrimary:           f.StorageConfig.PrimaryKey,
 		Required:            f.Required,
 		Tags:                helpers.ResolveTags(f),

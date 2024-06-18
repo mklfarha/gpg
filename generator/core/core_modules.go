@@ -83,6 +83,12 @@ func GenerateCoreModules(ctx context.Context, rootPath string, project entity.Pr
 		if err != nil {
 			return err
 		}
+
+		// list
+		err = generateList(ctx, req)
+		if err != nil {
+			return err
+		}
 	}
 
 	// generate main module
