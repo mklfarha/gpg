@@ -143,7 +143,7 @@ func GenerateBaseWeb(ctx context.Context, rootPath string, project entity.Projec
 				return false
 			},
 			"SearchFields": func(e entity.Entity) string {
-				searchFields := core.ResolveSearchFields(e)
+				searchFields := core.GetSearchFields(e)
 				res := "(item) => { var res = ''; "
 				first := true
 				for _, sf := range searchFields {

@@ -23,7 +23,7 @@ var (
 	CORE_MODULE_DIR           = path.Join(CORE_DIR, "module")
 	CORE_REPO_DIR             = path.Join(CORE_DIR, "repository")
 	CORE_REPO_SQL_DIR         = "sql"
-	CORE_REPO_SQL_QUERIES_DIR = path.Join(CORE_REPO_SQL_DIR, "queries")
+	CORE_REPO_SQL_QUERIES_DIR = "queries"
 	CORE_TOOLS                = "tools"
 	WEB_DIR                   = "web"
 	CUSTOM_DIR                = "custom"

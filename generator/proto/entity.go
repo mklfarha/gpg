@@ -9,7 +9,6 @@ import (
 	pluralize "github.com/gertd/go-pluralize"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator"
-	"github.com/maykel/gpg/generator/core"
 	"github.com/maykel/gpg/generator/field"
 	"github.com/maykel/gpg/generator/helpers"
 )
@@ -52,7 +51,7 @@ func generateEntityProtoFile(ctx context.Context, protoDir string, project entit
 				searchable = true
 			}
 		}
-		primaryKey := field.ResolveFieldType(core.EntityPrimaryKey(e), e, nil)
+		primaryKey := field.ResolveFieldType(helpers.EntityPrimaryKey(e), e, nil)
 		entityTemplate = ProtoEntityTemplate{
 			ProjectIdentifier: project.Identifier,
 			ParentIdentifier:  parentIdentifier,

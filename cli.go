@@ -148,7 +148,10 @@ func generateAPI(targetDir string, protocol string, project entity.Project) {
 	generator.GenerateConfig(ctx, targetDir, project)
 	core.GenerateCoreEntities(ctx, targetDir, project)
 	core.GenerateCoreRepository(ctx, targetDir, project)
-	core.GenerateCoreModules(ctx, targetDir, project)
+	err := core.GenerateCoreModules(ctx, targetDir, project)
+	if err != nil {
+		fmt.Printf("ERROR: Error generating core modules: %v", err)
+	}
 	switch protocol {
 	case API_PROTOCOL_GRAPHQL:
 		graph.GenerateGraph(ctx, targetDir, project)

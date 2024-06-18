@@ -97,7 +97,7 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 		entityTemplate := GraphEntityTemplate{
 			Identifier:    e.Identifier,
 			EntityName:    helpers.ToCamelCase(e.Identifier),
-			PrimaryKey:    field.ResolveFieldType(core.EntityPrimaryKey(e), e, nil),
+			PrimaryKey:    field.ResolveFieldType(helpers.EntityPrimaryKey(e), e, nil),
 			InFields:      inFields,
 			OutFields:     outFields,
 			Search:        searchable,
