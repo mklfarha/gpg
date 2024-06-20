@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"sort"
 
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator"
@@ -44,6 +45,17 @@ func generateServer(ctx context.Context, protoDir string, project entity.Project
 			return err
 		}
 		se.Declarations = getEntityDeclarations(se, dependantEntities, nil)
+		se.DeclarationKeys = make(map[string][]string)
+		for entityId, mapTypes := range se.Declarations {
+			for k, _ := range mapTypes {
+				se.DeclarationKeys[entityId] = append(se.DeclarationKeys[entityId], k)
+			}
+		}
+
+		for _, dk := range se.DeclarationKeys {
+			sort.Strings(dk)
+		}
+
 		err = generator.GenerateFile(ctx, generator.FileRequest{
 			OutputFile:      path.Join(protoDir, "server", fmt.Sprintf("list_%s.go", se.Identifier)),
 			TemplateName:    path.Join("proto", "server_list_entity"),
@@ -58,45 +70,46 @@ func generateServer(ctx context.Context, protoDir string, project entity.Project
 	return err
 }
 
-func getEntityDeclarations(e ProtoEntityTemplate, dependantEntities map[string][]ProtoEntityTemplate, prefix *string) map[string]string {
-	res := make(map[string]string)
+func getEntityDeclarations(e ProtoEntityTemplate, dependantEntities map[string][]ProtoEntityTemplate, prefix *string) map[string]map[string]string {
+	finalRes := make(map[string]map[string]string)
+	entityRes := make(map[string]string)
 	for _, f := range e.Fields {
 		finalIdentifier := f.Identifier
 		if prefix != nil {
 			finalIdentifier = *prefix + f.Identifier
 		}
-
 		switch f.InternalType {
 		case entity.IntFieldType:
-			res[finalIdentifier] = "filtering.TypeInt"
+			entityRes[finalIdentifier] = "filtering.TypeInt"
 		case entity.FloatFieldType:
-			res[finalIdentifier] = "filtering.TypeFloat"
+			entityRes[finalIdentifier] = "filtering.TypeFloat"
 		case entity.BooleanFieldType:
-			res[finalIdentifier] = "filtering.TypeBool"
+			entityRes[finalIdentifier] = "filtering.TypeBool"
 		case entity.DateTimeFieldType, entity.DateFieldType:
-			res[finalIdentifier] = "filtering.TypeTimestamp"
+			entityRes[finalIdentifier] = "filtering.TypeTimestamp"
 		case entity.UUIDFieldType, entity.StringFieldType, entity.LargeStringFieldType:
-			res[finalIdentifier] = "filtering.TypeString"
+			entityRes[finalIdentifier] = "filtering.TypeString"
 		case entity.OptionsSingleFieldType, entity.OptionsManyFieldType:
-			res[finalIdentifier] = "filtering.TypeString" // fix this
+			entityRes[finalIdentifier] = fmt.Sprintf("filtering.TypeEnum(pb.%s(0).Type())", f.ProtoType)
 		case entity.JSONFieldType:
-
 			nestedEntities := dependantEntities[e.Identifier]
-			var nestedEntity *ProtoEntityTemplate
+			var nestedEntity ProtoEntityTemplate
 			for _, ne := range nestedEntities {
 				if ne.Identifier == f.Identifier {
-					nestedEntity = &ne
+					nestedEntity = ne
 				}
 			}
-			if nestedEntity != nil {
-				parentPrefix := fmt.Sprintf("%s.", f.Identifier)
-				nestedDeclarations := getEntityDeclarations(*nestedEntity, dependantEntities, &parentPrefix)
-				for ndi, nd := range nestedDeclarations {
-					res[ndi] = nd
-				}
+
+			parentPrefix := fmt.Sprintf("%s.", f.Identifier)
+			nestedDeclarations := getEntityDeclarations(nestedEntity, dependantEntities, &parentPrefix)
+			nestedRes := make(map[string]string)
+			for ndi, nd := range nestedDeclarations[nestedEntity.Identifier] {
+				nestedRes[ndi] = nd
 			}
+			finalRes[f.Identifier] = nestedRes
 		}
 	}
-	fmt.Printf("res: %v\n", res)
-	return res
+
+	finalRes[e.Identifier] = entityRes
+	return finalRes
 }

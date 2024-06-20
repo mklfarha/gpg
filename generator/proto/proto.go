@@ -22,7 +22,8 @@ type ProtoEntityTemplate struct {
 	Search            bool
 	Enums             map[string]ProtoEnumTemplate
 	Imports           map[string]interface{}
-	Declarations      map[string]string
+	DeclarationKeys   map[string][]string
+	Declarations      map[string]map[string]string
 }
 
 type ProtoEnumTemplate struct {

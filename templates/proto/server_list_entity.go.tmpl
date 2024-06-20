@@ -80,13 +80,14 @@ func validatePageSize(request *pb.List{{.NamePlural}}Request) error {
 	}
 	return nil
 }
-
+{{$declarations := .Declarations}}
 func entityDeclarations() *filtering.Declarations{
     declarations, err := filtering.NewDeclarations(
 		filtering.DeclareStandardFunctions(),
-        {{range $name,$type := .Declarations}}
-        filtering.DeclareIdent("{{$name}}", {{$type}}),
-        {{end}}
+        {{range $entityIdentifier, $keys := .DeclarationKeys}}
+		//{{$entityIdentifier}}{{range $name := $keys}}
+        filtering.DeclareIdent("{{$name}}", {{ index (index $declarations $entityIdentifier) $name}}),{{end}}
+		{{end}}
     )
     if err != nil {
         fmt.Printf("error creating declarions:%v", err)
