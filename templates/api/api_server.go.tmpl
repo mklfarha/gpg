@@ -33,7 +33,7 @@ func (app *application) serverHandlerFunc() http.HandlerFunc {
 		
 		{{ if eq .Protocol "graphql" }}
 		app.server.ServeHTTP(w, r)
-		{{ end }}
+		{{ end }}		
 	})
 
 }
