@@ -30,6 +30,7 @@ func StringFieldTemplate(f entity.Field, e entity.Entity) Template {
 		Identifier:                 f.Identifier,
 		Name:                       helpers.ToCamelCase(f.Identifier),
 		Type:                       "string",
+		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.StringFieldType,
 		IsPrimary:                  f.StorageConfig.PrimaryKey,
 		Required:                   f.Required,

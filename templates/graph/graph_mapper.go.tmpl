@@ -63,6 +63,7 @@ func Map{{$entity.GraphGenType}}(items []{{$entity.ParentIdentifier}}.{{$entityN
     }
     return res
 }
+
 func Map{{$entity.GraphGenType}}Input(items []{{if ne $entity.Required true}}*{{end}}model.{{$entity.GraphGenType}}Input) []{{$entity.ParentIdentifier}}.{{$entityName}} {
     {{if ne $entity.Required true}}
     if items == nil {
@@ -73,7 +74,10 @@ func Map{{$entity.GraphGenType}}Input(items []{{if ne $entity.Required true}}*{{
     for _, item := range items {
         i := item
         res = append(res, {{$entity.ParentIdentifier}}.{{$entityName}}{ {{range $field := $entity.OutFields}}
-        {{$field.Name}}: {{$field.GraphGenFromMapper}},{{end}}
+       {{if eq $field.Required true}}
+        {{$field.Name}}: {{$field.GraphGenFromMapper}},{{else}}
+        {{$field.Name}}: {{$field.GraphGenFromMapperOptional}},{{end}}
+        {{end}}
         })
     }
     return res     
@@ -84,21 +88,43 @@ func Map{{$entity.GraphGenType}}(i {{$entity.ParentIdentifier}}.{{$entityName}})
         {{$field.GraphModelName}}: {{$field.GraphGenToMapper}},{{end}}           
     }
 }
+
 func Map{{$entity.GraphGenType}}Input(i {{if ne $entity.Required true}}*{{end}}model.{{$entity.GraphGenType}}Input) {{$entity.ParentIdentifier}}.{{$entityName}} {
     {{if ne $entity.Required true}}
     if i == nil {
         return {{$entity.ParentIdentifier}}.{{$entityName}}{}
     }
     {{end}}
-    return {{$entity.ParentIdentifier}}.{{$entityName}}{ {{range $field := $entity.OutFields}}
+    return {{$entity.ParentIdentifier}}.{{$entityName}}{ {{range $field := $entity.InFields}}
         {{if eq $field.Required true}}
-        {{$field.Name}}: {{$field.GraphGenFromMapper}},
-        {{else}}
-        {{$field.Name}}: {{$field.GraphGenFromMapperOptional}},
-        {{end}}{{end}}
+        {{$field.Name}}: {{$field.GraphGenFromMapper}},{{else}}
+        {{$field.Name}}: {{$field.GraphGenFromMapperOptional}},{{end}}
+        {{end}}
     }
 }
 {{end}}
+{{end}}
+
+// enums many 
+{{range $enum := .Enums}}{{if eq $enum.EnumMany true}}
+func Map{{$enum.Type}}ToModel(in []{{$enum.EntityIdentifier}}.{{$enum.Type}}) []{{if eq $enum.Required false}}*{{end}}string {
+    res := []{{if eq $enum.Required false}}*{{end}}string{}
+    for _, i := range in {
+        {{if eq $enum.Required true}}
+        res = append(res, i.String()){{else}}
+        res = append(res, i.StringPtr()){{end}}
+    }
+    return res
+}
+func Map{{$enum.Type}}FromModel(in []{{if eq $enum.Required false}}*{{end}}string) []{{$enum.EntityIdentifier}}.{{$enum.Type}}{
+    res := []{{$enum.EntityIdentifier}}.{{$enum.Type}}{}
+    for _, i := range in {
+        {{if eq $enum.Required true}}
+        res = append(res, {{$enum.EntityIdentifier}}.{{$enum.Type}}FromString(i)){{else}}
+        res = append(res, {{$enum.EntityIdentifier}}.{{$enum.Type}}FromPointerString(i)){{end}}
+    }
+    return res
+}{{end}}
 {{end}}
 
 func ParseTime(in string) time.Time {
@@ -189,7 +215,6 @@ func UuidFromPointerString(i *string) uuid.UUID {
     }    
     return uuid.FromStringOrNil(*i)
 }
-
 
 func BoolFromPointer(i *bool) bool {
     if i == nil {

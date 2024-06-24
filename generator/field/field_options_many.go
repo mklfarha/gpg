@@ -11,21 +11,22 @@ import (
 
 func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, prefix *string) Template {
 	name := f.Identifier
+	pl := pluralize.NewClient()
 	if prefix != nil {
-		name = fmt.Sprintf("%s_%s", *prefix, f.Identifier)
+		name = fmt.Sprintf("%s_%s", pl.Singular(*prefix), f.Identifier)
 	}
 	graphRequired := ""
 	if f.Required {
 		graphRequired = "!"
 	}
 
-	pl := pluralize.NewClient()
 	protoType := helpers.ToCamelCase(fmt.Sprintf("%s_%s", e.Identifier, pl.Singular(f.Identifier)))
 
 	return Template{
 		Identifier:          f.Identifier,
 		Name:                helpers.ToCamelCase(f.Identifier),
 		Type:                pl.Singular(helpers.ToCamelCase(name)),
+		EntityIdentifier:    e.Identifier,
 		InternalType:        entity.OptionsManyFieldType,
 		IsPrimary:           f.StorageConfig.PrimaryKey,
 		Required:            f.Required,
@@ -39,12 +40,12 @@ func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, prefix *string) T
 		EnumMany:            true,
 		GraphName:           f.Identifier,
 		GraphModelName:      helpers.ToCamelCase(f.Identifier),
-		GraphInType:         fmt.Sprintf("[String]%s", graphRequired),
+		GraphInType:         fmt.Sprintf("[String%s]%s", graphRequired, graphRequired),
 		GraphInTypeOptional: "[String]",
-		GraphOutType:        fmt.Sprintf("[String]%s", graphRequired),
+		GraphOutType:        fmt.Sprintf("[String%s]%s", graphRequired, graphRequired),
 		GraphGenType:        "[]string",
-		GraphGenToMapper:    "[]int{}",
-		GraphGenFromMapper:  "[]int{}",
+		GraphGenToMapper:    fmt.Sprintf("Map%sToModel(i.%s)", pl.Singular(helpers.ToCamelCase(name)), helpers.ToCamelCase(f.Identifier)),
+		GraphGenFromMapper:  fmt.Sprintf("Map%sFromModel(i.%s)", pl.Singular(helpers.ToCamelCase(name)), helpers.ToCamelCase(f.Identifier)),
 		ProtoType:           protoType,
 		ProtoName:           helpers.ToSnakeCase(f.Identifier),
 		ProtoEnumOptions:    helpers.ProtoEnumOptions(protoType, f.OptionValues),

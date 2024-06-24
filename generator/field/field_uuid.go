@@ -43,6 +43,7 @@ func UUIDFieldTemplate(f entity.Field, e entity.Entity) Template {
 		Identifier:                 f.Identifier,
 		Name:                       helpers.ToCamelCase(f.Identifier),
 		Type:                       "uuid.UUID",
+		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.UUIDFieldType,
 		IsPrimary:                  f.StorageConfig.PrimaryKey,
 		Required:                   f.Required,

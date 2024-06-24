@@ -13,14 +13,18 @@ func BooleanFieldTemplate(f entity.Field, e entity.Entity) Template {
 	if f.Required {
 		graphRequired = "!"
 	}
-	graphGenToMapper := fmt.Sprintf("i.%s", helpers.ToCamelCase(f.Identifier))
+	graphGenToMapper := fmt.Sprintf("&i.%s", helpers.ToCamelCase(f.Identifier))
+	if f.Required {
+		graphGenToMapper = fmt.Sprintf("i.%s", helpers.ToCamelCase(f.Identifier))
+	}
 	graphGenFromMapper := fmt.Sprintf("i.%s", helpers.ToCamelCase(f.Identifier))
-	GraphGenFromMapperOptional := fmt.Sprintf("BoolFromPointer(i.%s)", helpers.ToCamelCase(f.Identifier))
+	graphGenFromMapperOptional := fmt.Sprintf("BoolFromPointer(i.%s)", helpers.ToCamelCase(f.Identifier))
 
 	return Template{
 		Identifier:                 f.Identifier,
 		Name:                       helpers.ToCamelCase(f.Identifier),
 		Type:                       "bool",
+		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.BooleanFieldType,
 		IsPrimary:                  f.StorageConfig.PrimaryKey,
 		Required:                   f.Required,
@@ -41,7 +45,7 @@ func BooleanFieldTemplate(f entity.Field, e entity.Entity) Template {
 		GraphGenToMapper:           graphGenToMapper,
 		GraphGenFromMapperParam:    f.Identifier,
 		GraphGenFromMapper:         graphGenFromMapper,
-		GraphGenFromMapperOptional: GraphGenFromMapperOptional,
+		GraphGenFromMapperOptional: graphGenFromMapperOptional,
 		ProtoType:                  "bool",
 		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
 		ProtoToMapper:              fmt.Sprintf("e.%s", helpers.ToCamelCase(f.Identifier)),

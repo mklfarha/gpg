@@ -6,6 +6,7 @@ type Template struct {
 	Identifier                 string
 	Name                       string
 	Type                       string
+	EntityIdentifier           string
 	InternalType               entity.FieldType
 	IsPrimary                  bool
 	Required                   bool

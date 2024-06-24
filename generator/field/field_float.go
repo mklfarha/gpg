@@ -29,6 +29,7 @@ func FloatFieldTemplate(f entity.Field, e entity.Entity) Template {
 		Identifier:                 f.Identifier,
 		Name:                       helpers.ToCamelCase(f.Identifier),
 		Type:                       "float64",
+		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.FloatFieldType,
 		IsPrimary:                  f.StorageConfig.PrimaryKey,
 		Required:                   f.Required,

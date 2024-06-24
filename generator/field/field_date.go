@@ -31,6 +31,7 @@ func DateFieldTemplate(f entity.Field, e entity.Entity) Template {
 		Identifier:                 f.Identifier,
 		Name:                       helpers.ToCamelCase(f.Identifier),
 		Type:                       "time.Time",
+		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.DateFieldType,
 		IsPrimary:                  f.StorageConfig.PrimaryKey,
 		Required:                   f.Required,

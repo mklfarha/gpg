@@ -24,6 +24,7 @@ func IntFieldTemplate(f entity.Field, e entity.Entity) Template {
 		Identifier:                 f.Identifier,
 		Name:                       helpers.ToCamelCase(f.Identifier),
 		Type:                       "int32",
+		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.IntFieldType,
 		IsPrimary:                  f.StorageConfig.PrimaryKey,
 		Required:                   f.Required,

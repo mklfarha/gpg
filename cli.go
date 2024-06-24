@@ -24,6 +24,7 @@ import (
 )
 
 const (
+	API_PROTOCOL_ALL      = "all"
 	API_PROTOCOL_GRAPHQL  = "graphql"
 	API_PROTOCOL_PROTOBUF = "protobuf"
 
@@ -39,7 +40,7 @@ func main() {
 	app.Flags = []cli.Flag{
 		&cli.StringFlag{
 			Name:        FLAG_PROTOCOL,
-			Value:       "graphql",
+			Value:       "all",
 			Usage:       "API protocol to generate",
 			Destination: &protocol,
 		},
@@ -153,6 +154,9 @@ func generateAPI(targetDir string, protocol string, project entity.Project) {
 		fmt.Printf("ERROR: Error generating core modules: %v", err)
 	}
 	switch protocol {
+	case API_PROTOCOL_ALL:
+		graph.GenerateGraph(ctx, targetDir, project)
+		proto.Generate(ctx, targetDir, project)
 	case API_PROTOCOL_GRAPHQL:
 		graph.GenerateGraph(ctx, targetDir, project)
 	case API_PROTOCOL_PROTOBUF:

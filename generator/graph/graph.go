@@ -37,6 +37,7 @@ type GraphQueriesTemplate struct {
 	ProjectName  string
 	Entities     []GraphEntityTemplate
 	JSONEntities []GraphEntityTemplate
+	Enums        []field.Template
 }
 
 func GenerateGraph(ctx context.Context, rootPath string, project entity.Project) error {
@@ -54,6 +55,7 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 
 	entityTemplates := []GraphEntityTemplate{}
 	jsonEntityTemplates := []GraphEntityTemplate{}
+	enumTemplates := []field.Template{}
 	fmt.Printf("----[GPG][GraphQL] Generating gqls\n")
 	for _, e := range project.Entities {
 		inFields := []field.Template{}
@@ -90,7 +92,17 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 						DisableGoFormat: true,
 					})
 					jsonEntityTemplates = append(jsonEntityTemplates, jsonEntityTemplate)
+					for _, fn := range fields {
+						if fn.InternalType == entity.OptionsSingleFieldType || fn.InternalType == entity.OptionsManyFieldType {
+							enumTemplates = append(enumTemplates, fn)
+						}
+
+					}
 				}
+			}
+
+			if f.Type == entity.OptionsSingleFieldType || f.Type == entity.OptionsManyFieldType {
+				enumTemplates = append(enumTemplates, fieldTemplate)
 			}
 
 			if f.StorageConfig.Search {
@@ -169,6 +181,7 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 			ProjectName:  project.Identifier,
 			Entities:     entityTemplates,
 			JSONEntities: jsonEntityTemplates,
+			Enums:        enumTemplates,
 		},
 	})
 
