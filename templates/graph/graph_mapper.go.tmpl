@@ -216,6 +216,10 @@ func UuidFromPointerString(i *string) uuid.UUID {
     return uuid.FromStringOrNil(*i)
 }
 
+func UuidFromStringOrNil(i string) uuid.UUID{
+    return uuid.FromStringOrNil(i)
+}
+
 func BoolFromPointer(i *bool) bool {
     if i == nil {
         return false

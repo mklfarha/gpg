@@ -35,6 +35,7 @@ type GraphEntityTemplate struct {
 
 type GraphQueriesTemplate struct {
 	ProjectName  string
+	Project      entity.Project
 	Entities     []GraphEntityTemplate
 	JSONEntities []GraphEntityTemplate
 	Enums        []field.Template
@@ -191,6 +192,7 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 		TemplateName: path.Join("graph", "graph_queries_resolver"),
 		Data: GraphQueriesTemplate{
 			ProjectName: project.Identifier,
+			Project:     project,
 			Entities:    entityTemplates,
 		},
 		Funcs: template.FuncMap{
@@ -199,7 +201,7 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 				return inputFields
 			},
 		},
-		DisableGoFormat: true,
+		DisableGoFormat: false,
 	})
 
 	fmt.Printf("----[GPG][GraphQL] Override mutations resolvers\n")

@@ -3,15 +3,17 @@ package graph
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
 {{$projectName := .ProjectName}}
+{{$disableSelectCombinations := .Project.DisableSelectCombinations}}
 import (
 	"context"
 	"{{.ProjectName}}/graph/generated"
 	"{{.ProjectName}}/graph/model"
     {{range $entity := .Entities}}
     {{$entity.Identifier}} "{{$projectName}}/core/module/{{$entity.Identifier}}/types"
+    {{if eq $disableSelectCombinations false}}
     {{$entity.Identifier}}entity "{{$projectName}}/core/entity/{{$entity.Identifier}}"
-    {{end}}	 
-    "github.com/gofrs/uuid"  
+    {{end}}
+    {{end}}	     
     "{{.ProjectName}}/graph/mapper" 	
 )
 {{range $entity := .Entities}}

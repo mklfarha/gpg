@@ -28,14 +28,16 @@ const (
 	API_PROTOCOL_GRAPHQL  = "graphql"
 	API_PROTOCOL_PROTOBUF = "protobuf"
 
-	FLAG_PROTOCOL = "protocol"
+	FLAG_PROTOCOL            = "protocol"
+	FLAG_SELECT_COMBINATIONS = "enable_select_combinations"
 )
+
+var protocol string
+var enableSelectCombinations bool
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "[GPG] Go Project Generator"
-
-	var protocol string
 
 	app.Flags = []cli.Flag{
 		&cli.StringFlag{
@@ -43,6 +45,11 @@ func main() {
 			Value:       "all",
 			Usage:       "API protocol to generate",
 			Destination: &protocol,
+		},
+		&cli.BoolFlag{
+			Name:        FLAG_SELECT_COMBINATIONS,
+			Usage:       "Enable the generation of all select combination methods",
+			Destination: &enableSelectCombinations,
 		},
 	}
 
@@ -57,7 +64,7 @@ func main() {
 				if err != nil {
 					panic(err)
 				}
-				generateAPI(targetDir, protocol, project)
+				generateAPI(targetDir, project)
 				generateWeb(targetDir, project)
 				return nil
 			},
@@ -87,7 +94,7 @@ func main() {
 				if err != nil {
 					panic(err)
 				}
-				generateAPI(targetDir, protocol, project)
+				generateAPI(targetDir, project)
 				return nil
 			},
 		},
@@ -137,14 +144,19 @@ func loadProject(configPath string) (entity.Project, error) {
 	return project, nil
 }
 
-func generateAPI(targetDir string, protocol string, project entity.Project) {
+func generateAPI(targetDir string, project entity.Project) {
 	ctx := context.Background()
 	switch protocol {
+	case API_PROTOCOL_ALL:
+		project.Protocol = entity.ProjectProtocolAll
 	case API_PROTOCOL_GRAPHQL:
 		project.Protocol = entity.ProjectProtocolGraphQL
 	case API_PROTOCOL_PROTOBUF:
 		project.Protocol = entity.ProjectProtocolProtobuf
 	}
+
+	project.DisableSelectCombinations = !enableSelectCombinations
+
 	generator.GenerateProjectDirectories(ctx, targetDir, project)
 	generator.GenerateConfig(ctx, targetDir, project)
 	core.GenerateCoreEntities(ctx, targetDir, project)

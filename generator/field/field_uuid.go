@@ -19,9 +19,9 @@ func UUIDFieldTemplate(f entity.Field, e entity.Entity) Template {
 	graphModelName = strings.ReplaceAll(graphModelName, "Uuid", "UUID")
 
 	graphGenToMapper := fmt.Sprintf("i.%s.String()", helpers.ToCamelCase(f.Identifier))
-	graphGenFromMapper := fmt.Sprintf("uuid.FromStringOrNil(i.%s)", graphModelName)
+	graphGenFromMapper := fmt.Sprintf("UuidFromStringOrNil(i.%s)", graphModelName)
 	graphGenFromMapperOptional := fmt.Sprintf("UuidFromPointerString(i.%s)", graphModelName)
-	graphGenFromMapperParam := fmt.Sprintf("uuid.FromStringOrNil(%s)", f.Identifier)
+	graphGenFromMapperParam := fmt.Sprintf("mapper.UuidFromStringOrNil(%s)", f.Identifier)
 	graphGenType := "string"
 
 	if !f.Required {

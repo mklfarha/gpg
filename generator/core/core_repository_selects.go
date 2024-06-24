@@ -27,7 +27,7 @@ func ResolveSelectStatements(project entity.Project, e entity.Entity) []RepoSche
 		SortSupported: false,
 	})
 
-	if project.Protocol == entity.ProjectProtocolProtobuf {
+	if project.Protocol == entity.ProjectProtocolProtobuf || project.DisableSelectCombinations {
 		return selects
 	}
 
