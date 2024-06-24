@@ -1,17 +1,18 @@
 package main
-
+{{$enableProto := or (eq .Protocol "protobuf") (eq .Protocol "all")}}
+{{$enableGraph := or (eq .Protocol "graphql") (eq .Protocol "all")}}
 import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	{{.Identifier}}config "{{.Identifier}}/config"
 	"{{.Identifier}}/core"
-	{{ if eq .Protocol "protobuf"}}
+	{{ if eq $enableProto true}}
 	pbserver "{{.Identifier}}/idl/server"		
 	{{end}}
 	{{ if eq .Auth.Enabled true}}
 	"{{.Identifier}}/auth"
     {{ end }}
-	{{if eq .Protocol "graphql"}}
+	{{if eq $enableGraph true}}
 	"{{.Identifier}}/graph"
 	{{end}}
 )
@@ -23,12 +24,10 @@ func main() {
 			{{.Identifier}}config.New,
 			core.New,	
 			{{if eq .Auth.Enabled true}}auth.New,{{end}}	
-			{{if eq .Protocol "graphql"}}graph.New,{{end}}
+			{{if eq $enableGraph true}}graph.New,{{end}}
 		),				
 		fx.Invoke(httpServer),
-		{{ if eq .Protocol "protobuf" }}
-		fx.Invoke(pbserver.New),
-		{{end}}
+		{{ if eq $enableProto true}}fx.Invoke(pbserver.New),{{end}}
 	).Run()
 }
 
