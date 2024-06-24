@@ -49,6 +49,12 @@ func GenerateAuth(ctx context.Context, rootPath string, project entity.Project) 
 			TemplateName: path.Join("auth", "auth_validate"),
 			Data:         project,
 		})
+
+		GenerateFile(ctx, FileRequest{
+			OutputFile:   path.Join(authDir, "basic_auth.go"),
+			TemplateName: path.Join("auth", "auth_basic"),
+			Data:         project,
+		})
 	} else {
 		fmt.Printf("--[GPG] NOT Generating auth - not enabled or user entity not found\n")
 	}

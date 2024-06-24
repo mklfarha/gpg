@@ -1,7 +1,6 @@
 package core
 
-import (
-	"context"
+import (	
 	"database/sql"
 	"errors"
 	"fmt"
@@ -24,7 +23,7 @@ type Implementation struct {
     {{end}}	
 }
 
-func New(ctx context.Context, provider config.Provider) (*Implementation, error) {
+func New(provider config.Provider) (*Implementation, error) {
 
 	var dbs {{.Identifier}}config.DBs
 	if err := provider.Get("db").Populate(&dbs); err != nil {

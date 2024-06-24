@@ -43,6 +43,8 @@ func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, prefix *string) T
 		GraphInTypeOptional: "[String]",
 		GraphOutType:        fmt.Sprintf("[String]%s", graphRequired),
 		GraphGenType:        "[]string",
+		GraphGenToMapper:    "[]int{}",
+		GraphGenFromMapper:  "[]int{}",
 		ProtoType:           protoType,
 		ProtoName:           helpers.ToSnakeCase(f.Identifier),
 		ProtoEnumOptions:    helpers.ProtoEnumOptions(protoType, f.OptionValues),

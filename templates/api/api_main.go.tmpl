@@ -1,68 +1,34 @@
 package main
 
 import (
-	"log"
-	"net/http"	
-	{{ if eq .Protocol "graphql" }}
-	"github.com/99designs/gqlgen/graphql/playground"
-	{{end}}
-	"fmt"
-	"net"
+	"go.uber.org/fx"
 	"go.uber.org/zap"
 	{{.Identifier}}config "{{.Identifier}}/config"
+	"{{.Identifier}}/core"
+	{{ if eq .Protocol "protobuf"}}
+	pbserver "{{.Identifier}}/idl/server"		
+	{{end}}
+	{{ if eq .Auth.Enabled true}}
+	"{{.Identifier}}/auth"
+    {{ end }}
+	{{if eq .Protocol "graphql"}}
+	"{{.Identifier}}/graph"
+	{{end}}
 )
 
 func main() {
-	
-
-	app, err := New()
-	if err != nil {
-		panic(err)
-	}
-
-	ports := {{.Identifier}}config.Ports{}
-	err = app.config.Get("ports").Populate(&ports)
-	if err != nil {
-		panic(err)
-	}
-	httpPort := ports.HTTP
-	{{ if eq .Protocol "protobuf" }}
-	grpcPort := ports.GRPC
-	// proto server
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", grpcPort))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", zap.Error(err))
-	}
-	go app.server.Serve(lis)
-	{{end}}
-
-	{{ if eq .Auth.Enabled true }}
-	// auth
-	http.HandleFunc("/signin", app.auth.SignIn)
-	http.HandleFunc("/validate", app.auth.Validate)
-	http.HandleFunc("/refresh", app.auth.Refresh)
-	{{ end }}
-
-	{{ if eq .Protocol "graphql" }}
-	// graphql
-	http.Handle("/gplay", app.basicAuth(playground.Handler("GraphQL playground", "/query")))	
-	http.Handle("/query", app.serverHandlerFunc())
-	{{ end }}
-
-	// http upload
-	http.Handle("/upload", app.serverHandlerUploadFunc())	
-
-	log.Printf(`
-		Serving HTTP: %s			
-			{{if eq .Auth.Enabled true}}/signin
-			/refresh{{end}}
-			{{if eq .Protocol "graphql"}}/gplay
-			/query{{end}}
-			/upload
-	{{ if eq .Protocol "protobuf" }}
-		Serving GRPC: %s
-	{{end}}
-
-			`, httpPort {{ if eq .Protocol "protobuf" }}, grpcPort {{end}})
-	log.Fatal(http.ListenAndServe(":"+httpPort, nil))
+	fx.New(
+		fx.Provide(
+			zap.NewProduction,
+			{{.Identifier}}config.New,
+			core.New,	
+			{{if eq .Auth.Enabled true}}auth.New,{{end}}	
+			{{if eq .Protocol "graphql"}}graph.New,{{end}}
+		),				
+		fx.Invoke(httpServer),
+		{{ if eq .Protocol "protobuf" }}
+		fx.Invoke(pbserver.New),
+		{{end}}
+	).Run()
 }
+

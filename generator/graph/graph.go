@@ -8,6 +8,7 @@ import (
 	"path"
 	"text/template"
 
+	pluralize "github.com/gertd/go-pluralize"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator"
 	"github.com/maykel/gpg/generator/core"
@@ -49,6 +50,8 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 		DisableGoFormat: true,
 	})
 
+	pl := pluralize.NewClient()
+
 	entityTemplates := []GraphEntityTemplate{}
 	jsonEntityTemplates := []GraphEntityTemplate{}
 	fmt.Printf("----[GPG][GraphQL] Generating gqls\n")
@@ -70,11 +73,11 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 					fields, _ := field.ResolveFieldsAndImports(f.JSONConfig.Fields, e, &f.Identifier)
 					jsonEntityTemplate := GraphEntityTemplate{
 						Identifier:       f.Identifier,
-						EntityName:       helpers.ToCamelCase(f.Identifier),
+						EntityName:       pl.Singular(helpers.ToCamelCase(f.Identifier)),
 						JSON:             true,
 						JSONMany:         f.JSONConfig.Type == entity.ManyJSONConfigType,
 						Required:         f.Required,
-						GraphGenType:     fmt.Sprintf("%s%s", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier)),
+						GraphGenType:     fmt.Sprintf("%s%s", helpers.ToCamelCase(e.Identifier), pl.Singular(helpers.ToCamelCase(f.Identifier))),
 						ParentIdentifier: e.Identifier,
 						ParentEntityName: helpers.ToCamelCase(e.Identifier),
 						InFields:         fields,
@@ -194,6 +197,13 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 			ProjectName: project.Identifier,
 			Entities:    entityTemplates,
 		},
+	})
+
+	fmt.Printf("----[GPG][GraphQL] Server\n")
+	generator.GenerateFile(ctx, generator.FileRequest{
+		OutputFile:   path.Join(graphDir, "server.go"),
+		TemplateName: path.Join("graph", "graph_server"),
+		Data:         project,
 	})
 
 	return nil

@@ -10,9 +10,10 @@ import (
 )
 
 func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, prefix *string) Template {
+	pl := pluralize.NewClient()
 	name := f.Identifier
 	if prefix != nil {
-		name = fmt.Sprintf("%s_%s", *prefix, f.Identifier)
+		name = fmt.Sprintf("%s_%s", pl.Singular(*prefix), f.Identifier)
 	}
 	graphRequired := ""
 	graphGenToMapper := fmt.Sprintf("i.%s.StringPtr()", helpers.ToCamelCase(f.Identifier))
@@ -20,7 +21,7 @@ func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, prefix *string)
 		graphRequired = "!"
 		graphGenToMapper = fmt.Sprintf("i.%s.String()", helpers.ToCamelCase(f.Identifier))
 	}
-	pl := pluralize.NewClient()
+
 	protoType := helpers.ToCamelCase(fmt.Sprintf("%s_%s", e.Identifier, pl.Singular(f.Identifier)))
 	return Template{
 		Identifier:                 f.Identifier,
@@ -46,8 +47,8 @@ func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, prefix *string)
 		GraphGenType:               "string",
 		GraphGenToMapper:           graphGenToMapper,
 		GraphGenFromMapperParam:    fmt.Sprintf("%sentity.%sFromString(%s)", e.Identifier, helpers.ToCamelCase(f.Identifier), f.Identifier),
-		GraphGenFromMapper:         fmt.Sprintf("%s.%sFromString(i.%s)", e.Identifier, helpers.ToCamelCase(name), helpers.ToCamelCase(f.Identifier)),
-		GraphGenFromMapperOptional: fmt.Sprintf("%s.%sFromPointerString(i.%s)", e.Identifier, helpers.ToCamelCase(name), helpers.ToCamelCase(f.Identifier)),
+		GraphGenFromMapper:         fmt.Sprintf("%s.%sFromString(i.%s)", e.Identifier, pl.Singular(helpers.ToCamelCase(name)), helpers.ToCamelCase(f.Identifier)),
+		GraphGenFromMapperOptional: fmt.Sprintf("%s.%sFromPointerString(i.%s)", e.Identifier, pl.Singular(helpers.ToCamelCase(name)), helpers.ToCamelCase(f.Identifier)),
 		ProtoType:                  protoType,
 		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
 		ProtoEnumOptions:           helpers.ProtoEnumOptions(protoType, f.OptionValues),

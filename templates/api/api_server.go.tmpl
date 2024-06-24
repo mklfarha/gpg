@@ -1,39 +1,28 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
+	"log"			
+	"go.uber.org/config"
 )
 
-func (app *application) serverHandlerFunc() http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func httpServer(config config.Provider){
+	// http port from config 
+	httpPort := config.Get("ports.http").String()
 
-		origin := r.Header.Get("origin")
-		method := r.Method
-		fmt.Printf("method: %v\n", method)
-		w.Header().Set("Access-Control-Allow-Origin", origin)
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-		w.Header().Set("Accept", "application/json, multipart/mixed")
-		w.Header().Set("Content-Type", "application/json")
-		if method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
+	// http upload - move to seperate module
+	http.Handle("/upload", serverHandlerUploadFunc())	
 
-		{{ if eq .Auth.Enabled true }}
-		claims, err := app.auth.ClaimsFromHeader(w, r)
-		if err != nil {
-			fmt.Printf("auth err: %v\n", err)
-			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		}		
-		fmt.Printf("claims: %v\n", claims)
-		{{ end }}
-		
-		{{ if eq .Protocol "graphql" }}
-		app.server.ServeHTTP(w, r)
-		{{ end }}		
-	})
+	go http.ListenAndServe(":"+httpPort, nil)
 
+	log.Printf(`
+		Serving HTTP: %s			
+			{{if eq .Auth.Enabled true}}/signin
+			/refresh{{end}}
+			{{if eq .Protocol "graphql"}}/gplay
+			/query{{end}}
+			/upload	
+			`, httpPort)
 }
+
+

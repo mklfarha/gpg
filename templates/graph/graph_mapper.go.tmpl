@@ -26,21 +26,26 @@ func Map{{$entity.EntityName}}(in []{{$entity.Identifier}}.{{$entity.EntityName}
 }
 
 func Map{{$entity.EntityName}}Upsert(i model.{{$entity.EntityName}}Input) {{$entity.Identifier}}module.UpsertRequest {
-    return {{$entity.Identifier}}module.UpsertRequest{ {{range $field := $entity.OutFields}}
-        {{if eq $field.Required true}}
-        {{$field.Name}}: {{$field.GraphGenFromMapper}},{{else}}
-        {{$field.Name}}: {{$field.GraphGenFromMapperOptional}},{{end}}{{end}}
-
+    return {{$entity.Identifier}}module.UpsertRequest{ 
+        {{$entity.EntityName}}:{{$entity.Identifier}}.{{$entity.EntityName}}{
+        {{range $field := $entity.OutFields}}
+            {{if eq $field.Required true}}
+            {{$field.Name}}: {{$field.GraphGenFromMapper}},{{else}}
+            {{$field.Name}}: {{$field.GraphGenFromMapperOptional}},{{end}}
+        {{end}}
+        },
     }
 }
 
 func Map{{$entity.EntityName}}UpsertPartial(i model.{{$entity.EntityName}}PartialInput) {{$entity.Identifier}}module.UpsertRequest {
-    return {{$entity.Identifier}}module.UpsertRequest{ {{range $field := $entity.OutFields}}
-        {{if eq $field.IsPrimary true}}
-        {{$field.Name}}: {{$field.GraphGenFromMapper}},
-        {{else}}
-        {{$field.Name}}: {{$field.GraphGenFromMapperOptional}},
-        {{end}}{{end}}
+    return {{$entity.Identifier}}module.UpsertRequest{ 
+        {{$entity.EntityName}}:{{$entity.Identifier}}.{{$entity.EntityName}}{
+        {{range $field := $entity.OutFields}}
+            {{if eq $field.IsPrimary true}}
+            {{$field.Name}}: {{$field.GraphGenFromMapper}},{{else}}
+            {{$field.Name}}: {{$field.GraphGenFromMapperOptional}},{{end}}
+            {{end}}
+        },
     }
 }
 {{end}}

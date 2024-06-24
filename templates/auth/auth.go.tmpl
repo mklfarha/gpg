@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"{{.Identifier}}/core"
+	"net/http"
 )
 
 var jwtKey = []byte("{{.Auth.JWTKey}}")
@@ -27,8 +28,12 @@ type Implementation struct {
 }
 
 func New(ctx context.Context, c *core.Implementation) (Interface, error) {
-	return &Implementation{
+	i := Implementation{
 		core: c,
 	}, nil
 
+	http.HandleFunc("/signin", i.SignIn)
+	http.HandleFunc("/validate", i.Validate)
+	http.HandleFunc("/refresh", i.Refresh)
+	return &i
 }

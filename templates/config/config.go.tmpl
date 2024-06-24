@@ -7,11 +7,6 @@ import (
 	"go.uber.org/config"
 )
 
-type Ports struct{
-	HTTP string `yaml:"http"`
-	GRPC string `yaml:"grpc"`
-}
-
 type DBs []DB
 
 type DB struct {

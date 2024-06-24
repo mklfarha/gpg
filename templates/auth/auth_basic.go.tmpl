@@ -1,19 +1,20 @@
-package main
+package auth
 
 import (
 	"crypto/sha256"
 	"crypto/subtle"
 	"net/http"
+	"go.uber.org/config"
 )
 
-func (app *application) basicAuth(next http.HandlerFunc) http.HandlerFunc {
+func BasicAuth(config config.Provider, next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		username, password, ok := r.BasicAuth()
 		if ok {
 			usernameHash := sha256.Sum256([]byte(username))
 			passwordHash := sha256.Sum256([]byte(password))
-			expectedUsernameHash := sha256.Sum256([]byte(app.bac.username))
-			expectedPasswordHash := sha256.Sum256([]byte(app.bac.password))
+			expectedUsernameHash := sha256.Sum256([]byte(config.Get("auth.basic.username").String()))
+			expectedPasswordHash := sha256.Sum256([]byte(config.Get("auth.basic.password").String()))
 
 			usernameMatch := (subtle.ConstantTimeCompare(usernameHash[:], expectedUsernameHash[:]) == 1)
 			passwordMatch := (subtle.ConstantTimeCompare(passwordHash[:], expectedPasswordHash[:]) == 1)

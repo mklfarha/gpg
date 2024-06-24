@@ -44,7 +44,7 @@ func awsSession() (*session.Session, config.AWS) {
     return sess, awsConfig
 }
 
-func (app *application) serverHandlerUploadFunc() http.HandlerFunc {
+func serverHandlerUploadFunc() http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         origin := r.Header.Get("origin")
         origin = strings.ReplaceAll(origin, "api.", "admin.")

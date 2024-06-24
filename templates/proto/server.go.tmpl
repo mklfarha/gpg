@@ -1,15 +1,20 @@
 package server
 
 import (
+	"context"
+	"fmt"
+	"net"
 	"{{.Identifier}}/core"
 	pb "{{.Identifier}}/idl/gen"
 
+	"go.uber.org/config"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
+	
 )
 
 type server struct {
@@ -20,15 +25,46 @@ type server struct {
 type Params struct {
 	fx.In
 	Logger *zap.Logger
+	Lifecycle fx.Lifecycle
 	Core   *core.Implementation
+	Config config.Provider
 }
 
-func New(params Params) *grpc.Server {
+func New(params Params) *grpc.Server {	
+	log := params.Logger
 	s := grpc.NewServer()
-	grpc_health_v1.RegisterHealthServer(s, health.NewServer())
-	pb.Register{{.Name}}Server(s, &server{
-		Core: params.Core,
+	params.Lifecycle.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			// GRPC port from config
+			grpcPort := params.Config.Get("ports.grpc").String()
+
+			// proto server
+			lis, err := net.Listen("tcp", fmt.Sprintf(":%s", grpcPort))
+			if err != nil {
+				log.Error("failed to listen: %v", zap.Error(err))
+				return err
+			}
+						
+			// register grpc servers
+			grpc_health_v1.RegisterHealthServer(s, health.NewServer())
+			pb.Register{{.Name}}Server(s, &server{
+				Core: params.Core,
+			})
+			reflection.Register(s)
+
+			log.Info("GRPC Server listening at %v", zap.Any("addr", lis.Addr()))
+
+			go s.Serve(lis)
+
+			return nil
+
+		},
+		OnStop: func(ctx context.Context) error {
+			s.Stop()
+			return nil
+		},
 	})
-	reflection.Register(s)
+	
+	
 	return s
 }

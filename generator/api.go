@@ -16,18 +16,6 @@ func GenerateAPIModule(ctx context.Context, rootPath string, project entity.Proj
 	fmt.Printf("--[GPG] API Directory: %v\n", apiDir)
 
 	GenerateFile(ctx, FileRequest{
-		OutputFile:   path.Join(apiDir, "app.go"),
-		TemplateName: path.Join("api", "api_app"),
-		Data:         project,
-	})
-
-	GenerateFile(ctx, FileRequest{
-		OutputFile:   path.Join(apiDir, "basic_auth.go"),
-		TemplateName: path.Join("api", "api_basic_auth"),
-		Data:         project,
-	})
-
-	GenerateFile(ctx, FileRequest{
 		OutputFile:   path.Join(apiDir, "main.go"),
 		TemplateName: path.Join("api", "api_main"),
 		Data:         project,
