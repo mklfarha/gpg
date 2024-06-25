@@ -9,10 +9,8 @@ import (
 	"{{.ProjectName}}/graph/generated"
 	"{{.ProjectName}}/graph/model"
     {{range $entity := .Entities}}
-    {{$entity.Identifier}} "{{$projectName}}/core/module/{{$entity.Identifier}}/types"
-    {{if eq $disableSelectCombinations false}}
-    {{$entity.Identifier}}entity "{{$projectName}}/core/entity/{{$entity.Identifier}}"
-    {{end}}
+    {{$entity.Identifier}} "{{$projectName}}/core/module/{{$entity.Identifier}}/types"    
+    {{$entity.Identifier}}entity "{{$projectName}}/core/entity/{{$entity.Identifier}}"    
     {{end}}	     
     "{{.ProjectName}}/graph/mapper" 	
 )

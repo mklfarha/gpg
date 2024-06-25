@@ -27,10 +27,6 @@ func ResolveSelectStatements(project entity.Project, e entity.Entity) []RepoSche
 		SortSupported: false,
 	})
 
-	if project.Protocol == entity.ProjectProtocolProtobuf || project.DisableSelectCombinations {
-		return selects
-	}
-
 	indexes := []string{}
 	indexFields := map[string]entity.Field{}
 
@@ -94,6 +90,10 @@ func ResolveSelectStatements(project entity.Project, e entity.Entity) []RepoSche
 			TimeFields:    timeFields,
 			SortSupported: true,
 		})
+	}
+
+	if project.Protocol == entity.ProjectProtocolProtobuf || project.DisableSelectCombinations {
+		return selects
 	}
 
 	for _, indexID := range indexesIDs {

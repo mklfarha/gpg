@@ -28,7 +28,7 @@ func (m *module) Fetch{{.Select.Name}}(
             
     {{else}}
     if req.OrderBy == "" {
-        models, err := m.repository.Fetch{{.Select.Name}}(
+        models, err := m.repository.Queries.Fetch{{.Select.Name}}(
             ctx,
             {{.ProjectName}}db.Fetch{{.Select.Name}}Params{ {{range $field := .Select.Fields}}
                 {{$field.Field.Name}}: req.{{$field.Field.Name}}{{$field.Field.RepoToMapper}},{{end}}
@@ -77,7 +77,7 @@ func (m *module) Fetch{{.Select.Name}}(
         {{range $timeField := .Select.TimeFields}}
         case "{{$timeField.Identifier}}":
             if sort == "ASC" {
-                models, err := m.repository.Fetch{{$select.Name}}OrderedBy{{$timeField.Name}}ASC(
+                models, err := m.repository.Queries.Fetch{{$select.Name}}OrderedBy{{$timeField.Name}}ASC(
                     ctx,
                     {{$projectName}}db.Fetch{{$select.Name}}OrderedBy{{$timeField.Name}}ASCParams{ {{range $field := $select.Fields}}
                         {{$field.Field.Name}}: req.{{$field.Field.Name}}{{$field.Field.RepoToMapper}},{{end}}
@@ -92,7 +92,7 @@ func (m *module) Fetch{{.Select.Name}}(
                     Results: mapModelsToEntities(models),
                 }, nil
             } else {
-                models, err := m.repository.Fetch{{$select.Name}}OrderedBy{{$timeField.Name}}DESC(
+                models, err := m.repository.Queries.Fetch{{$select.Name}}OrderedBy{{$timeField.Name}}DESC(
                     ctx,
                     {{$projectName}}db.Fetch{{$select.Name}}OrderedBy{{$timeField.Name}}DESCParams{ {{range $field := $select.Fields}}
                         {{$field.Field.Name}}: req.{{$field.Field.Name}}{{$field.Field.RepoToMapper}},{{end}}
