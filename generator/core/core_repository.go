@@ -32,5 +32,33 @@ func GenerateCoreRepository(ctx context.Context, rootPath string, project entity
 	// ignoring error on purpose
 	executeSkeema(ctx, project, sqlDir)
 
+	// list
+	err = generator.GenerateFile(ctx, generator.FileRequest{
+		OutputFile:   path.Join(repoDir, "list.go"),
+		TemplateName: path.Join("core", "repo", "repo_list"),
+		Data: struct {
+			ProjectName string
+		}{
+			ProjectName: project.Identifier,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	// new function to return generated code module
+	err = generator.GenerateFile(ctx, generator.FileRequest{
+		OutputFile:   path.Join(repoDir, "repository.go"),
+		TemplateName: path.Join("core", "repo", "repository"),
+		Data: struct {
+			ProjectName string
+		}{
+			ProjectName: project.Identifier,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -28,6 +28,7 @@ func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, prefix *string) T
 		Type:                pl.Singular(helpers.ToCamelCase(name)),
 		EntityIdentifier:    e.Identifier,
 		InternalType:        entity.OptionsManyFieldType,
+		GenFieldType:        "MultiEnumFieldType",
 		IsPrimary:           f.StorageConfig.PrimaryKey,
 		Required:            f.Required,
 		Tags:                helpers.ResolveTags(f),

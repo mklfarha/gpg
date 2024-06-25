@@ -2,11 +2,18 @@ package {{.EntityIdentifier}}
 
 import (
 	"context"
+	"fmt"
+	entity "{{.ProjectIdentifier}}/core/entity/{{.EntityIdentifier}}"
 	"{{.ProjectIdentifier}}/core/module/{{.EntityIdentifier}}/types"
 )
 
 func (m *module) List(ctx context.Context,
 	request types.ListRequest,
 	opts ...Option) (types.ListResponse, error) {
+	query, err := m.repository.BuildListEntityQuery(ctx, request, entity.{{.EntityName}}{})
+	if err != nil {
+		return types.ListResponse{}, err
+	}
+	fmt.Printf("query: %s", query)
 	return types.ListResponse{}, nil
 }

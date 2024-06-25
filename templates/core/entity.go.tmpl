@@ -8,6 +8,7 @@ import (
     {{if eq .JSON true}}
     "fmt"
     {{end}}
+    "{{.ProjectName}}/core/entity/types"
 )
 
 type {{.EntityName}} struct { {{range $field := .Fields}}
@@ -19,6 +20,21 @@ func (e {{.EntityName}}) String() string {
     return string(res)
 }
 
+func (e {{.EntityName}}) EntityIdentifier() string {    
+    return "{{.Identifier}}"
+}
+
+func (e {{.EntityName}}) FieldIdentfierToTypeMap() map[string]types.FieldType {
+    res := make(map[string]types.FieldType)
+    {{range $field := .Fields}}
+    res["{{$field.Identifier}}"] = types.{{$field.GenFieldType}}{{end}}
+    return res
+}
+
+func (e {{.EntityName}}) IsDependant() bool {
+    return {{.JSON}}
+}
+ 
 {{if eq .JSON true}}
 {{if eq .JSONField.JSONMany true}}
 type {{.EntityName}}Collection []{{.EntityName}}

@@ -32,6 +32,7 @@ func StringFieldTemplate(f entity.Field, e entity.Entity) Template {
 		Type:                       "string",
 		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.StringFieldType,
+		GenFieldType:               "StringFieldType",
 		IsPrimary:                  f.StorageConfig.PrimaryKey,
 		Required:                   f.Required,
 		Tags:                       helpers.ResolveTags(f),

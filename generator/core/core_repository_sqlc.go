@@ -52,19 +52,5 @@ func generateRepositorySQLCode(ctx context.Context, repoDir string, project enti
 		return err
 	}
 
-	// new function to return generated code module
-	err = generator.GenerateFile(ctx, generator.FileRequest{
-		OutputFile:   path.Join(repoDir, "repository.go"),
-		TemplateName: path.Join("core", "repo", "repository"),
-		Data: struct {
-			ProjectName string
-		}{
-			ProjectName: project.Identifier,
-		},
-	})
-	if err != nil {
-		return err
-	}
-
 	return nil
 }

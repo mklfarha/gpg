@@ -26,6 +26,7 @@ func IntFieldTemplate(f entity.Field, e entity.Entity) Template {
 		Type:                       "int32",
 		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.IntFieldType,
+		GenFieldType:               "IntFieldType",
 		IsPrimary:                  f.StorageConfig.PrimaryKey,
 		Required:                   f.Required,
 		Tags:                       helpers.ResolveTags(f),

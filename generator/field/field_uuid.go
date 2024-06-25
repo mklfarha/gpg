@@ -45,6 +45,7 @@ func UUIDFieldTemplate(f entity.Field, e entity.Entity) Template {
 		Type:                       "uuid.UUID",
 		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.UUIDFieldType,
+		GenFieldType:               "UUIDFieldType",
 		IsPrimary:                  f.StorageConfig.PrimaryKey,
 		Required:                   f.Required,
 		Tags:                       helpers.ResolveTags(f),

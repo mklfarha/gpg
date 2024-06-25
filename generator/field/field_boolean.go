@@ -26,6 +26,7 @@ func BooleanFieldTemplate(f entity.Field, e entity.Entity) Template {
 		Type:                       "bool",
 		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.BooleanFieldType,
+		GenFieldType:               "BooleanFieldType",
 		IsPrimary:                  f.StorageConfig.PrimaryKey,
 		Required:                   f.Required,
 		Tags:                       helpers.ResolveTags(f),

@@ -31,6 +31,7 @@ func FloatFieldTemplate(f entity.Field, e entity.Entity) Template {
 		Type:                       "float64",
 		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.FloatFieldType,
+		GenFieldType:               "FloatFieldType",
 		IsPrimary:                  f.StorageConfig.PrimaryKey,
 		Required:                   f.Required,
 		Tags:                       helpers.ResolveTags(f),

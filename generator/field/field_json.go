@@ -26,10 +26,12 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, prefix *string) Template
 	graphInTypeOptional := fmt.Sprintf("%s%sInput", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(singularIdentifier))
 	graphOutType := fmt.Sprintf("%s%s", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(singularIdentifier))
 	protoType := helpers.ToCamelCase(singularIdentifier)
+	genFieldType := "SingleDependantEntityFieldType"
 	if jsonMany {
 		fieldType = fmt.Sprintf("%sCollection", fieldType)
 		graphInTypeOptional = fmt.Sprintf("[%s]", graphInTypeOptional)
 		graphOutType = fmt.Sprintf("[%s]", graphOutType)
+		genFieldType = "MultiDependantEntityFieldType"
 	}
 
 	graphInType := fmt.Sprintf("%s%s", graphInTypeOptional, graphRequired)
@@ -38,6 +40,7 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, prefix *string) Template
 	if len(f.JSONConfig.Fields) == 0 {
 		stringTemplate := StringFieldTemplate(f, e)
 		stringTemplate.Type = "json.RawMessage"
+		stringTemplate.GenFieldType = "RawJSONFieldType"
 		stringTemplate.JSONRaw = true
 		stringTemplate.GraphGenToMapper = fmt.Sprintf("StringFromJsonRaw(%s)", stringTemplate.GraphGenToMapper)
 		stringTemplate.GraphGenFromMapper = strings.ReplaceAll(stringTemplate.GraphGenFromMapper, "StringFromPointer", "JsonRawFromString")
@@ -53,6 +56,7 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, prefix *string) Template
 		Type:                       fieldType,
 		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.JSONFieldType,
+		GenFieldType:               genFieldType,
 		IsPrimary:                  f.StorageConfig.PrimaryKey,
 		Required:                   f.Required,
 		Tags:                       helpers.ResolveTags(f),

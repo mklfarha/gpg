@@ -33,6 +33,7 @@ func DateFieldTemplate(f entity.Field, e entity.Entity) Template {
 		Type:                       "time.Time",
 		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.DateFieldType,
+		GenFieldType:               "TimestampFieldType",
 		IsPrimary:                  f.StorageConfig.PrimaryKey,
 		Required:                   f.Required,
 		Tags:                       helpers.ResolveTags(f),

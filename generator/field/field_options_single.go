@@ -29,6 +29,7 @@ func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, prefix *string)
 		Type:                       pl.Singular(helpers.ToCamelCase(name)),
 		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.OptionsSingleFieldType,
+		GenFieldType:               "SingleEnumFieldType",
 		IsPrimary:                  f.StorageConfig.PrimaryKey,
 		Required:                   f.Required,
 		Tags:                       helpers.ResolveTags(f),

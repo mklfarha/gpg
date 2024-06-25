@@ -1,0 +1,114 @@
+package repository
+
+import (
+	"context"
+	"fmt"
+	"strings"
+
+	entitytypes "{{.ProjectName}}/core/entity/types"
+
+	"go.einride.tech/aip/filtering"
+	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
+	"google.golang.org/protobuf/reflect/protoreflect"
+)
+
+type ListEntity interface {
+	FieldIdentfierToTypeMap() map[string]entitytypes.FieldType
+	EntityIdentifier() string
+}
+
+type ListRequest interface {
+	GetFilter() filtering.Filter
+	GetFilteringDeclarations() *filtering.Declarations
+}
+
+func (i *Implementation) BuildListEntityQuery(ctx context.Context, request ListRequest, entity ListEntity) (string, error) {
+	query := buildQuery(request, entity)
+	return query, nil
+}
+
+func buildQuery(request ListRequest, entity ListEntity) string {
+	res := fmt.Sprintf("SELECT * FROM %s WHERE ", entity.EntityIdentifier())
+
+	whereClause := buildClause(request.GetFilter().CheckedExpr.Expr, entity, request.GetFilteringDeclarations())
+
+	res += whereClause
+
+	return res
+}
+
+func buildClause(ex *expr.Expr, entity ListEntity, declarations *filtering.Declarations) string {
+	cex := ex.GetCallExpr()
+	if isBaseFunction(cex.Function) {
+		return buildSingleClause(cex, entity, declarations)
+	}
+
+	if cex.Function == filtering.FunctionAnd {
+		return fmt.Sprintf("(%s AND %s)", buildClause(cex.Args[0], entity, declarations), buildClause(cex.Args[1], entity, declarations))
+	}
+
+	if cex.Function == filtering.FunctionOr {
+		return fmt.Sprintf("(%s OR %s)", buildClause(cex.Args[0], entity, declarations), buildClause(cex.Args[1], entity, declarations))
+	}
+
+	return cex.Function
+}
+
+func isBaseFunction(f string) bool {
+	if f == filtering.FunctionEquals ||
+		f == filtering.FunctionGreaterEquals ||
+		f == filtering.FunctionGreaterThan ||
+		f == filtering.FunctionLessEquals ||
+		f == filtering.FunctionLessThan ||
+		f == filtering.FunctionNot ||
+		f == filtering.FunctionNotEquals ||
+		f == filtering.FunctionHas ||
+		f == filtering.FunctionDuration ||
+		f == filtering.FunctionTimestamp {
+		return true
+	}
+	return false
+}
+
+func buildSingleClause(cex *expr.Expr_Call, entity ListEntity, declarations *filtering.Declarations) string {
+	fieldIdentifier := cex.Args[0].GetIdentExpr().Name
+	if strings.Contains(fieldIdentifier, ".") {
+		// handle nested entity clause
+		return ""
+	}
+	fieldMap := entity.FieldIdentfierToTypeMap()
+	fieldType := fieldMap[fieldIdentifier]
+	switch fieldType {
+	case entitytypes.StringFieldType:
+		return buildStringClause(cex)
+	case entitytypes.SingleEnumFieldType:
+		return buildSingleEnumClause(cex, declarations)
+	}
+	return ""
+}
+
+func buildStringClause(cex *expr.Expr_Call) string {
+	switch cex.Function {
+	case filtering.FunctionEquals, filtering.FunctionNotEquals:
+		return fmt.Sprintf("%s %s '%s'", cex.Args[0].GetIdentExpr().Name, cex.Function, cex.Args[1].GetConstExpr().GetStringValue())
+	case filtering.FunctionHas:
+		return fmt.Sprintf("%s like '%%%s%%'", cex.Args[0].GetIdentExpr().Name, cex.Args[1].GetConstExpr().GetStringValue())
+	}
+	return "unsupported function for type string"
+}
+
+func buildSingleEnumClause(cex *expr.Expr_Call, declarations *filtering.Declarations) string {
+	name := cex.Args[0].GetIdentExpr().Name
+	enumType, found := declarations.LookupEnumIdent(name)
+	if found {
+		value := cex.Args[1].GetIdentExpr().Name
+		numValue := enumType.Descriptor().Values().ByName(protoreflect.Name(value)).Number()
+		switch cex.Function {
+		case filtering.FunctionEquals, filtering.FunctionNotEquals:
+			return fmt.Sprintf("%s %s %d", name, cex.Function, numValue)
+		}
+		return "unsupported function for type single enum"
+	}
+
+	return "enum declaration not found"
+}

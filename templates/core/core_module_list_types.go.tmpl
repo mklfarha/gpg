@@ -8,11 +8,36 @@ import (
 )
 
 type ListRequest struct {
-	PageSize    int32
-	Offset      int64
-	Filter      filtering.Filter
-	OrderBy     ordering.OrderBy
-	ShowDeleted bool
+	PageSize              	int32
+	Offset      		  	int64
+	Filter      		  	filtering.Filter
+	FilteringDeclarations 	*filtering.Declarations
+	OrderBy     			ordering.OrderBy
+	ShowDeleted 			bool
+}
+
+func (r ListRequest) GetPageSize() int32 {
+	return r.PageSize
+}
+
+func (r ListRequest) GetOffset() int64 {
+	return r.Offset
+}
+
+func (r ListRequest) GetFilter() filtering.Filter {
+	return r.Filter
+}
+
+func (r ListRequest) GetFilteringDeclarations() *filtering.Declarations {
+	return r.FilteringDeclarations
+}
+
+func (r ListRequest) GetOrderBy() ordering.OrderBy {
+	return r.OrderBy
+}
+
+func (r ListRequest) GetShowDeleted() bool {
+	return r.ShowDeleted
 }
 
 type ListResponse struct {
