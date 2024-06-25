@@ -23,7 +23,13 @@ type ProtoEntityTemplate struct {
 	Enums             map[string]ProtoEnumTemplate
 	Imports           map[string]interface{}
 	DeclarationKeys   map[string][]string
-	Declarations      map[string]map[string]string
+	Declarations      map[string]map[string]ProtoDeclaration
+}
+
+type ProtoDeclaration struct {
+	Name      string
+	Filtering string
+	IsEnum    bool
 }
 
 type ProtoEnumTemplate struct {

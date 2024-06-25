@@ -70,9 +70,9 @@ func generateServer(ctx context.Context, protoDir string, project entity.Project
 	return err
 }
 
-func getEntityDeclarations(e ProtoEntityTemplate, dependantEntities map[string][]ProtoEntityTemplate, prefix *string) map[string]map[string]string {
-	finalRes := make(map[string]map[string]string)
-	entityRes := make(map[string]string)
+func getEntityDeclarations(e ProtoEntityTemplate, dependantEntities map[string][]ProtoEntityTemplate, prefix *string) map[string]map[string]ProtoDeclaration {
+	finalRes := make(map[string]map[string]ProtoDeclaration)
+	entityRes := make(map[string]ProtoDeclaration)
 	for _, f := range e.Fields {
 		finalIdentifier := f.Identifier
 		if prefix != nil {
@@ -80,17 +80,41 @@ func getEntityDeclarations(e ProtoEntityTemplate, dependantEntities map[string][
 		}
 		switch f.InternalType {
 		case entity.IntFieldType:
-			entityRes[finalIdentifier] = "filtering.TypeInt"
+			entityRes[finalIdentifier] = ProtoDeclaration{
+				Name:      finalIdentifier,
+				Filtering: "filtering.TypeInt",
+				IsEnum:    false,
+			}
 		case entity.FloatFieldType:
-			entityRes[finalIdentifier] = "filtering.TypeFloat"
+			entityRes[finalIdentifier] = ProtoDeclaration{
+				Name:      finalIdentifier,
+				Filtering: "filtering.TypeFloat",
+				IsEnum:    false,
+			}
 		case entity.BooleanFieldType:
-			entityRes[finalIdentifier] = "filtering.TypeBool"
+			entityRes[finalIdentifier] = ProtoDeclaration{
+				Name:      finalIdentifier,
+				Filtering: "filtering.TypeBool",
+				IsEnum:    false,
+			}
 		case entity.DateTimeFieldType, entity.DateFieldType:
-			entityRes[finalIdentifier] = "filtering.TypeTimestamp"
+			entityRes[finalIdentifier] = ProtoDeclaration{
+				Name:      finalIdentifier,
+				Filtering: "filtering.TypeTimestamp",
+				IsEnum:    false,
+			}
 		case entity.UUIDFieldType, entity.StringFieldType, entity.LargeStringFieldType:
-			entityRes[finalIdentifier] = "filtering.TypeString"
+			entityRes[finalIdentifier] = ProtoDeclaration{
+				Name:      finalIdentifier,
+				Filtering: "filtering.TypeString",
+				IsEnum:    false,
+			}
 		case entity.OptionsSingleFieldType, entity.OptionsManyFieldType:
-			entityRes[finalIdentifier] = fmt.Sprintf("filtering.TypeEnum(pb.%s(0).Type())", f.ProtoType)
+			entityRes[finalIdentifier] = ProtoDeclaration{
+				Name:      finalIdentifier,
+				Filtering: fmt.Sprintf("pb.%s(0).Type()", f.ProtoType),
+				IsEnum:    true,
+			}
 		case entity.JSONFieldType:
 			nestedEntities := dependantEntities[e.Identifier]
 			var nestedEntity ProtoEntityTemplate
@@ -102,7 +126,7 @@ func getEntityDeclarations(e ProtoEntityTemplate, dependantEntities map[string][
 
 			parentPrefix := fmt.Sprintf("%s.", f.Identifier)
 			nestedDeclarations := getEntityDeclarations(nestedEntity, dependantEntities, &parentPrefix)
-			nestedRes := make(map[string]string)
+			nestedRes := make(map[string]ProtoDeclaration)
 			for ndi, nd := range nestedDeclarations[nestedEntity.Identifier] {
 				nestedRes[ndi] = nd
 			}

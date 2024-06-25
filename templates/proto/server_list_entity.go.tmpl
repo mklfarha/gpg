@@ -85,8 +85,14 @@ func entityDeclarations() *filtering.Declarations{
     declarations, err := filtering.NewDeclarations(
 		filtering.DeclareStandardFunctions(),
         {{range $entityIdentifier, $keys := .DeclarationKeys}}
-		//{{$entityIdentifier}}{{range $name := $keys}}
-        filtering.DeclareIdent("{{$name}}", {{ index (index $declarations $entityIdentifier) $name}}),{{end}}
+			//{{$entityIdentifier}}
+			{{range $name := $keys}}
+				{{ $declarionObject := index (index $declarations $entityIdentifier) $name}}
+				{{if eq $declarionObject.IsEnum true }} 
+					filtering.DeclareEnumIdent("{{$name}}", {{$declarionObject.Filtering}}),				
+				{{else}} 
+					filtering.DeclareIdent("{{$name}}", {{$declarionObject.Filtering}}), {{end}}
+			{{end}}
 		{{end}}
     )
     if err != nil {
