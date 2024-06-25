@@ -14,7 +14,7 @@ func (m *module) {{.CustomQuery.Name}}(
     opts ...Option,
 ) (types.{{.CustomQuery.Name}}Response, error) {
     
-    models, err := m.repository.{{.CustomQuery.Name}}(
+    models, err := m.repository.Queries.{{.CustomQuery.Name}}(
         ctx,
         {{.ProjectName}}db.{{.CustomQuery.Name}}Params{ {{range $field := (.CustomQuery | Fields )}}
             {{$inputField := ($field | MapToInput ) }}

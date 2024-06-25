@@ -15,7 +15,7 @@ func (m *module) Fetch{{.Select.Name}}(
     opts ...Option,
 ) (types.Fetch{{.Select.Name}}Response, error) {
     {{if eq .Select.IsPrimary true}}
-    models, err := m.repository.Fetch{{.Select.Name}}(
+    models, err := m.repository.Queries.Fetch{{.Select.Name}}(
         ctx,{{range $field := .Select.Fields}}
         req.{{$field.Field.Name}}{{$field.Field.RepoToMapper}},{{end}}
     )

@@ -6,7 +6,15 @@ import (
 	{{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"
 )
 
-func New(db sql.DB) *{{.ProjectName}}db.Queries {
-	return {{.ProjectName}}db.New(&db)
+type Implementation struct {
+	Queries *{{.ProjectName}}db.Queries
+	DB      *sql.DB
 }
 
+func New(db *sql.DB) *Implementation {
+	queries := {{.ProjectName}}db.New(db)
+	return &Implementation{
+		Queries: queries,
+		DB:      db,
+	}
+}

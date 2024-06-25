@@ -14,7 +14,7 @@ func (m *module) Search(
     limit int32, 
     offset int32,
 ) (types.Search{{.EntityName}}Response, error) {
-    models, err := m.repository.Search{{.EntityName}}(
+    models, err := m.repository.Queries.Search{{.EntityName}}(
         ctx,
         {{.ProjectName}}db.Search{{.EntityName}}Params{ {{range $field := .SearchFields}}
             {{$field.Name}}: fmt.Sprintf("%%%s%%", query),{{end}}

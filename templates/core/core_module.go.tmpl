@@ -3,7 +3,7 @@ package {{.Package}}
 import (
 	"context"
     "sync"
-	{{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"
+	"{{.ProjectName}}/core/repository"
 	"{{.ProjectName}}/core/module/{{.EntityIdentifier}}/types"
 )
 
@@ -22,11 +22,11 @@ type Module interface {
 }
 
 type module struct {
-	repository {{.ProjectName}}db.Querier
+	repository *repository.Implementation
     mu sync.Mutex
 }
 
-func New(repo {{.ProjectName}}db.Querier) Module {
+func New(repo *repository.Implementation) Module {
 	return &module{
 		repository: repo,
 	}

@@ -28,7 +28,7 @@ func (m *module) Upsert(
 ) (types.UpsertResponse, error) {
 	if req.{{.EntityName}}.{{.PrimaryKey.Name}} == uuid.Nil {		
 		params := mapUpsertRequestToInsertParams(req)
-		_, err := m.repository.Insert{{.EntityName}}(
+		_, err := m.repository.Queries.Insert{{.EntityName}}(
 			ctx,
 			params,
 		)
@@ -41,7 +41,7 @@ func (m *module) Upsert(
 		}, nil
 	}
 
-	existing, err := m.repository.Fetch{{.EntityName}}By{{.PrimaryKey.Name}}(ctx, req.{{.EntityName}}.{{.PrimaryKey.Name}}.String())
+	existing, err := m.repository.Queries.Fetch{{.EntityName}}By{{.PrimaryKey.Name}}(ctx, req.{{.EntityName}}.{{.PrimaryKey.Name}}.String())
 	if err != nil {
 		return types.UpsertResponse{}, err
 	}
@@ -49,7 +49,7 @@ func (m *module) Upsert(
 	if len(existing) == 0 {
 		return types.UpsertResponse{}, errors.New("entity not found")
 	}
-	err = m.repository.Update{{.EntityName}}(
+	err = m.repository.Queries.Update{{.EntityName}}(
 		ctx,
 		mapUpsertRequestToUpdateParams(req, existing[0], partial),
 	)

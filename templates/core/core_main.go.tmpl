@@ -13,11 +13,11 @@ import (
     "{{$projectName}}/core/module/{{$entity.Identifier}}"
     {{end}}	
 	"{{.Identifier}}/core/repository"
-	{{.Identifier}}db "{{.Identifier}}/core/repository/gen"
+	
 )
 
 type Implementation struct {
-	repository     {{.Identifier}}db.Queries
+	repository     *repository.Implementation
     {{range $entity := .Entities}}
     {{$entity.Identifier}}       {{$entity.Identifier}}.Module
     {{end}}	
@@ -43,17 +43,17 @@ func New(provider config.Provider) (*Implementation, error) {
 	db.SetConnMaxLifetime(0)
 	db.SetMaxIdleConns(10)
 	db.SetMaxOpenConns(0)
-	repository := repository.New(*db)
+	repository := repository.New(db)
 
 	return &Implementation{
-		repository: *repository,
+		repository: repository,
 	}, nil
 }
 
 {{range $entity := .Entities}}
 func (i Implementation) {{$entity.Identifier | ToCamelCase}}() {{$entity.Identifier}}.Module {
 	if i.{{$entity.Identifier}} == nil {
-		i.{{$entity.Identifier}} = {{$entity.Identifier}}.New(&i.repository)
+		i.{{$entity.Identifier}} = {{$entity.Identifier}}.New(i.repository)
 	}
 	return i.{{$entity.Identifier}}
 }

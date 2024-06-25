@@ -3,7 +3,8 @@ package server
 import (
 	"context"
 	"fmt"
-
+	"encoding/json"
+	
 	"{{.ProjectIdentifier}}/core/module/{{.Identifier}}/types"
 	pb "{{.ProjectIdentifier}}/idl/gen"
 
@@ -33,7 +34,8 @@ func (s *server) List{{.NamePlural}}(ctx context.Context, request *pb.List{{.Nam
 	}
 
 	if filter.CheckedExpr != nil {
-		fmt.Printf("filtering: %v", filter.CheckedExpr.Expr.GetCallExpr().Args)
+		b, _ := json.Marshal(filter.CheckedExpr.Expr)
+		fmt.Printf("filtering: %v \n", string(b))
 	}
 
 	orderBy, err := ordering.ParseOrderBy(request)
