@@ -31,6 +31,15 @@ func (e {{.EntityName}}) FieldIdentfierToTypeMap() map[string]types.FieldType {
     return res
 }
 
+{{if eq .JSON false}}
+func (e {{.EntityName}}) DependantFieldIdentifierToTypeMap() map[string]map[string]types.FieldType {
+    res := make(map[string]map[string]types.FieldType)
+    {{range $field := .Fields}} {{if eq $field.JSON true}}
+    res["{{$field.Identifier}}"] = {{$field.SingularType}}{}.FieldIdentfierToTypeMap(){{end}}{{end}}
+    return res 
+}
+{{end}}
+
 func (e {{.EntityName}}) IsDependant() bool {
     return {{.JSON}}
 }

@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	entitytypes "{{.ProjectName}}/core/entity/types"
 
@@ -11,9 +10,9 @@ import (
 	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
-
 type ListEntity interface {
 	FieldIdentfierToTypeMap() map[string]entitytypes.FieldType
+	DependantFieldIdentifierToTypeMap() map[string]map[string]entitytypes.FieldType
 	EntityIdentifier() string
 }
 
@@ -71,41 +70,106 @@ func isBaseFunction(f string) bool {
 }
 
 func buildSingleClause(cex *expr.Expr_Call, entity ListEntity, declarations *filtering.Declarations) string {
-	fieldIdentifier := cex.Args[0].GetIdentExpr().Name
-	if strings.Contains(fieldIdentifier, ".") {
-		// handle nested entity clause
+	if len(cex.Args) != 2 {
 		return ""
 	}
+	fieldIdentifier := ""
+	isDependant := false
+	dependantField := ""
+	if cex.Args[0].GetIdentExpr() == nil {
+		if cex.Args[0].GetSelectExpr() != nil {
+			isDependant = true
+			fieldIdentifier = cex.Args[0].GetSelectExpr().GetOperand().GetIdentExpr().GetName()
+			dependantField = cex.Args[0].GetSelectExpr().GetField()
+		}
+	} else {
+		fieldIdentifier = cex.Args[0].GetIdentExpr().Name
+	}
+
+	request := SingleClauseRequest{
+		cex:                     cex,
+		declarations:            declarations,
+		fieldIdentifier:         fieldIdentifier,
+		isDependant:             isDependant,
+		dependantFieldIdentifer: dependantField,
+	}
+
 	fieldMap := entity.FieldIdentfierToTypeMap()
 	fieldType := fieldMap[fieldIdentifier]
+	return handleClauseByType(request, entity, fieldType)
+}
+
+func handleClauseByType(req SingleClauseRequest, entity ListEntity, fieldType entitytypes.FieldType) string {
 	switch fieldType {
-	case entitytypes.StringFieldType:
-		return buildStringClause(cex)
+	case entitytypes.StringFieldType, entitytypes.UUIDFieldType:
+		return buildStringClause(req)
 	case entitytypes.SingleEnumFieldType:
-		return buildSingleEnumClause(cex, declarations)
+		return buildSingleEnumClause(req)
+	case entitytypes.SingleDependantEntityFieldType:
+		typeMap := entity.DependantFieldIdentifierToTypeMap()
+		dependantTypeMap := typeMap[req.fieldIdentifier]
+		dependantFieldType := dependantTypeMap[req.dependantFieldIdentifer]
+		return handleClauseByType(req, entity, dependantFieldType)
+	case entitytypes.MultiDependantEntityFieldType:
+		typeMap := entity.DependantFieldIdentifierToTypeMap()
+		dependantTypeMap := typeMap[req.fieldIdentifier]
+		dependantFieldType := dependantTypeMap[req.dependantFieldIdentifer]
+		req.isDependantMulti = true
+		return handleClauseByType(req, entity, dependantFieldType)
 	}
 	return ""
 }
 
-func buildStringClause(cex *expr.Expr_Call) string {
+type SingleClauseRequest struct {
+	cex                     *expr.Expr_Call
+	declarations            *filtering.Declarations
+	fieldIdentifier         string
+	isDependant             bool
+	isDependantMulti        bool
+	dependantFieldIdentifer string
+}
+
+func buildLeftOperator(req SingleClauseRequest) string {
+	if req.isDependant {
+		return buildJSONExtract(req)
+	}
+	return req.fieldIdentifier
+}
+
+func buildJSONExtract(req SingleClauseRequest) string {
+	if req.isDependantMulti {
+		return fmt.Sprintf("JSON_EXTRACT(%s, '$[*].%s')", req.fieldIdentifier, req.dependantFieldIdentifer)
+	}
+	return fmt.Sprintf("JSON_EXTRACT(%s, '$.%s')", req.fieldIdentifier, req.dependantFieldIdentifer)
+}
+
+func buildStringClause(req SingleClauseRequest) string {
+	cex := req.cex
+	left := buildLeftOperator(req)
 	switch cex.Function {
 	case filtering.FunctionEquals, filtering.FunctionNotEquals:
-		return fmt.Sprintf("%s %s '%s'", cex.Args[0].GetIdentExpr().Name, cex.Function, cex.Args[1].GetConstExpr().GetStringValue())
+		return fmt.Sprintf("%s %s '%s'", left, cex.Function, cex.Args[1].GetConstExpr().GetStringValue())
 	case filtering.FunctionHas:
-		return fmt.Sprintf("%s like '%%%s%%'", cex.Args[0].GetIdentExpr().Name, cex.Args[1].GetConstExpr().GetStringValue())
+		return fmt.Sprintf("%s like '%%%s%%'", left, cex.Args[1].GetConstExpr().GetStringValue())
 	}
 	return "unsupported function for type string"
 }
 
-func buildSingleEnumClause(cex *expr.Expr_Call, declarations *filtering.Declarations) string {
-	name := cex.Args[0].GetIdentExpr().Name
+func buildSingleEnumClause(req SingleClauseRequest) string {
+	cex := req.cex
+	declarations := req.declarations
+	left := buildLeftOperator(req)
+	name := req.fieldIdentifier
+	if req.isDependant {
+		name = fmt.Sprintf("%s.%s", req.fieldIdentifier, req.dependantFieldIdentifer)
+	}
 	enumType, found := declarations.LookupEnumIdent(name)
 	if found {
 		value := cex.Args[1].GetIdentExpr().Name
 		numValue := enumType.Descriptor().Values().ByName(protoreflect.Name(value)).Number()
 		switch cex.Function {
 		case filtering.FunctionEquals, filtering.FunctionNotEquals:
-			return fmt.Sprintf("%s %s %d", name, cex.Function, numValue)
+			return fmt.Sprintf("%s %s %d", left, cex.Function, numValue)
 		}
 		return "unsupported function for type single enum"
 	}

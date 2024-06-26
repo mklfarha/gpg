@@ -54,6 +54,7 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, prefix *string) Template
 		Identifier:                 singularIdentifier,
 		Name:                       helpers.ToCamelCase(f.Identifier),
 		Type:                       fieldType,
+		SingularType:               helpers.ToCamelCase(singularIdentifier),
 		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.JSONFieldType,
 		GenFieldType:               genFieldType,
