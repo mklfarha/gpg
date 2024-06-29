@@ -3,9 +3,9 @@ package server
 import (
 	"context"
 	"errors"
-	"{{.ProjectIdentifier}}/core/module/{{.Identifier}}/types"
+	"{{.ProjectIdentifier}}/core/module/{{.FinalIdentifier}}/types"
 	pb "{{.ProjectIdentifier}}/idl/gen"
-	pbmapper "{{.ProjectIdentifier}}/idl/mapper/{{.Identifier}}"
+	pbmapper "{{.ProjectIdentifier}}/idl/mapper/{{.FinalIdentifier}}"
 )
 
 func (s *server) Create{{.Name}}(ctx context.Context, req *pb.Create{{.Name}}Request) (*pb.{{.Name}}, error) {

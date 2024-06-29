@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gertd/go-pluralize"
 	"github.com/iancoleman/strcase"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator/helpers"
 )
 
 func UUIDFieldTemplate(f entity.Field, e entity.Entity) Template {
+	pl := pluralize.NewClient()
 	graphRequired := ""
 	if f.Required {
 		graphRequired = "!"
@@ -41,6 +43,7 @@ func UUIDFieldTemplate(f entity.Field, e entity.Entity) Template {
 	imp := "github.com/gofrs/uuid"
 	return Template{
 		Identifier:                 f.Identifier,
+		SingularIdentifier:         pl.Singular(f.Identifier),
 		Name:                       helpers.ToCamelCase(f.Identifier),
 		Type:                       "uuid.UUID",
 		EntityIdentifier:           e.Identifier,

@@ -14,20 +14,20 @@ import (
 )
 
 {{range $entity := .Entities}}
-func Map{{$entity.EntityName}}(in []{{$entity.Identifier}}.{{$entity.EntityName}}) []*model.{{$entity.EntityName}} {
-    res := []*model.{{$entity.EntityName}}{}
+func Map{{$entity.EntityType}}(in []{{$entity.Identifier}}.{{$entity.EntityType}}) []*model.{{$entity.EntityType}} {
+    res := []*model.{{$entity.EntityType}}{}
     for _, item := range in {
         i := item
-        res = append(res, &model.{{$entity.EntityName}}{ {{range $field := $entity.OutFields}}
+        res = append(res, &model.{{$entity.EntityType}}{ {{range $field := $entity.OutFields}}
             {{$field.GraphModelName}}: {{$field.GraphGenToMapper}},{{end}}           
         })
     }
     return res
 }
 
-func Map{{$entity.EntityName}}Upsert(i model.{{$entity.EntityName}}Input) {{$entity.Identifier}}module.UpsertRequest {
+func Map{{$entity.EntityType}}Upsert(i model.{{$entity.EntityType}}Input) {{$entity.Identifier}}module.UpsertRequest {
     return {{$entity.Identifier}}module.UpsertRequest{ 
-        {{$entity.EntityName}}:{{$entity.Identifier}}.{{$entity.EntityName}}{
+        {{$entity.EntityType}}:{{$entity.Identifier}}.{{$entity.EntityType}}{
         {{range $field := $entity.OutFields}}
             {{if eq $field.Required true}}
             {{$field.Name}}: {{$field.GraphGenFromMapper}},{{else}}
@@ -37,9 +37,9 @@ func Map{{$entity.EntityName}}Upsert(i model.{{$entity.EntityName}}Input) {{$ent
     }
 }
 
-func Map{{$entity.EntityName}}UpsertPartial(i model.{{$entity.EntityName}}PartialInput) {{$entity.Identifier}}module.UpsertRequest {
+func Map{{$entity.EntityType}}UpsertPartial(i model.{{$entity.EntityType}}PartialInput) {{$entity.Identifier}}module.UpsertRequest {
     return {{$entity.Identifier}}module.UpsertRequest{ 
-        {{$entity.EntityName}}:{{$entity.Identifier}}.{{$entity.EntityName}}{
+        {{$entity.EntityType}}:{{$entity.Identifier}}.{{$entity.EntityType}}{
         {{range $field := $entity.OutFields}}
             {{if eq $field.IsPrimary true}}
             {{$field.Name}}: {{$field.GraphGenFromMapper}},{{else}}
@@ -51,9 +51,10 @@ func Map{{$entity.EntityName}}UpsertPartial(i model.{{$entity.EntityName}}Partia
 {{end}}
 
 {{range $entity := .JSONEntities}}
-{{$entityName := $entity.EntityName}}
+{{$entityType := $entity.EntityType}}
+
 {{if eq $entity.JSONMany true}}
-func Map{{$entity.GraphGenType}}(items []{{$entity.ParentIdentifier}}.{{$entityName}}) []*model.{{$entity.GraphGenType}} {
+func Map{{$entity.GraphGenType}}(items []{{$entity.ParentIdentifier}}.{{$entityType}}) []*model.{{$entity.GraphGenType}} {
     res := []*model.{{$entity.GraphGenType}}{}
     for _, item := range items {
         i := item
@@ -64,16 +65,16 @@ func Map{{$entity.GraphGenType}}(items []{{$entity.ParentIdentifier}}.{{$entityN
     return res
 }
 
-func Map{{$entity.GraphGenType}}Input(items []{{if ne $entity.Required true}}*{{end}}model.{{$entity.GraphGenType}}Input) []{{$entity.ParentIdentifier}}.{{$entityName}} {
+func Map{{$entity.GraphGenType}}Input(items []{{if ne $entity.Required true}}*{{end}}model.{{$entity.GraphGenType}}Input) []{{$entity.ParentIdentifier}}.{{$entityType}} {
     {{if ne $entity.Required true}}
     if items == nil {
-        return []{{$entity.ParentIdentifier}}.{{$entityName}}{}
+        return []{{$entity.ParentIdentifier}}.{{$entityType}}{}
     }
     {{end}}
-    res := []{{$entity.ParentIdentifier}}.{{$entityName}}{}
+    res := []{{$entity.ParentIdentifier}}.{{$entityType}}{}
     for _, item := range items {
         i := item
-        res = append(res, {{$entity.ParentIdentifier}}.{{$entityName}}{ {{range $field := $entity.OutFields}}
+        res = append(res, {{$entity.ParentIdentifier}}.{{$entityType}}{ {{range $field := $entity.OutFields}}
        {{if eq $field.Required true}}
         {{$field.Name}}: {{$field.GraphGenFromMapper}},{{else}}
         {{$field.Name}}: {{$field.GraphGenFromMapperOptional}},{{end}}
@@ -83,19 +84,19 @@ func Map{{$entity.GraphGenType}}Input(items []{{if ne $entity.Required true}}*{{
     return res     
 }
 {{else}}
-func Map{{$entity.GraphGenType}}(i {{$entity.ParentIdentifier}}.{{$entityName}}) *model.{{$entity.GraphGenType}} {
+func Map{{$entity.GraphGenType}}(i {{$entity.ParentIdentifier}}.{{$entityType}}) *model.{{$entity.GraphGenType}} {
     return &model.{{$entity.GraphGenType}}{ {{range $field := $entity.OutFields}}
         {{$field.GraphModelName}}: {{$field.GraphGenToMapper}},{{end}}           
     }
 }
 
-func Map{{$entity.GraphGenType}}Input(i {{if ne $entity.Required true}}*{{end}}model.{{$entity.GraphGenType}}Input) {{$entity.ParentIdentifier}}.{{$entityName}} {
+func Map{{$entity.GraphGenType}}Input(i {{if ne $entity.Required true}}*{{end}}model.{{$entity.GraphGenType}}Input) {{$entity.ParentIdentifier}}.{{$entityType}} {
     {{if ne $entity.Required true}}
     if i == nil {
-        return {{$entity.ParentIdentifier}}.{{$entityName}}{}
+        return {{$entity.ParentIdentifier}}.{{$entityType}}{}
     }
     {{end}}
-    return {{$entity.ParentIdentifier}}.{{$entityName}}{ {{range $field := $entity.InFields}}
+    return {{$entity.ParentIdentifier}}.{{$entityType}}{ {{range $field := $entity.InFields}}
         {{if eq $field.Required true}}
         {{$field.Name}}: {{$field.GraphGenFromMapper}},{{else}}
         {{$field.Name}}: {{$field.GraphGenFromMapperOptional}},{{end}}

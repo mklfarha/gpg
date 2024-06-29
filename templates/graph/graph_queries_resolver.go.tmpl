@@ -25,8 +25,8 @@ func (r *queryResolver) {{$select.Name}}(
     orderBy *string,
     sort *string,
     {{end}}
-) ([]*model.{{$entity.EntityName}}, error) {
-	res, err := r.Core.{{$entity.EntityName}}().
+) ([]*model.{{$entity.EntityType}}, error) {
+	res, err := r.Core.{{$entity.EntityType}}().
     Fetch{{$select.Name}}(
         ctx, 
         {{$entity.Identifier}}.Fetch{{$select.Name}}Request{ {{range $field := $select.Fields}}
@@ -39,25 +39,25 @@ func (r *queryResolver) {{$select.Name}}(
             {{end}}
 	    },
     )
-	return mapper.Map{{$entity.EntityName}}(res.Results), err
+	return mapper.Map{{$entity.EntityType}}(res.Results), err
 }
 {{end}}
 
 {{if eq $entity.Search true}}
-func (r *queryResolver) Search{{$entity.EntityName}}(
+func (r *queryResolver) Search{{$entity.EntityType}}(
     ctx context.Context,
     query string,
     limit *int, 
     offset *int,
-) ([]*model.{{$entity.EntityName}}, error) {
-    res, err := r.Core.{{$entity.EntityName}}().
+) ([]*model.{{$entity.EntityType}}, error) {
+    res, err := r.Core.{{$entity.EntityType}}().
         Search(
             ctx, 
             query,
             resolveLimit(limit),
             resolveOffset(offset),
         )
-	return mapper.Map{{$entity.EntityName}}(res.Results), err
+	return mapper.Map{{$entity.EntityType}}(res.Results), err
 }
 {{end}}
 
@@ -68,8 +68,8 @@ func (r *queryResolver) {{$cq.Name}}(
     {{$field.Identifier}} {{$field.GraphGenType}},{{end}}   
     limit *int,
     offset *int,    
-) ([]*model.{{$entity.EntityName}}, error) {
-	res, err := r.Core.{{$entity.EntityName}}().
+) ([]*model.{{$entity.EntityType}}, error) {
+	res, err := r.Core.{{$entity.EntityType}}().
     {{$cq.Name}}(
         ctx, 
         {{$entity.Identifier}}.{{$cq.Name}}Request{ {{range $field := $inputFields}}
@@ -78,7 +78,7 @@ func (r *queryResolver) {{$cq.Name}}(
             Offset: resolveOffset(offset),            
 	    },
     )
-	return mapper.Map{{$entity.EntityName}}(res.Results), err
+	return mapper.Map{{$entity.EntityType}}(res.Results), err
 }
 {{end}}
 

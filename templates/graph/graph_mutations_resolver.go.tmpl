@@ -15,55 +15,55 @@ import (
     "{{.ProjectName}}/graph/mapper"
 )
 {{range $entity := .Entities}}
-func (r *mutationResolver) Upsert{{$entity.EntityName}}(
+func (r *mutationResolver) Upsert{{$entity.EntityType}}(
     ctx context.Context, 
-    input model.{{$entity.EntityName}}Input,
-) (*model.{{$entity.EntityName}}, error) {
-	res, err := r.Core.{{$entity.EntityName}}().Upsert(
+    input model.{{$entity.EntityType}}Input,
+) (*model.{{$entity.EntityType}}, error) {
+	res, err := r.Core.{{$entity.EntityType}}().Upsert(
         ctx, 
-        mapper.Map{{$entity.EntityName}}Upsert(input),
+        mapper.Map{{$entity.EntityType}}Upsert(input),
         false,
     )
 	if err != nil {
 		return nil, err
 	}
-	read, err := r.Core.{{$entity.EntityName}}().
-        Fetch{{$entity.EntityName}}By{{$entity.PrimaryKey.Name}}(
+	read, err := r.Core.{{$entity.EntityType}}().
+        Fetch{{$entity.EntityType}}By{{$entity.PrimaryKey.Name}}(
             ctx, 
-            {{$entity.Identifier}}.Fetch{{$entity.EntityName}}By{{$entity.PrimaryKey.Name}}Request{
+            {{$entity.Identifier}}.Fetch{{$entity.EntityType}}By{{$entity.PrimaryKey.Name}}Request{
 		        {{$entity.PrimaryKey.Name}}: res.{{$entity.PrimaryKey.Name}},
 	        },
         )
     if len(read.Results) == 0 {
         return nil, errors.New("entity not found after upsert")
     }
-	return mapper.Map{{$entity.EntityName}}(read.Results)[0], err
+	return mapper.Map{{$entity.EntityType}}(read.Results)[0], err
     
 }
 
-func (r *mutationResolver) UpsertPartial{{$entity.EntityName}}(
+func (r *mutationResolver) UpsertPartial{{$entity.EntityType}}(
     ctx context.Context, 
-    input model.{{$entity.EntityName}}PartialInput,
-) (*model.{{$entity.EntityName}}, error) {
-	res, err := r.Core.{{$entity.EntityName}}().Upsert(
+    input model.{{$entity.EntityType}}PartialInput,
+) (*model.{{$entity.EntityType}}, error) {
+	res, err := r.Core.{{$entity.EntityType}}().Upsert(
         ctx, 
-        mapper.Map{{$entity.EntityName}}UpsertPartial(input),
+        mapper.Map{{$entity.EntityType}}UpsertPartial(input),
         true,
     )
 	if err != nil {
 		return nil, err
 	}
-	read, err := r.Core.{{$entity.EntityName}}().
-        Fetch{{$entity.EntityName}}By{{$entity.PrimaryKey.Name}}(
+	read, err := r.Core.{{$entity.EntityType}}().
+        Fetch{{$entity.EntityType}}By{{$entity.PrimaryKey.Name}}(
             ctx, 
-            {{$entity.Identifier}}.Fetch{{$entity.EntityName}}By{{$entity.PrimaryKey.Name}}Request{
+            {{$entity.Identifier}}.Fetch{{$entity.EntityType}}By{{$entity.PrimaryKey.Name}}Request{
 		        {{$entity.PrimaryKey.Name}}: res.{{$entity.PrimaryKey.Name}},
 	        },
         )
     if len(read.Results) == 0 {
         return nil, errors.New("entity not found after upsert")
     }
-	return mapper.Map{{$entity.EntityName}}(read.Results)[0], err
+	return mapper.Map{{$entity.EntityType}}(read.Results)[0], err
     
 }
 {{end}}

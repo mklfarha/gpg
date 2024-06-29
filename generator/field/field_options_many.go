@@ -9,21 +9,25 @@ import (
 	"github.com/maykel/gpg/generator/helpers"
 )
 
-func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, prefix *string) Template {
+func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, dependantEntity *Template) Template {
 	name := f.Identifier
 	pl := pluralize.NewClient()
-	if prefix != nil {
-		name = fmt.Sprintf("%s_%s", pl.Singular(*prefix), f.Identifier)
+	if dependantEntity != nil && dependantEntity.EntityIdentifier != "" {
+		name = fmt.Sprintf("%s_%s", pl.Singular(dependantEntity.Identifier), f.Identifier)
 	}
 	graphRequired := ""
 	if f.Required {
 		graphRequired = "!"
 	}
 
-	protoType := helpers.ToCamelCase(fmt.Sprintf("%s_%s", e.Identifier, pl.Singular(f.Identifier)))
+	protoType := helpers.ToCamelCase(fmt.Sprintf("%s_%s", pl.Singular(e.Identifier), pl.Singular(f.Identifier)))
+	if dependantEntity != nil && dependantEntity.EntityIdentifier != "" {
+		protoType = helpers.ToCamelCase(fmt.Sprintf("%s_%s", dependantEntity.EntityIdentifier, protoType))
+	}
 
 	return Template{
 		Identifier:          f.Identifier,
+		SingularIdentifier:  pl.Singular(f.Identifier),
 		Name:                helpers.ToCamelCase(f.Identifier),
 		Type:                pl.Singular(helpers.ToCamelCase(name)),
 		EntityIdentifier:    e.Identifier,

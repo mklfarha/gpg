@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gertd/go-pluralize"
 	"github.com/iancoleman/strcase"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator/helpers"
 )
 
 func StringFieldTemplate(f entity.Field, e entity.Entity) Template {
+	pl := pluralize.NewClient()
 	graphRequired := ""
 	if f.Required {
 		graphRequired = "!"
@@ -28,6 +30,7 @@ func StringFieldTemplate(f entity.Field, e entity.Entity) Template {
 	}
 	return Template{
 		Identifier:                 f.Identifier,
+		SingularIdentifier:         pl.Singular(f.Identifier),
 		Name:                       helpers.ToCamelCase(f.Identifier),
 		Type:                       "string",
 		EntityIdentifier:           e.Identifier,

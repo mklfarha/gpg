@@ -34,9 +34,9 @@ func executeSkeema(ctx context.Context, project entity.Project, sqlDir string) e
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
-		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		fmt.Println("skeema Result: " + out.String())
-		return err
+		fmt.Println("skeema diff 1: " + fmt.Sprint(err) + ": " + stderr.String())
+		fmt.Println("skeema diff 2: " + out.String())
+		//return err - don't return error as the command sends exit (1) even if it succeeded
 	}
 
 	fmt.Printf("----[GPG][Skeema] Sync DB - Push \n")
@@ -46,9 +46,9 @@ func executeSkeema(ctx context.Context, project entity.Project, sqlDir string) e
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
-		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		fmt.Println("skeema Result: " + out.String())
-		return err
+		fmt.Println("skeema psuh 1: " + fmt.Sprint(err) + ": " + stderr.String())
+		fmt.Println("skeema psuh 2: " + out.String())
+		//return err - don't return error as the command sends exit (1) even if it succeeded
 	}
 	return nil
 }

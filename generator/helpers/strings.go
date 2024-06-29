@@ -3,6 +3,8 @@ package helpers
 import (
 	"regexp"
 	"strings"
+
+	"github.com/iancoleman/strcase"
 )
 
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
@@ -16,7 +18,16 @@ func ToCamelCase(str string) string {
 		return "UUID"
 	}
 
-	words := strings.Split(str, "_")
+	key := strcase.ToCamel(str)
+	if strings.Contains(key, "_Id") {
+		key = strings.ReplaceAll(key, "Id", "ID")
+	}
+
+	key = strings.ReplaceAll(key, "uuid", "UUID")
+	key = strings.ReplaceAll(key, "Uuid", "UUID")
+	return key
+
+	/*words := strings.Split(str, "_")
 	key := strings.Title(strings.ToLower(words[0]))
 	for _, word := range words[1:] {
 		key += strings.Title(word)
@@ -28,7 +39,7 @@ func ToCamelCase(str string) string {
 
 	key = strings.ReplaceAll(key, "uuid", "UUID")
 	key = strings.ReplaceAll(key, "Uuid", "UUID")
-	return key
+	return key*/
 }
 
 func ToSnakeCase(str string) string {

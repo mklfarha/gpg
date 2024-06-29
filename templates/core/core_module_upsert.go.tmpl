@@ -2,6 +2,7 @@ package {{.Package}}
 
 {{$entityName := .EntityName}}
 {{$projectName := .ProjectName}}
+{{$entityIdenfier := .EntityIdentifier}}
 import (
 	"context"
     "errors"
@@ -9,14 +10,21 @@ import (
 	"github.com/gofrs/uuid"
 	"{{.ProjectName}}/core/module/{{.EntityIdentifier}}/types"	
 	{{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"   
-	{{$first := true}}
+	{{$firstGen := true}}
+	{{$firstJSONMany := true}}
 	{{range $field := .Fields}}	
-		{{if eq $first true}}
+		{{if eq $firstGen true}}
 			{{ if eq $field.Generated true}}
 				"{{$projectName}}/custom"
-				{{$first = false}}
-			{{end}}
+				{{$firstGen = false}}				
+			{{end}}			
 		{{end}}		
+		{{if eq $firstJSONMany true}}
+			{{if eq $field.JSONMany true}}
+				entity "{{$projectName}}/core/entity/{{$entityIdenfier}}"	
+				{{$firstJSONMany = false}}
+			{{end}}
+		{{end}}
 	{{end}}
 )
 
@@ -68,7 +76,12 @@ func mapUpsertRequestToInsertParams(req types.UpsertRequest) {{.ProjectName}}db.
 		{{ if eq $field.Generated true}} 
 		{{$field.Name}}: {{$field.GeneratedFuncInsert}}{{$field.RepoToMapper}},
 		{{else}}
-        {{$field.Name}}: req.{{$entityName}}.{{$field.Name}}{{$field.RepoToMapper}}, {{end}}	
+		{{ if eq $field.JSONMany true}}
+			{{$field.Name}}: {{$field.RepoToMapper}}, 
+		{{ else }}
+        	{{$field.Name}}: req.{{$entityName}}.{{$field.Name}}{{$field.RepoToMapper}}, 
+		{{end}}
+		{{end}}	
 		{{end}}
 	}
 }
@@ -79,7 +92,12 @@ func mapUpsertRequestToUpdateParams(req types.UpsertRequest, existing {{.Project
 			{{ if eq $field.Generated true}} 
 			{{$field.Name}}: {{$field.GeneratedFuncUpdate}}{{$field.RepoToMapper}},
 			{{else}}
-			{{$field.Name}}: req.{{$entityName}}.{{$field.Name}}{{$field.RepoToMapper}}, {{end}}	
+			{{ if eq $field.JSONMany true}}
+				{{$field.Name}}: {{$field.RepoToMapper}}, 
+			{{ else }}
+				{{$field.Name}}: req.{{$entityName}}.{{$field.Name}}{{$field.RepoToMapper}}, 
+			{{end}}
+			{{end}}	
 			{{end}}
 		}
 	}
@@ -106,7 +124,11 @@ func mapUpsertRequestToUpdateParams(req types.UpsertRequest, existing {{.Project
 			{{ if eq $field.Generated true}} 
 			res.{{$field.Name}} = {{$field.GeneratedFuncUpdate}}{{$field.RepoToMapper}}
 			{{else}}
-			res.{{$field.Name}} = req.{{$entityName}}.{{$field.Name}}{{$field.RepoToMapper}}
+			{{ if eq $field.JSONMany true}}
+			res.{{$field.Name}} = {{$field.RepoToMapper}}
+			{{ else }}
+			res.{{$field.Name}} = req.{{$entityName}}.{{$field.Name}}{{$field.RepoToMapper}} 
+			{{end}}			
 			{{end}}
 		}
 	{{end}}

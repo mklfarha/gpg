@@ -3,6 +3,7 @@ package proto
 import (
 	"context"
 	"fmt"
+	"os"
 	"path"
 
 	"github.com/maykel/gpg/entity"
@@ -11,25 +12,33 @@ import (
 )
 
 type ProtoEntityTemplate struct {
-	ProjectIdentifier string
-	ParentIdentifier  string
-	Identifier        string
-	IdentifierPlural  string
-	Name              string
-	NamePlural        string
-	Fields            []field.Template
-	PrimaryKey        field.Template
-	Search            bool
-	Enums             map[string]ProtoEnumTemplate
-	Imports           map[string]interface{}
-	DeclarationKeys   map[string][]string
-	Declarations      map[string]map[string]ProtoDeclaration
+	ProjectIdentifier     string
+	ParentIdentifier      string
+	OrignalIdentifier     string
+	FinalIdentifier       string
+	FinalIdentifierPlural string
+	Name                  string
+	NamePlural            string
+	Type                  string
+	Fields                []field.Template
+	PrimaryKey            field.Template
+	Search                bool
+	Enums                 map[string]ProtoEnumTemplate
+	Imports               map[string]interface{}
+	Declarations          []ProtoEntityDeclaration
 }
 
-type ProtoDeclaration struct {
-	Name      string
-	Filtering string
-	IsEnum    bool
+type ProtoEntityDeclaration struct {
+	Identifier  string
+	Fields      []ProtoFieldDeclaration
+	IsDependant bool
+}
+
+type ProtoFieldDeclaration struct {
+	Identifier string
+	Name       string
+	Filtering  string
+	IsEnum     bool
 }
 
 type ProtoEnumTemplate struct {
@@ -48,6 +57,11 @@ func Generate(ctx context.Context, rootPath string, project entity.Project) erro
 	fmt.Printf("--[GPG][Proto] Generating Directory\n")
 	projectDir := generator.ProjectDir(ctx, rootPath, project)
 	protoDir := path.Join(projectDir, generator.PROTO_DIR)
+
+	err := os.RemoveAll(protoDir)
+	if err != nil {
+		fmt.Printf("ERROR: Deleting module directory\n")
+	}
 
 	fullDir := path.Join(protoDir, "gen")
 	generator.CreateDir(fullDir)

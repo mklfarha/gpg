@@ -1,0 +1,73 @@
+package main
+
+import (
+	"context"
+
+	
+{{ if eq .Auth.Enabled true}}
+	"{{.Identifier}}/auth"
+{{ end }}
+	{{.Identifier}}config "{{.Identifier}}/config"
+{{ if eq .Protocol "graphql"}}
+	"github.com/99designs/gqlgen/graphql/handler"
+	"{{.Identifier}}/graph"
+	"{{.Identifier}}/graph/generated"
+{{end}}
+	"{{.Identifier}}/core"
+	"go.uber.org/config"
+)
+
+type basicAuthCredentials struct {
+	username string
+	password string
+}
+
+type application struct {
+	core   *core.Implementation
+	{{ if eq .Auth.Enabled true}}
+	auth   auth.Interface
+	{{ end }}
+	{{ if eq .Protocol "graphql"}}
+	server *handler.Server
+	{{ end }}	
+	bac    basicAuthCredentials
+	config config.Provider
+}
+
+func New() (application, error) {
+	ctx := context.Background()
+	config := {{.Identifier}}config.New()
+	c, err := core.New(ctx, config)
+	if err != nil {
+		return application{}, err
+	}
+
+	{{ if eq .Auth.Enabled true}}
+	auth, err := auth.New(ctx, c)
+	if err != nil {
+		return application{}, err
+	}
+	{{end}}
+
+	{{ if eq .Protocol "graphql"}}
+	srv := handler.NewDefaultServer(
+		generated.NewExecutableSchema(
+			generated.Config{
+				Resolvers: &graph.Resolver{
+					Core: *c,
+				}}))
+	{{end}}
+
+	return application{
+		core:    c,
+		{{ if eq .Auth.Enabled true}}
+		auth:   auth,
+		{{ end }}		
+		server: srv,		
+		bac: basicAuthCredentials{
+			username: "{{.Auth.BasicUsername}}",
+			password: "{{.Auth.BasicPassword}}",
+		},
+		config: config,
+	}, nil
+}

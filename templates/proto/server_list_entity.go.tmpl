@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"encoding/json"
 	
-	"{{.ProjectIdentifier}}/core/module/{{.Identifier}}/types"
+	"{{.ProjectIdentifier}}/core/module/{{.FinalIdentifier}}/types"
 	pb "{{.ProjectIdentifier}}/idl/gen"
 
 	"go.einride.tech/aip/filtering"
@@ -84,18 +84,17 @@ func validatePageSize(request *pb.List{{.NamePlural}}Request) error {
 	}
 	return nil
 }
-{{$declarations := .Declarations}}
+
 func entityDeclarations() *filtering.Declarations{
     declarations, err := filtering.NewDeclarations(
 		filtering.DeclareStandardFunctions(),
-        {{range $entityIdentifier, $keys := .DeclarationKeys}}
-			//{{$entityIdentifier}}
-			{{range $name := $keys}}
-				{{ $declarionObject := index (index $declarations $entityIdentifier) $name}}
-				{{if eq $declarionObject.IsEnum true }} 
-					filtering.DeclareEnumIdent("{{$name}}", {{$declarionObject.Filtering}}),				
+        {{range $entityDeclaration := .Declarations}}
+			//{{$entityDeclaration.Identifier}}
+			{{range $field := $entityDeclaration.Fields}}				
+				{{if eq $field.IsEnum true }} 
+					filtering.DeclareEnumIdent("{{$field.Name}}", {{$field.Filtering}}),				
 				{{else}} 
-					filtering.DeclareIdent("{{$name}}", {{$declarionObject.Filtering}}), {{end}}
+					filtering.DeclareIdent("{{$field.Name}}", {{$field.Filtering}}), {{end}}
 			{{end}}
 		{{end}}
     )

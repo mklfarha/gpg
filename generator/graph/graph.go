@@ -8,7 +8,6 @@ import (
 	"path"
 	"text/template"
 
-	pluralize "github.com/gertd/go-pluralize"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator"
 	"github.com/maykel/gpg/generator/core"
@@ -18,7 +17,7 @@ import (
 
 type GraphEntityTemplate struct {
 	Identifier       string
-	EntityName       string
+	EntityType       string
 	JSON             bool
 	JSONMany         bool
 	Required         bool
@@ -52,8 +51,6 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 		DisableGoFormat: true,
 	})
 
-	pl := pluralize.NewClient()
-
 	entityTemplates := []GraphEntityTemplate{}
 	jsonEntityTemplates := []GraphEntityTemplate{}
 	enumTemplates := []field.Template{}
@@ -72,15 +69,18 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 			}
 
 			if f.Type == entity.JSONFieldType {
+				ft := field.ResolveFieldType(f, e, &field.Template{
+					Identifier: f.Identifier,
+				})
 				if len(f.JSONConfig.Fields) > 0 {
-					fields, _ := field.ResolveFieldsAndImports(f.JSONConfig.Fields, e, &f.Identifier)
+					fields, _ := field.ResolveFieldsAndImports(f.JSONConfig.Fields, e, &ft)
 					jsonEntityTemplate := GraphEntityTemplate{
 						Identifier:       f.Identifier,
-						EntityName:       pl.Singular(helpers.ToCamelCase(f.Identifier)),
+						EntityType:       ft.Type,
 						JSON:             true,
 						JSONMany:         f.JSONConfig.Type == entity.ManyJSONConfigType,
 						Required:         f.Required,
-						GraphGenType:     fmt.Sprintf("%s%s", helpers.ToCamelCase(e.Identifier), pl.Singular(helpers.ToCamelCase(f.Identifier))),
+						GraphGenType:     ft.GraphGenType,
 						ParentIdentifier: e.Identifier,
 						ParentEntityName: helpers.ToCamelCase(e.Identifier),
 						InFields:         fields,
@@ -112,7 +112,7 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 		}
 		entityTemplate := GraphEntityTemplate{
 			Identifier:    e.Identifier,
-			EntityName:    helpers.ToCamelCase(e.Identifier),
+			EntityType:    helpers.ToCamelCase(e.Identifier),
 			PrimaryKey:    field.ResolveFieldType(helpers.EntityPrimaryKey(e), e, nil),
 			InFields:      inFields,
 			OutFields:     outFields,

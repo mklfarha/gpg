@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"path"
 
-	"github.com/gertd/go-pluralize"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator"
 	"github.com/maykel/gpg/generator/field"
@@ -84,24 +83,24 @@ func resolveEntityTemplate(e entity.Entity, project entity.Project) (EntityTempl
 }
 
 func generateJSONEntities(ctx context.Context, entityDir string, e entity.Entity, project entity.Project) {
-	pl := pluralize.NewClient()
 	for _, f := range e.Fields {
 		if f.Type == entity.JSONFieldType {
-			singularIdentifier := pl.Singular(f.Identifier)
-			fmt.Printf("----[GPG] Generating json entity: %s\n", singularIdentifier)
-			fields, imports := field.ResolveFieldsAndImports(f.JSONConfig.Fields, e, &singularIdentifier)
-			field := field.ResolveFieldType(f, e, nil)
+			ft := field.ResolveFieldType(f, e, &field.Template{
+				Identifier: f.Identifier,
+			})
+			fmt.Printf("----[GPG] Generating json entity: %s\n", ft.SingularIdentifier)
+			fields, imports := field.ResolveFieldsAndImports(f.JSONConfig.Fields, e, &ft)
 			entityTemplate := EntityTemplate{
 				ProjectName: project.Identifier,
 				Package:     e.Identifier,
-				EntityName:  helpers.ToCamelCase(singularIdentifier),
+				EntityName:  helpers.ToCamelCase(ft.SingularIdentifier),
 				Fields:      fields,
 				Imports:     helpers.MapKeys(imports),
 				JSON:        true,
-				JSONField:   field,
+				JSONField:   ft,
 			}
 			generator.GenerateFile(ctx, generator.FileRequest{
-				OutputFile:   path.Join(entityDir, fmt.Sprintf("%s.go", singularIdentifier)),
+				OutputFile:   path.Join(entityDir, fmt.Sprintf("%s.go", ft.SingularIdentifier)),
 				TemplateName: path.Join("core", "entity"),
 				Data:         entityTemplate,
 			})

@@ -9,11 +9,11 @@ import (
 	"github.com/maykel/gpg/generator/helpers"
 )
 
-func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, prefix *string) Template {
+func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, dependantEntity *Template) Template {
 	pl := pluralize.NewClient()
 	name := f.Identifier
-	if prefix != nil {
-		name = fmt.Sprintf("%s_%s", pl.Singular(*prefix), f.Identifier)
+	if dependantEntity != nil && dependantEntity.EntityIdentifier != "" {
+		name = fmt.Sprintf("%s_%s", pl.Singular(dependantEntity.Identifier), f.Identifier)
 	}
 	graphRequired := ""
 	graphGenToMapper := fmt.Sprintf("i.%s.StringPtr()", helpers.ToCamelCase(f.Identifier))
@@ -22,10 +22,14 @@ func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, prefix *string)
 		graphGenToMapper = fmt.Sprintf("i.%s.String()", helpers.ToCamelCase(f.Identifier))
 	}
 
-	protoType := helpers.ToCamelCase(fmt.Sprintf("%s_%s", e.Identifier, pl.Singular(f.Identifier)))
+	protoType := helpers.ToCamelCase(fmt.Sprintf("%s_%s", pl.Singular(e.Identifier), pl.Singular(f.Identifier)))
+	if dependantEntity != nil && dependantEntity.EntityIdentifier != "" {
+		protoType = helpers.ToCamelCase(fmt.Sprintf("%s_%s", dependantEntity.EntityIdentifier, protoType))
+	}
 	return Template{
 		Identifier:                 f.Identifier,
-		Name:                       pl.Singular(helpers.ToCamelCase(f.Identifier)),
+		SingularIdentifier:         pl.Singular(f.Identifier),
+		Name:                       helpers.ToCamelCase(f.Identifier),
 		Type:                       pl.Singular(helpers.ToCamelCase(name)),
 		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.OptionsSingleFieldType,

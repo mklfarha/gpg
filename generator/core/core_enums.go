@@ -6,9 +6,9 @@ import (
 	"path"
 	"strings"
 
-	"github.com/gertd/go-pluralize"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator"
+	"github.com/maykel/gpg/generator/field"
 	"github.com/maykel/gpg/generator/helpers"
 )
 
@@ -20,7 +20,8 @@ func generateEnums(ctx context.Context, entityDir string, e entity.Entity) {
 		if f.Type == entity.JSONFieldType {
 			for _, jf := range f.JSONConfig.Fields {
 				if jf.Type == entity.OptionsSingleFieldType || jf.Type == entity.OptionsManyFieldType {
-					generateEnum(ctx, entityDir, e, jf, &f.Identifier)
+					ft := field.ResolveFieldType(f, e, nil)
+					generateEnum(ctx, entityDir, e, jf, &ft)
 				}
 			}
 		}
@@ -31,12 +32,13 @@ func generateEnum(ctx context.Context,
 	entityDir string,
 	e entity.Entity,
 	f entity.Field,
-	prefix *string) {
+	nestedEntity *field.Template) {
 
-	pl := pluralize.NewClient()
-	name := pl.Singular(f.Identifier)
-	if prefix != nil {
-		name = fmt.Sprintf("%s_%s", pl.Singular(*prefix), name)
+	ft := field.ResolveFieldType(f, e, nestedEntity)
+
+	name := ft.SingularIdentifier
+	if nestedEntity != nil {
+		name = fmt.Sprintf("%s_%s", nestedEntity.SingularIdentifier, name)
 	}
 	fmt.Printf("----[GPG] Generating enum: %s\n", name)
 

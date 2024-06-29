@@ -9,21 +9,21 @@ package {{.Identifier}};
 
 import "google/protobuf/field_mask.proto";
 {{range $entity := .Entities}}
-import "{{$entity.Identifier}}.proto";
+import "{{$entity.FinalIdentifier}}.proto";
 {{end}}
 
 service {{.Name}} {    
     {{range $entity := .Entities}}
-    // {{$entity.Identifier}} start
+    // {{$entity.OrignalIdentifier}} start
     rpc List{{$entity.NamePlural}}(List{{$entity.NamePlural}}Request) returns (List{{$entity.NamePlural}}Response){}
     rpc Create{{$entity.Name}}(Create{{$entity.Name}}Request) returns ({{$entity.Name}}) {}
     rpc Update{{$entity.Name}}(Update{{$entity.Name}}Request) returns ({{$entity.Name}}) {}
-    // {{$entity.Identifier}} end
+    // {{$entity.OrignalIdentifier}} end
     {{end}}
 }
 
 {{range $entity := .Entities}}
-// {{$entity.Identifier}} start
+// {{$entity.OrignalIdentifier}} start
 message List{{$entity.NamePlural}}Request {
     // The maximum number of records to return. The service may return fewer than
     // this value.
@@ -42,7 +42,7 @@ message List{{$entity.NamePlural}}Request {
 }
 
 message List{{$entity.NamePlural}}Response {
-    repeated {{$entity.Name}} {{$entity.IdentifierPlural}} = 1;
+    repeated {{$entity.Name}} {{$entity.FinalIdentifierPlural}} = 1;
 
     // A token that can be sent as `page_token` to retrieve the next page.
     // If this field is omitted, there are no subsequent pages.
@@ -50,15 +50,15 @@ message List{{$entity.NamePlural}}Response {
 }
 
 message Create{{$entity.Name}}Request {
-    {{$entity.Name}} {{$entity.Identifier}} = 1;
+    {{$entity.Name}} {{$entity.FinalIdentifier}} = 1;
 }
 
 message Update{{$entity.Name}}Request {
    
-    {{$entity.Name}} {{$entity.Identifier}} = 1;
+    {{$entity.Name}} {{$entity.FinalIdentifier}} = 1;
   
     // The list of fields to update.
     google.protobuf.FieldMask update_mask = 2;
 }
-// {{$entity.Identifier}} end
+// {{$entity.OrignalIdentifier}} end
 {{end}}

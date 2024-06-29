@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"path"
-	"sort"
 
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator"
@@ -12,6 +11,7 @@ import (
 )
 
 func generateServer(ctx context.Context, protoDir string, project entity.Project, standaloneEntities []ProtoEntityTemplate, dependantEntities map[string][]ProtoEntityTemplate) error {
+	fmt.Printf("--[GPG][Proto] Generating server.go\n")
 	err := generator.GenerateFile(ctx, generator.FileRequest{
 		OutputFile:   path.Join(protoDir, "server", "server.go"),
 		TemplateName: path.Join("proto", "server"),
@@ -26,8 +26,9 @@ func generateServer(ctx context.Context, protoDir string, project entity.Project
 	}
 
 	for _, se := range standaloneEntities {
+		fmt.Printf("--[GPG][Proto] Generating create: %v\n", se.FinalIdentifier)
 		err = generator.GenerateFile(ctx, generator.FileRequest{
-			OutputFile:      path.Join(protoDir, "server", fmt.Sprintf("create_%s.go", se.Identifier)),
+			OutputFile:      path.Join(protoDir, "server", fmt.Sprintf("create_%s.go", se.FinalIdentifier)),
 			TemplateName:    path.Join("proto", "server_create_entity"),
 			Data:            se,
 			DisableGoFormat: false,
@@ -35,8 +36,10 @@ func generateServer(ctx context.Context, protoDir string, project entity.Project
 		if err != nil {
 			return err
 		}
+
+		fmt.Printf("--[GPG][Proto] Generating update: %v\n", se.FinalIdentifier)
 		err = generator.GenerateFile(ctx, generator.FileRequest{
-			OutputFile:      path.Join(protoDir, "server", fmt.Sprintf("update_%s.go", se.Identifier)),
+			OutputFile:      path.Join(protoDir, "server", fmt.Sprintf("update_%s.go", se.FinalIdentifier)),
 			TemplateName:    path.Join("proto", "server_update_entity"),
 			Data:            se,
 			DisableGoFormat: false,
@@ -44,20 +47,11 @@ func generateServer(ctx context.Context, protoDir string, project entity.Project
 		if err != nil {
 			return err
 		}
+
 		se.Declarations = getEntityDeclarations(se, dependantEntities, nil)
-		se.DeclarationKeys = make(map[string][]string)
-		for entityId, mapTypes := range se.Declarations {
-			for k, _ := range mapTypes {
-				se.DeclarationKeys[entityId] = append(se.DeclarationKeys[entityId], k)
-			}
-		}
-
-		for _, dk := range se.DeclarationKeys {
-			sort.Strings(dk)
-		}
-
+		fmt.Printf("--[GPG][Proto] Generating list: %v\n", se.FinalIdentifier)
 		err = generator.GenerateFile(ctx, generator.FileRequest{
-			OutputFile:      path.Join(protoDir, "server", fmt.Sprintf("list_%s.go", se.Identifier)),
+			OutputFile:      path.Join(protoDir, "server", fmt.Sprintf("list_%s.go", se.FinalIdentifier)),
 			TemplateName:    path.Join("proto", "server_list_entity"),
 			Data:            se,
 			DisableGoFormat: false,
@@ -70,70 +64,78 @@ func generateServer(ctx context.Context, protoDir string, project entity.Project
 	return err
 }
 
-func getEntityDeclarations(e ProtoEntityTemplate, dependantEntities map[string][]ProtoEntityTemplate, prefix *string) map[string]map[string]ProtoDeclaration {
-	finalRes := make(map[string]map[string]ProtoDeclaration)
-	entityRes := make(map[string]ProtoDeclaration)
+func getEntityDeclarations(e ProtoEntityTemplate, dependantEntities map[string][]ProtoEntityTemplate, nestedEntity *ProtoEntityTemplate) []ProtoEntityDeclaration {
+	finalRes := []ProtoEntityDeclaration{}
+	isDependant := false
+	if nestedEntity != nil {
+		isDependant = true
+	}
+	entityRes := ProtoEntityDeclaration{
+		Identifier:  e.FinalIdentifier,
+		IsDependant: isDependant,
+		Fields:      []ProtoFieldDeclaration{},
+	}
 	for _, f := range e.Fields {
 		finalIdentifier := f.Identifier
-		if prefix != nil {
-			finalIdentifier = *prefix + f.Identifier
+		if nestedEntity != nil {
+			finalIdentifier = fmt.Sprintf("%s.%s", nestedEntity.OrignalIdentifier, f.Identifier)
 		}
 		switch f.InternalType {
 		case entity.IntFieldType:
-			entityRes[finalIdentifier] = ProtoDeclaration{
+			entityRes.Fields = append(entityRes.Fields, ProtoFieldDeclaration{
 				Name:      finalIdentifier,
 				Filtering: "filtering.TypeInt",
 				IsEnum:    false,
-			}
+			})
 		case entity.FloatFieldType:
-			entityRes[finalIdentifier] = ProtoDeclaration{
+			entityRes.Fields = append(entityRes.Fields, ProtoFieldDeclaration{
 				Name:      finalIdentifier,
 				Filtering: "filtering.TypeFloat",
 				IsEnum:    false,
-			}
+			})
 		case entity.BooleanFieldType:
-			entityRes[finalIdentifier] = ProtoDeclaration{
+			entityRes.Fields = append(entityRes.Fields, ProtoFieldDeclaration{
 				Name:      finalIdentifier,
 				Filtering: "filtering.TypeBool",
 				IsEnum:    false,
-			}
+			})
 		case entity.DateTimeFieldType, entity.DateFieldType:
-			entityRes[finalIdentifier] = ProtoDeclaration{
+			entityRes.Fields = append(entityRes.Fields, ProtoFieldDeclaration{
 				Name:      finalIdentifier,
 				Filtering: "filtering.TypeTimestamp",
 				IsEnum:    false,
-			}
+			})
 		case entity.UUIDFieldType, entity.StringFieldType, entity.LargeStringFieldType:
-			entityRes[finalIdentifier] = ProtoDeclaration{
+			entityRes.Fields = append(entityRes.Fields, ProtoFieldDeclaration{
 				Name:      finalIdentifier,
 				Filtering: "filtering.TypeString",
 				IsEnum:    false,
-			}
+			})
 		case entity.OptionsSingleFieldType, entity.OptionsManyFieldType:
-			entityRes[finalIdentifier] = ProtoDeclaration{
+			enumType := f.ProtoType
+			entityRes.Fields = append(entityRes.Fields, ProtoFieldDeclaration{
 				Name:      finalIdentifier,
-				Filtering: fmt.Sprintf("pb.%s(0).Type()", f.ProtoType),
+				Filtering: fmt.Sprintf("pb.%s(0).Type()", enumType),
 				IsEnum:    true,
-			}
+			})
 		case entity.JSONFieldType:
-			nestedEntities := dependantEntities[e.Identifier]
-			var nestedEntity ProtoEntityTemplate
-			for _, ne := range nestedEntities {
-				if ne.Identifier == f.Identifier {
-					nestedEntity = ne
+			nestedEntities, found := dependantEntities[e.FinalIdentifier]
+			if found {
+				var nestedEntity ProtoEntityTemplate
+				for _, ne := range nestedEntities {
+					if ne.OrignalIdentifier == f.Identifier {
+						nestedEntity = ne
+					}
 				}
-			}
 
-			parentPrefix := fmt.Sprintf("%s.", f.Identifier)
-			nestedDeclarations := getEntityDeclarations(nestedEntity, dependantEntities, &parentPrefix)
-			nestedRes := make(map[string]ProtoDeclaration)
-			for ndi, nd := range nestedDeclarations[nestedEntity.Identifier] {
-				nestedRes[ndi] = nd
+				nestedEntityDeclarations := getEntityDeclarations(nestedEntity, dependantEntities, &nestedEntity)
+				finalRes = append(finalRes, nestedEntityDeclarations...)
+			} else {
+				fmt.Printf("nested entity not found: %v", f.Identifier)
 			}
-			finalRes[f.Identifier] = nestedRes
 		}
 	}
 
-	finalRes[e.Identifier] = entityRes
+	finalRes = append(finalRes, entityRes)
 	return finalRes
 }
