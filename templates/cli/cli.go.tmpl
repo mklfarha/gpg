@@ -6,6 +6,7 @@ package main
 		{{$userEntity = $entity}}
 	{{end}}
 {{end}}
+{{$projectIdentifier := .Identifier}}
 import (
 	"bytes"
 	{{if ne $userEntity ""}}
@@ -19,16 +20,18 @@ import (
 	"net/http"
 	"os"
 	"sort"   
+	"context"
 
-	{{if ne $userEntity ""}}	
 	"{{.Identifier}}/config"
 	"{{.Identifier}}/core"
-    "{{.Identifier}}/core/entity/user"
-	"{{.Identifier}}/core/module/user/types"
+	{{range $entity := .Entities}}
+	"{{$projectIdentifier}}/core/entity/{{$entity.Identifier}}"
+	{{$entity.Identifier}}types "{{$projectIdentifier}}/core/module/{{$entity.Identifier}}/types"
 	{{end}}
 	
 	"github.com/manifoldco/promptui"
 	"github.com/urfave/cli"
+	"github.com/gofrs/uuid"
 )
 
 func main() {
@@ -36,6 +39,14 @@ func main() {
 	app.Name = "GPG CLI"
 
 	app.Flags = []cli.Flag{}
+
+	config := config.NewWithPath("../config/base.yaml")
+	c, err := core.New(core.Params{
+		Provider: config,		
+	})
+	if err != nil {
+		panic("error creating core")
+	}
 
 	app.Commands = []cli.Command{
 		{
@@ -45,8 +56,7 @@ func main() {
 				
                 
 				{{if ne $userEntity ""}}
-				ctx := context.Background()
-				config := config.NewWithPath("../config/base.yaml")
+				ctx := context.Background()				
 				fields := map[string]promptContent{                    
                     {{range $field := $userEntity.Fields}}
                         {{if ne $field.Identifier "id"}}
@@ -74,12 +84,7 @@ func main() {
 					f.value = res
 					fields[k] = f
 				}
-
-				c, err := core.New(ctx, config)
-				if err != nil {
-					return err
-				}
-
+				
 				res, err := c.User().Upsert(ctx, types.UpsertRequest{
                     {{range $field := $userEntity.Fields}}                                               
                         {{if eq $field.Identifier "status"}}
@@ -156,13 +161,46 @@ func main() {
 				
 			},
 		},
-		
+		{
+			Name: "fill-db",
+			Usage: "Fills the entity with dummy values for testing",
+			Action: func(ctx *cli.Context) error {
+				entityIdentifier, err := promptGetInput(promptContent{
+					label: "Entity Identifier",
+					fieldType: "string",
+				})
+
+				if err != nil {
+					return err
+				}
+
+				switch entityIdentifier {
+					{{range $entity := .Entities}}
+					case "{{$entity.Identifier}}":
+						entities := {{$entity.Identifier}}.New{{$entity.Identifier | ToCamelCase}}SliceWithRandomValues(100)
+						for _, e := range entities {
+							e.UUID = uuid.Nil
+							res, err := c.Team().Upsert(context.Background(), {{$entity.Identifier}}types.UpsertRequest{
+								{{$entity.Identifier | ToCamelCase}}: e,
+							}, false)
+							if err != nil {
+								fmt.Printf("error writing entity: %s, %v \n", "{{$entity.Identifier}}", err)
+							} else {
+								fmt.Printf("wrote entity: %s, %v \n", "{{$entity.Identifier}}", res)
+							}
+						}
+						c.Destroy()
+					{{end}}
+				}
+				return nil
+			},
+		},
 	}
 
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))
 
-	err := app.Run(os.Args)
+	err = app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}

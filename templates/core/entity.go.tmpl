@@ -89,9 +89,9 @@ func New{{.EntityName}}WithRandomValues() {{.EntityName}} {
     }
 }
 
-func New{{.EntityName}}SliceWithRandomValues() []{{.EntityName}} {
+func New{{.EntityName}}SliceWithRandomValues(n int) []{{.EntityName}} {
     rand.New(rand.NewSource((time.Now().UnixNano())))
-    numRecords := rand.Intn(10)
+    numRecords := n
     res := []{{.EntityName}}{}
     for i:=0; i<numRecords; i++{
         res = append(res, New{{.EntityName}}WithRandomValues())

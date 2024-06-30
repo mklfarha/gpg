@@ -47,7 +47,7 @@ func GetRandomOptionValue[EnumType ~int32](max int)EnumType {
 
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 func GetRandomStringValue() string {
-    b := make([]rune, 30)
+    b := make([]rune, 10)
     for i := range b {
         b[i] = letterRunes[rand.Intn(len(letterRunes))]
     }
@@ -59,6 +59,6 @@ func GetRandomUUIDValue() uuid.UUID {
 }
 
 func GetRandomRawJSONValue() json.RawMessage {
-    return json.RawMessage{}
+    return json.RawMessage("{}")
 }
 

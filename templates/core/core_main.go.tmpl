@@ -4,9 +4,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"context"
 
 	_ "github.com/go-sql-driver/mysql"
 	"go.uber.org/config"
+	"go.uber.org/fx"
 	{{.Identifier}}config "{{.Identifier}}/config"
     {{$projectName := .Identifier}}
     {{range $entity := .Entities}}
@@ -14,19 +16,27 @@ import (
     {{end}}	
 	"{{.Identifier}}/core/repository"
 	
+	
 )
 
 type Implementation struct {
+	db 			   *sql.DB
 	repository     *repository.Implementation
     {{range $entity := .Entities}}
     {{$entity.Identifier}}       {{$entity.Identifier}}.Module
     {{end}}	
 }
 
-func New(provider config.Provider) (*Implementation, error) {
+type Params struct {
+	fx.In
+	Provider config.Provider
+	Lifecycle fx.Lifecycle
+}
+
+func New(params Params) (*Implementation, error) {
 
 	var dbs {{.Identifier}}config.DBs
-	if err := provider.Get("db").Populate(&dbs); err != nil {
+	if err := params.Provider.Get("db").Populate(&dbs); err != nil {
 		return nil, err
 	}
 
@@ -38,17 +48,31 @@ func New(provider config.Provider) (*Implementation, error) {
 	db, err := sql.Open(dbconfig.Driver, dbconfig.Path())
 	if err != nil {
 		return nil, fmt.Errorf("error connecting to DB: %v", err)
-	}
-	defer db.Close()
+	}	
 	db.SetConnMaxLifetime(0)
 	db.SetMaxIdleConns(10)
 	db.SetMaxOpenConns(0)
 	repository := repository.New(db)
 
+	if params.Lifecycle != nil {
+		params.Lifecycle.Append(fx.Hook{
+			OnStop: func(ctx context.Context) error {
+				db.Close()
+				return nil
+			},
+		})
+	}
+
 	return &Implementation{
+		db: db,
 		repository: repository,
 	}, nil
 }
+
+func (i *Implementation) Destroy() {
+	i.db.Close()
+}
+
 
 {{range $entity := .Entities}}
 func (i Implementation) {{$entity.Identifier | ToCamelCase}}() {{$entity.Identifier}}.Module {

@@ -34,7 +34,7 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, dependant bool) Template
 		graphInTypeOptional = fmt.Sprintf("[%s]", graphInTypeOptional)
 		graphOutType = fmt.Sprintf("[%s]", graphOutType)
 		genFieldType = "MultiDependantEntityFieldType"
-		genRandomValue = fmt.Sprintf("New%sSliceWithRandomValues()", fieldType)
+		genRandomValue = fmt.Sprintf("New%sSliceWithRandomValues(rand.Intn(10))", fieldType)
 	}
 
 	graphInType := fmt.Sprintf("%s%s", graphInTypeOptional, graphRequired)
