@@ -35,6 +35,7 @@ func DatetimeFieldTemplate(f entity.Field, e entity.Entity) Template {
 		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.DateTimeFieldType,
 		GenFieldType:               "TimestampFieldType",
+		GenRandomValue:             "randomvalues.GetRandomTimeValue()",
 		IsPrimary:                  f.StorageConfig.PrimaryKey,
 		Required:                   f.Required,
 		Tags:                       helpers.ResolveTags(f),

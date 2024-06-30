@@ -1,14 +1,23 @@
 package {{.Package}}
 
 import (
-    
+    {{$timeImport := false}}
     "encoding/json"
     {{range $import := .Imports}}
+    {{if eq $import "time"}} {{$timeImport = true}} {{end}}
     "{{$import}}" {{end}}
     {{if eq .JSON true}}
     "fmt"
     {{end}}
     "{{.ProjectName}}/core/entity/types"
+    {{ if ne (len .Fields) 0 }}
+    "{{.ProjectName}}/core/entity/randomvalues"
+    {{ end }}
+    "math/rand"
+    {{if eq $timeImport false}}
+    "time"
+    {{end}}
+    
 )
 
 type {{.EntityName}} struct { {{range $field := .Fields}}
@@ -71,3 +80,21 @@ func {{.EntityName}}SliceToJSON(e []{{.EntityName}}) json.RawMessage {
 }
 {{end}}
 {{end}}
+
+
+func New{{.EntityName}}WithRandomValues() {{.EntityName}} {
+    rand.New(rand.NewSource((time.Now().UnixNano())))
+    return {{.EntityName}}{ {{range $field := .Fields}}
+        {{$field.Name}}: {{$field.GenRandomValue}}, {{end}}
+    }
+}
+
+func New{{.EntityName}}SliceWithRandomValues() []{{.EntityName}} {
+    rand.New(rand.NewSource((time.Now().UnixNano())))
+    numRecords := rand.Intn(10)
+    res := []{{.EntityName}}{}
+    for i:=0; i<numRecords; i++{
+        res = append(res, New{{.EntityName}}WithRandomValues())
+    }
+    return res
+}

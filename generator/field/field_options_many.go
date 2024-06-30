@@ -25,14 +25,17 @@ func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, dependantEntity *
 		protoType = helpers.ToCamelCase(fmt.Sprintf("%s_%s", dependantEntity.EntityIdentifier, protoType))
 	}
 
+	fieldType := pl.Singular(helpers.ToCamelCase(name))
+
 	return Template{
 		Identifier:          f.Identifier,
 		SingularIdentifier:  pl.Singular(f.Identifier),
 		Name:                helpers.ToCamelCase(f.Identifier),
-		Type:                pl.Singular(helpers.ToCamelCase(name)),
+		Type:                fieldType,
 		EntityIdentifier:    e.Identifier,
 		InternalType:        entity.OptionsManyFieldType,
 		GenFieldType:        "MultiEnumFieldType",
+		GenRandomValue:      fmt.Sprintf("randomvalues.GetRandomOptionsValues[%s](%d)", fieldType, len(f.OptionValues)),
 		IsPrimary:           f.StorageConfig.PrimaryKey,
 		Required:            f.Required,
 		Tags:                helpers.ResolveTags(f),

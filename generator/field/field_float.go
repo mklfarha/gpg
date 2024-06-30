@@ -35,6 +35,7 @@ func FloatFieldTemplate(f entity.Field, e entity.Entity) Template {
 		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.FloatFieldType,
 		GenFieldType:               "FloatFieldType",
+		GenRandomValue:             "randomvalues.GetRandomFloatValue()",
 		IsPrimary:                  f.StorageConfig.PrimaryKey,
 		Required:                   f.Required,
 		Tags:                       helpers.ResolveTags(f),

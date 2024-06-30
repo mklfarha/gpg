@@ -25,6 +25,9 @@ type Template struct {
 	// type of the field in the generated code
 	GenFieldType string
 
+	// returns the functions that generates a random value
+	GenRandomValue string
+
 	// is primary key
 	IsPrimary bool
 	Required  bool

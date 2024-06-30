@@ -12,16 +12,16 @@ import (
 	"github.com/maykel/gpg/generator/helpers"
 )
 
-func generateEnums(ctx context.Context, entityDir string, e entity.Entity) {
+func generateEnums(ctx context.Context, project entity.Project, entityDir string, e entity.Entity) {
 	for _, f := range e.Fields {
 		if f.Type == entity.OptionsSingleFieldType || f.Type == entity.OptionsManyFieldType {
-			generateEnum(ctx, entityDir, e, f, nil)
+			generateEnum(ctx, project, entityDir, e, f, nil)
 		}
 		if f.Type == entity.JSONFieldType {
 			for _, jf := range f.JSONConfig.Fields {
 				if jf.Type == entity.OptionsSingleFieldType || jf.Type == entity.OptionsManyFieldType {
 					ft := field.ResolveFieldType(f, e, nil)
-					generateEnum(ctx, entityDir, e, jf, &ft)
+					generateEnum(ctx, project, entityDir, e, jf, &ft)
 				}
 			}
 		}
@@ -29,6 +29,7 @@ func generateEnums(ctx context.Context, entityDir string, e entity.Entity) {
 }
 
 func generateEnum(ctx context.Context,
+	project entity.Project,
 	entityDir string,
 	e entity.Entity,
 	f entity.Field,
@@ -48,6 +49,7 @@ func generateEnum(ctx context.Context,
 	}
 
 	enumTemplate := EnumTemplate{
+		ProjectName:   project.Identifier,
 		Package:       e.Identifier,
 		EnumName:      helpers.ToCamelCase(name),
 		EnumNameUpper: strings.ToUpper(name),

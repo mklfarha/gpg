@@ -1,7 +1,8 @@
 package {{.Package}}
 
+
 //go:generate go run github.com/dmarkham/enumer -type={{.EnumName}} -json
-type {{.EnumName}} int
+type {{.EnumName}} int32
 
 const (
 	{{.EnumNameUpper}}_INVALID {{.EnumName}} = iota {{range $value := .Values}}

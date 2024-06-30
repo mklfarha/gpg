@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"path"
 
@@ -24,6 +25,7 @@ type EntityTemplate struct {
 }
 
 type EnumTemplate struct {
+	ProjectName   string
 	Package       string
 	EnumName      string
 	EnumNameUpper string
@@ -32,9 +34,16 @@ type EnumTemplate struct {
 }
 
 func GenerateCoreEntities(ctx context.Context, rootPath string, project entity.Project) error {
+
 	fmt.Printf("--[GPG] Generating core entities\n")
 	projectDir := generator.ProjectDir(ctx, rootPath, project)
 	entitiesDir := path.Join(projectDir, generator.CORE_ENTITY_DIR)
+
+	err := os.RemoveAll(entitiesDir)
+	if err != nil {
+		fmt.Printf("ERROR: Deleting module directory\n")
+	}
+
 	allimports := map[string]any{}
 	for _, e := range project.Entities {
 		fmt.Printf("----[GPG] Generating entity: %s\n", e.Identifier)
@@ -48,7 +57,7 @@ func GenerateCoreEntities(ctx context.Context, rootPath string, project entity.P
 			TemplateName: path.Join("core", "entity"),
 			Data:         entityTemplate,
 		})
-		generateEnums(ctx, entityDir, e)
+		generateEnums(ctx, project, entityDir, e)
 		generateJSONEntities(ctx, entityDir, e, project)
 	}
 
@@ -63,8 +72,19 @@ func GenerateCoreEntities(ctx context.Context, rootPath string, project entity.P
 
 	entityTypesDir := path.Join(entitiesDir, "types")
 	generator.GenerateFile(ctx, generator.FileRequest{
-		OutputFile:   path.Join(entityTypesDir, "field_types.go"),
-		TemplateName: path.Join("core", "field_types"),
+		OutputFile:   path.Join(entityTypesDir, "types.go"),
+		TemplateName: path.Join("core", "types"),
+	})
+
+	entityRandomValuesDir := path.Join(entitiesDir, "randomvalues")
+	generator.GenerateFile(ctx, generator.FileRequest{
+		OutputFile:   path.Join(entityRandomValuesDir, "randomvalues.go"),
+		TemplateName: path.Join("core", "random_values"),
+		Data: struct {
+			ProjectName string
+		}{
+			ProjectName: project.Identifier,
+		},
 	})
 
 	return nil

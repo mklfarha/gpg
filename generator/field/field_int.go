@@ -30,6 +30,7 @@ func IntFieldTemplate(f entity.Field, e entity.Entity) Template {
 		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.IntFieldType,
 		GenFieldType:               "IntFieldType",
+		GenRandomValue:             "randomvalues.GetRandomIntValue()",
 		IsPrimary:                  f.StorageConfig.PrimaryKey,
 		Required:                   f.Required,
 		Tags:                       helpers.ResolveTags(f),
