@@ -22,6 +22,14 @@ func {{.Name}}EntityToProto(e entity.{{.Type}}) *pb.{{.Name}} {
     }
 }
 
+func {{.Name}}EntitiesToProto(es []entity.{{.Type}}) []*pb.{{.Name}} {
+    res := []*pb.{{.Name}}{}
+    for _, e := range es {
+        res = append(res, {{.Name}}EntityToProto(e))
+    }
+    return res
+}
+
 func {{.Name}}ProtoToEntity(m *pb.{{.Name}}) entity.{{.Type}} {
     return entity.{{.Type}}{ {{range $field := .Fields}}
         {{$field.Name}}: {{$field.ProtoFromMapper}},{{end}}

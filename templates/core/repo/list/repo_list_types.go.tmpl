@@ -1,0 +1,34 @@
+package list 
+
+import (
+	entitytypes "{{.ProjectName}}/core/entity/types"
+	"go.einride.tech/aip/filtering"
+	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"	
+)
+
+
+type ListEntity interface {
+	FieldIdentfierToTypeMap() map[string]entitytypes.FieldType
+	DependantFieldIdentifierToTypeMap() map[string]map[string]entitytypes.FieldType
+	EntityIdentifier() string
+}
+
+type ListRequest interface {
+	GetFilter() filtering.Filter
+	GetFilteringDeclarations() *filtering.Declarations
+}
+
+type SingleClauseRequest struct {
+	cex                     *expr.Expr_Call
+	declarations            *filtering.Declarations
+	fieldIdentifier         string
+	isDependant             bool
+	isDependantMulti        bool
+	dependantFieldIdentifer string
+}
+
+type SingleClauseResponse struct {
+	ResolvedClause string
+	JSONTable      string
+	JSONTableName  string
+}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/gertd/go-pluralize"
 	"github.com/maykel/gpg/generator"
+	"github.com/maykel/gpg/generator/field"
 	"github.com/maykel/gpg/generator/helpers"
 )
 
@@ -15,6 +16,7 @@ type listData struct {
 	EntityIdentifier  string
 	EntityName        string
 	EntityNamePlural  string
+	Fields            []field.Template
 }
 
 func generateList(ctx context.Context, req coreSubModuleRequest) error {
@@ -25,6 +27,7 @@ func generateList(ctx context.Context, req coreSubModuleRequest) error {
 		EntityIdentifier:  req.Entity.Identifier,
 		EntityName:        helpers.ToCamelCase(req.Entity.Identifier),
 		EntityNamePlural:  pl.Plural(helpers.ToCamelCase(req.Entity.Identifier)),
+		Fields:            req.Fields,
 	}
 	err := generator.GenerateFile(ctx, generator.FileRequest{
 		OutputFile:   path.Join(req.ModuleDir, req.Entity.Identifier, "types", "list.go"),

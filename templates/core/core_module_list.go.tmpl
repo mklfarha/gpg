@@ -5,6 +5,7 @@ import (
 	"fmt"
 	entity "{{.ProjectIdentifier}}/core/entity/{{.EntityIdentifier}}"
 	"{{.ProjectIdentifier}}/core/module/{{.EntityIdentifier}}/types"
+	repogen "{{.ProjectIdentifier}}/core/repository/gen"
 )
 
 func (m *module) List(ctx context.Context,
@@ -14,6 +15,34 @@ func (m *module) List(ctx context.Context,
 	if err != nil {
 		return types.ListResponse{}, err
 	}
-	fmt.Printf("query: %s", query)
-	return types.ListResponse{}, nil
+
+	fmt.Printf("query: %s \n", query)
+
+	rows, err := m.repository.DB.QueryContext(ctx, query)
+	if err != nil {
+		return types.ListResponse{}, err
+	}
+
+	defer rows.Close()
+	var items []repogen.{{.EntityName}}
+	for rows.Next() {
+
+		var i repogen.{{.EntityName}}
+		if err := rows.Scan( {{range $field := .Fields}}
+			&i.{{$field.Name}},{{end}}			
+		); err != nil {
+			return types.ListResponse{}, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return types.ListResponse{}, err
+	}
+	if err := rows.Err(); err != nil {
+		return types.ListResponse{}, err
+	}
+
+	return types.ListResponse{
+		{{.EntityNamePlural}}: mapModelsToEntities(items),
+	}, nil	
 }

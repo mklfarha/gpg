@@ -7,6 +7,7 @@ import (
 	
 	"{{.ProjectIdentifier}}/core/module/{{.FinalIdentifier}}/types"
 	pb "{{.ProjectIdentifier}}/idl/gen"
+	pbmapper "nuzur_entity_manager/idl/mapper/{{.FinalIdentifier}}"
 
 	"go.einride.tech/aip/filtering"
 	"go.einride.tech/aip/ordering"
@@ -58,7 +59,7 @@ func (s *server) List{{.NamePlural}}(ctx context.Context, request *pb.List{{.Nam
 
 	// Build the response.
 	response := &pb.List{{.NamePlural}}Response{
-		//{{.NamePlural}}: result.{{.NamePlural}},
+		{{.NamePlural}}: pbmapper.{{.Name}}EntitiesToProto(result.{{.NamePlural}}),		
 	}
 	// Set the next page token.
 	if result.HasNextPage {

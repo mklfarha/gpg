@@ -1,14 +1,18 @@
 package repository
 
 import (
+	"context"
+
 	"database/sql"
 	
 	{{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"
+	"{{.ProjectName}}/core/repository/list"
 )
 
 type Implementation struct {
 	Queries *{{.ProjectName}}db.Queries
 	DB      *sql.DB
+	List    *list.Implementation
 }
 
 func New(db *sql.DB) *Implementation {
@@ -16,5 +20,10 @@ func New(db *sql.DB) *Implementation {
 	return &Implementation{
 		Queries: queries,
 		DB:      db,
+		List:    list.New(),
 	}
+}
+
+func (i *Implementation) BuildListEntityQuery(ctx context.Context, request list.ListRequest, entity list.ListEntity) (string, error) {
+	return i.List.BuildListEntityQuery(ctx, request, entity)
 }

@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"fmt"
+	"os"
 	"path"
 
 	"github.com/maykel/gpg/entity"
@@ -16,8 +17,13 @@ func GenerateCoreRepository(ctx context.Context, rootPath string, project entity
 
 	sqlDir := path.Join(repoDir, generator.CORE_REPO_SQL_DIR)
 
+	err := os.RemoveAll(repoDir)
+	if err != nil {
+		fmt.Printf("ERROR: Deleting repo directory\n")
+	}
+
 	// generate sql files
-	err := generateRepositorySQL(ctx, project, sqlDir)
+	err = generateRepositorySQL(ctx, project, sqlDir)
 	if err != nil {
 		return err
 	}
@@ -32,16 +38,8 @@ func GenerateCoreRepository(ctx context.Context, rootPath string, project entity
 	// ignoring error on purpose
 	executeSkeema(ctx, project, sqlDir)
 
-	// list
-	err = generator.GenerateFile(ctx, generator.FileRequest{
-		OutputFile:   path.Join(repoDir, "list.go"),
-		TemplateName: path.Join("core", "repo", "repo_list"),
-		Data: struct {
-			ProjectName string
-		}{
-			ProjectName: project.Identifier,
-		},
-	})
+	// list module
+	err = generateRepositoryListCode(ctx, repoDir, project)
 	if err != nil {
 		return err
 	}
