@@ -15,3 +15,19 @@ const (
 	IntFieldType                   FieldType = "int"
 	FloatFieldType                 FieldType = "float"
 )
+
+func FieldTypeToSQL(ft FieldType) string {
+	switch(ft) {
+		case StringFieldType, UUIDFieldType:
+			return "VARCHAR"
+		case SingleDependantEntityFieldType, MultiDependantEntityFieldType, RawJSONFieldType, MultiEnumFieldType:
+			return "JSON"
+		case SingleEnumFieldType, BooleanFieldType, IntFieldType:
+			return "INT"
+		case TimestampFieldType:
+			return "DATETIME"
+		case FloatFieldType:
+			return "DOUBLE"	
+	}
+	return ""
+}

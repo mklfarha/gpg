@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"go.einride.tech/aip/filtering"
+	entitytypes "{{.ProjectName}}/core/entity/types"
 	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"	
 )
 
@@ -19,12 +20,18 @@ func New() *Implementation {
 }
 
 func (i *Implementation) BuildListEntityQuery(ctx context.Context, request ListRequest, entity ListEntity) (string, error) {
-	jsonTables := make(map[string]string)
+
+	jsonTables := make(map[string]string)	
 	whereClause, err := buildWhereClauses(
 		request.GetFilter().CheckedExpr.Expr,
 		entity,
 		request.GetFilteringDeclarations(),
 		jsonTables)
+	if err != nil {
+		return "", err
+	}
+
+	orderByClause, err := buildOrderByClause(request, entity, jsonTables)
 	if err != nil {
 		return "", err
 	}
@@ -36,7 +43,7 @@ func (i *Implementation) BuildListEntityQuery(ctx context.Context, request ListR
 
 	jsonTablesFinal := strings.Join(jsonTablesSlice, " ")
 
-	res := fmt.Sprintf("SELECT DISTINCT %s.* FROM %s %s WHERE %s ", entity.EntityIdentifier(), entity.EntityIdentifier(), jsonTablesFinal, whereClause)
+	res := fmt.Sprintf("SELECT DISTINCT %s.* FROM %s %s WHERE %s %s", entity.EntityIdentifier(), entity.EntityIdentifier(), jsonTablesFinal, whereClause, orderByClause)
 
 	return res, nil
 }
@@ -77,8 +84,6 @@ func buildWhereClauses(ex *expr.Expr, entity ListEntity, declarations *filtering
 	}
 	return "", errors.New("invalid call expression")
 }
-
-
 
 func buildSingleClause(cex *expr.Expr_Call, entity ListEntity, declarations *filtering.Declarations) (SingleClauseResponse, error) {
 	if len(cex.Args) != 2 {
@@ -126,3 +131,101 @@ func isBaseFunction(f string) bool {
 	return false
 }
 
+func buildOrderByClause(request ListRequest, entity ListEntity, jsonTables map[string]string) (string, error) {
+	ofs, err := isValidOrderby(request, entity)
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Printf("fields: %v \n", ofs)
+	res := ""
+	if len(ofs) > 0 {
+		res = "ORDER BY "
+		orderByPairs := []string{}
+		for _, f := range ofs {
+			order := "ASC"
+			if f.desc {
+				order = "DESC"
+			}
+			if !f.isDependant {
+				orderByPairs = append(orderByPairs, fmt.Sprintf("%s %s", f.fieldIdentifier, order))
+			} else if f.isDependantMulti {
+				/* 
+				json_table_name, json_table := resolveJSONTable(SingleClauseRequest{
+					fieldIdentifier:         f.fieldIdentifier,
+					dependantFieldIdentifer: f.dependantFieldIdentifer,
+					isDependant:             f.isDependant,
+					isDependantMulti:        f.isDependantMulti,
+				}, entitytypes.FieldTypeToSQL(f.fieldType))
+				jsonTables[json_table_name] = json_table
+				orderByPairs = append(orderByPairs, fmt.Sprintf("%s.%s %s", json_table_name, f.dependantFieldIdentifer, order))
+				*/
+				return "", errors.New("dependant list entities are not supported in sorting")
+			} else {
+				left := buildJSONExtract(SingleClauseRequest{
+					fieldIdentifier:         f.fieldIdentifier,
+					dependantFieldIdentifer: f.dependantFieldIdentifer,
+					isDependant:             f.isDependant,
+					isDependantMulti:        f.isDependantMulti,
+				})
+				orderByPairs = append(orderByPairs, fmt.Sprintf("%s %s", left, order))
+			}
+		}
+		res += strings.Join(orderByPairs, ", ")
+	}
+	return res, nil
+}
+
+func isValidOrderby(request ListRequest, entity ListEntity) ([]OrderByField, error) {
+	res := []OrderByField{}
+	fields := request.GetOrderBy().Fields
+	fieldsMap := entity.FieldIdentfierToTypeMap()
+	dependantFieldMap := entity.DependantFieldIdentifierToTypeMap()
+	if len(fields) > 0 {
+		for _, f := range fields {
+
+			if strings.Contains(f.Path, ".") {
+				parts := strings.Split(f.Path, ".")
+				if len(parts) != 2 {
+					return res, errors.New("invalid dependant sort by field")
+				}
+
+				subFieldsMap, found := dependantFieldMap[parts[0]]
+				if !found {
+					return res, errors.New("invalid sort by field (2)")
+				}
+				subFieldType, found := subFieldsMap[parts[1]]
+				if !found {
+					return res, errors.New("invalid sort by field (3)")
+				}
+
+				isDependantMulti := false
+				if fieldsMap[parts[0]] == entitytypes.MultiDependantEntityFieldType {
+					isDependantMulti = true
+				}
+				res = append(res, OrderByField{
+					path:                    f.Path,
+					isDependant:             true,
+					isDependantMulti:        isDependantMulti,
+					fieldIdentifier:         parts[0],
+					dependantFieldIdentifer: parts[1],
+					desc:                    f.Desc,
+					fieldType:               subFieldType,
+				})
+			} else {
+				fieldType, found := fieldsMap[f.Path]
+				if !found {
+					return res, errors.New("invalid sort by field (1)")
+				}
+				res = append(res, OrderByField{
+					path:            f.Path,
+					fieldIdentifier: f.Path,
+					desc:            f.Desc,
+					fieldType:       fieldType,
+				})
+
+			}
+		}
+	}
+	return res, nil
+}
