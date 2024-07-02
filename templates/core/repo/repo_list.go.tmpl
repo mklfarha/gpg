@@ -2,7 +2,9 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strings"
 
 	entitytypes "{{.ProjectName}}/core/entity/types"
 
@@ -10,6 +12,7 @@ import (
 	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
+
 type ListEntity interface {
 	FieldIdentfierToTypeMap() map[string]entitytypes.FieldType
 	DependantFieldIdentifierToTypeMap() map[string]map[string]entitytypes.FieldType
@@ -22,35 +25,68 @@ type ListRequest interface {
 }
 
 func (i *Implementation) BuildListEntityQuery(ctx context.Context, request ListRequest, entity ListEntity) (string, error) {
-	query := buildQuery(request, entity)
-	return query, nil
+	return buildQuery(request, entity)
 }
 
-func buildQuery(request ListRequest, entity ListEntity) string {
-	res := fmt.Sprintf("SELECT * FROM %s WHERE ", entity.EntityIdentifier())
+func buildQuery(request ListRequest, entity ListEntity) (string, error) {
 
-	whereClause := buildClause(request.GetFilter().CheckedExpr.Expr, entity, request.GetFilteringDeclarations())
+	jsonTables := make(map[string]string)
+	whereClause, err := buildClauses(
+		request.GetFilter().CheckedExpr.Expr,
+		entity,
+		request.GetFilteringDeclarations(),
+		jsonTables)
+	if err != nil {
+		return "", err
+	}
 
-	res += whereClause
+	jsonTablesSlice := []string{}
+	for _, jt := range jsonTables {
+		jsonTablesSlice = append(jsonTablesSlice, jt)
+	}
 
-	return res
+	jsonTablesFinal := strings.Join(jsonTablesSlice, " ")
+
+	res := fmt.Sprintf("SELECT DISTINCT %s.* FROM %s %s WHERE %s ", entity.EntityIdentifier(), entity.EntityIdentifier(), jsonTablesFinal, whereClause)
+
+	return res, nil
 }
 
-func buildClause(ex *expr.Expr, entity ListEntity, declarations *filtering.Declarations) string {
+func buildClauses(ex *expr.Expr, entity ListEntity, declarations *filtering.Declarations, jsonTables map[string]string) (string, error) {
 	cex := ex.GetCallExpr()
-	if isBaseFunction(cex.Function) {
-		return buildSingleClause(cex, entity, declarations)
-	}
+	if cex != nil {
+		if isBaseFunction(cex.Function) {
+			res, err := buildSingleClause(cex, entity, declarations)
+			if err != nil {
+				return "", nil
+			}
+			if res.JSONTable != "" {
+				if _, found := jsonTables[res.JSONTableName]; !found {
+					jsonTables[res.JSONTableName] = res.JSONTable
+				}
+			}
+			return res.ResolvedClause, nil
+		}
 
-	if cex.Function == filtering.FunctionAnd {
-		return fmt.Sprintf("(%s AND %s)", buildClause(cex.Args[0], entity, declarations), buildClause(cex.Args[1], entity, declarations))
-	}
+		operator := ""
+		switch cex.Function {
+		case filtering.FunctionAnd:
+			operator = "AND"
+		case filtering.FunctionOr:
+			operator = "OR"
+		}
 
-	if cex.Function == filtering.FunctionOr {
-		return fmt.Sprintf("(%s OR %s)", buildClause(cex.Args[0], entity, declarations), buildClause(cex.Args[1], entity, declarations))
+		left, err := buildClauses(cex.Args[0], entity, declarations, jsonTables)
+		if err != nil {
+			return "", err
+		}
+		right, err := buildClauses(cex.Args[1], entity, declarations, jsonTables)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("(%s %s %s)", left, operator, right), nil
 	}
-
-	return cex.Function
+	return "", errors.New("invalid call expression")
 }
 
 func isBaseFunction(f string) bool {
@@ -69,9 +105,9 @@ func isBaseFunction(f string) bool {
 	return false
 }
 
-func buildSingleClause(cex *expr.Expr_Call, entity ListEntity, declarations *filtering.Declarations) string {
+func buildSingleClause(cex *expr.Expr_Call, entity ListEntity, declarations *filtering.Declarations) (SingleClauseResponse, error) {
 	if len(cex.Args) != 2 {
-		return ""
+		return SingleClauseResponse{}, errors.New("invalid argument count")
 	}
 	fieldIdentifier := ""
 	isDependant := false
@@ -99,12 +135,15 @@ func buildSingleClause(cex *expr.Expr_Call, entity ListEntity, declarations *fil
 	return handleClauseByType(request, entity, fieldType)
 }
 
-func handleClauseByType(req SingleClauseRequest, entity ListEntity, fieldType entitytypes.FieldType) string {
+func handleClauseByType(req SingleClauseRequest, entity ListEntity, fieldType entitytypes.FieldType) (SingleClauseResponse, error) {
 	switch fieldType {
-	case entitytypes.StringFieldType, entitytypes.UUIDFieldType:
+	case entitytypes.StringFieldType, entitytypes.UUIDFieldType, entitytypes.RawJSONFieldType:
 		return buildStringClause(req)
 	case entitytypes.SingleEnumFieldType:
-		return buildSingleEnumClause(req)
+		return buildEnumClause(req)
+	case entitytypes.MultiEnumFieldType:
+		req.isDependantMulti = true
+		return buildEnumClause(req)
 	case entitytypes.SingleDependantEntityFieldType:
 		typeMap := entity.DependantFieldIdentifierToTypeMap()
 		dependantTypeMap := typeMap[req.fieldIdentifier]
@@ -116,8 +155,16 @@ func handleClauseByType(req SingleClauseRequest, entity ListEntity, fieldType en
 		dependantFieldType := dependantTypeMap[req.dependantFieldIdentifer]
 		req.isDependantMulti = true
 		return handleClauseByType(req, entity, dependantFieldType)
+	case entitytypes.IntFieldType:
+		return buildIntClause(req)
+	case entitytypes.FloatFieldType:
+		return buildFloatClause(req)
+	case entitytypes.BooleanFieldType:
+		return buildBooleanClause(req)
+	case entitytypes.TimestampFieldType:
+		return buildTimestampClause(req)
 	}
-	return ""
+	return SingleClauseResponse{}, errors.New("unsupported field type")
 }
 
 type SingleClauseRequest struct {
@@ -127,6 +174,12 @@ type SingleClauseRequest struct {
 	isDependant             bool
 	isDependantMulti        bool
 	dependantFieldIdentifer string
+}
+
+type SingleClauseResponse struct {
+	ResolvedClause string
+	JSONTable      string
+	JSONTableName  string
 }
 
 func buildLeftOperator(req SingleClauseRequest) string {
@@ -143,19 +196,23 @@ func buildJSONExtract(req SingleClauseRequest) string {
 	return fmt.Sprintf("JSON_EXTRACT(%s, '$.%s')", req.fieldIdentifier, req.dependantFieldIdentifer)
 }
 
-func buildStringClause(req SingleClauseRequest) string {
+func buildStringClause(req SingleClauseRequest) (SingleClauseResponse, error) {
 	cex := req.cex
 	left := buildLeftOperator(req)
 	switch cex.Function {
 	case filtering.FunctionEquals, filtering.FunctionNotEquals:
-		return fmt.Sprintf("%s %s '%s'", left, cex.Function, cex.Args[1].GetConstExpr().GetStringValue())
+		return SingleClauseResponse{
+			ResolvedClause: fmt.Sprintf("%s %s '%s'", left, cex.Function, cex.Args[1].GetConstExpr().GetStringValue()),
+		}, nil
 	case filtering.FunctionHas:
-		return fmt.Sprintf("%s like '%%%s%%'", left, cex.Args[1].GetConstExpr().GetStringValue())
+		return SingleClauseResponse{
+			ResolvedClause: fmt.Sprintf("%s like '%%%s%%'", left, cex.Args[1].GetConstExpr().GetStringValue()),
+		}, nil
 	}
-	return "unsupported function for type string"
+	return SingleClauseResponse{}, errors.New("unsupported function for type string")
 }
 
-func buildSingleEnumClause(req SingleClauseRequest) string {
+func buildEnumClause(req SingleClauseRequest) (SingleClauseResponse, error) {
 	cex := req.cex
 	declarations := req.declarations
 	left := buildLeftOperator(req)
@@ -163,16 +220,134 @@ func buildSingleEnumClause(req SingleClauseRequest) string {
 	if req.isDependant {
 		name = fmt.Sprintf("%s.%s", req.fieldIdentifier, req.dependantFieldIdentifer)
 	}
+
 	enumType, found := declarations.LookupEnumIdent(name)
 	if found {
 		value := cex.Args[1].GetIdentExpr().Name
 		numValue := enumType.Descriptor().Values().ByName(protoreflect.Name(value)).Number()
 		switch cex.Function {
 		case filtering.FunctionEquals, filtering.FunctionNotEquals:
-			return fmt.Sprintf("%s %s %d", left, cex.Function, numValue)
+			if req.isDependant && req.isDependantMulti {
+				return SingleClauseResponse{
+					ResolvedClause: fmt.Sprintf("JSON_CONTAINS(%s, '%d', '$')", left, numValue),
+				}, nil
+			}
+			return SingleClauseResponse{
+				ResolvedClause: fmt.Sprintf("%s %s %d", left, cex.Function, numValue),
+			}, nil
 		}
-		return "unsupported function for type single enum"
+		return SingleClauseResponse{}, errors.New("unsupported function for type single enum")
 	}
 
-	return "enum declaration not found"
+	return SingleClauseResponse{}, errors.New("enum declaration not found")
+}
+
+func buildIntClause(req SingleClauseRequest) (SingleClauseResponse, error) {
+	cex := req.cex
+	left := buildLeftOperator(req)
+	right := cex.Args[1].GetConstExpr().GetInt64Value()
+	sqlType := "INT"
+	if req.isDependant {
+		if req.isDependantMulti {
+			json_table_name, json_table := resolveJSONTable(req, sqlType)
+			return SingleClauseResponse{
+				ResolvedClause: fmt.Sprintf("%s.%s %s %d", json_table_name, req.dependantFieldIdentifer, cex.Function, right),
+				JSONTable:      json_table,
+				JSONTableName:  json_table_name,
+			}, nil
+		}
+		return SingleClauseResponse{
+			ResolvedClause: fmt.Sprintf("convert(%s, %s) %s %d", left, sqlType, cex.Function, right),
+		}, nil
+	}
+	return SingleClauseResponse{
+		ResolvedClause: fmt.Sprintf("%s %s %d", left, cex.Function, right),
+	}, nil
+}
+
+func buildFloatClause(req SingleClauseRequest) (SingleClauseResponse, error) {
+	cex := req.cex
+	left := buildLeftOperator(req)
+	right := cex.Args[1].GetConstExpr().GetDoubleValue()
+	sqlType := "DOUBLE"
+	if req.isDependant {
+		if req.isDependantMulti {
+			json_table_name, json_table := resolveJSONTable(req, sqlType)
+			return SingleClauseResponse{
+				ResolvedClause: fmt.Sprintf("%s.%s %s %f", json_table_name, req.dependantFieldIdentifer, cex.Function, right),
+				JSONTable:      json_table,
+				JSONTableName:  json_table_name,
+			}, nil
+		}
+		return SingleClauseResponse{
+			ResolvedClause: fmt.Sprintf("convert(%s, %s) %s %f", left, sqlType, cex.Function, right),
+		}, nil
+	}
+	return SingleClauseResponse{
+		ResolvedClause: fmt.Sprintf("%s %s %f", left, cex.Function, right),
+	}, nil
+}
+
+func buildBooleanClause(req SingleClauseRequest) (SingleClauseResponse, error) {
+	cex := req.cex
+	if cex.Function != filtering.FunctionEquals {
+		return SingleClauseResponse{}, errors.New("unsupported function in dependant entity")
+	}
+	left := buildLeftOperator(req)
+	booleanIdent := cex.Args[1].GetIdentExpr().GetName()
+	numValue := 0
+	if booleanIdent == "true" {
+		numValue = 1
+	}
+	if req.isDependant {
+		if req.isDependantMulti {
+			return SingleClauseResponse{
+				ResolvedClause: fmt.Sprintf("JSON_CONTAINS(%s, '%s', '$')", left, booleanIdent),
+			}, nil
+		}
+		return SingleClauseResponse{
+			ResolvedClause: fmt.Sprintf("%s %s '%s'", left, cex.Function, booleanIdent),
+		}, nil
+	}
+	return SingleClauseResponse{
+		ResolvedClause: fmt.Sprintf("%s %s %d", left, cex.Function, numValue),
+	}, nil
+}
+
+func buildTimestampClause(req SingleClauseRequest) (SingleClauseResponse, error) {
+	cex := req.cex
+	left := buildLeftOperator(req)
+	right := cex.Args[1].GetConstExpr().GetStringValue()
+	sqlType := "DATETIME"
+	if req.isDependant {
+		if req.isDependantMulti {
+			json_table_name, json_table := resolveJSONTable(req, sqlType)
+			return SingleClauseResponse{
+				ResolvedClause: fmt.Sprintf("%s.%s %s '%s'", json_table_name, req.dependantFieldIdentifer, cex.Function, right),
+				JSONTable:      json_table,
+				JSONTableName:  json_table_name,
+			}, nil
+		}
+		return SingleClauseResponse{
+			ResolvedClause: fmt.Sprintf("convert(%s, %s) %s '%s'", left, sqlType, cex.Function, right),
+		}, nil
+	}
+
+	return SingleClauseResponse{
+		ResolvedClause: fmt.Sprintf("%s %s '%s'", left, cex.Function, right),
+	}, nil
+}
+
+func resolveJSONTable(req SingleClauseRequest, sqlType string) (json_table_name, json_table string) {
+	json_table_name = fmt.Sprintf("%s_%s", req.fieldIdentifier, req.dependantFieldIdentifer)
+	json_table = fmt.Sprintf(`
+			INNER JOIN JSON_TABLE(
+				%s,
+				'$[*]'
+				COLUMNS(
+					%s %s PATH '$.%s'            
+				)
+			) AS %s
+			`, req.fieldIdentifier, req.dependantFieldIdentifer, sqlType, req.dependantFieldIdentifer, json_table_name)
+	return
 }

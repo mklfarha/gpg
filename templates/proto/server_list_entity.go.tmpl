@@ -88,6 +88,10 @@ func validatePageSize(request *pb.List{{.NamePlural}}Request) error {
 func entityDeclarations() *filtering.Declarations{
     declarations, err := filtering.NewDeclarations(
 		filtering.DeclareStandardFunctions(),
+		// boolean values 
+		filtering.DeclareIdent("true", filtering.TypeBool),
+		filtering.DeclareIdent("false", filtering.TypeBool),
+
         {{range $entityDeclaration := .Declarations}}
 			//{{$entityDeclaration.Identifier}}
 			{{range $field := $entityDeclaration.Fields}}				
