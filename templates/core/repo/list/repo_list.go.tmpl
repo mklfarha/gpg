@@ -19,7 +19,11 @@ func New() *Implementation {
 	}
 }
 
-func (i *Implementation) BuildListEntityQuery(ctx context.Context, request ListRequest, entity ListEntity) (string, error) {
+func (i *Implementation) BuildListEntityQuery(
+	ctx context.Context,
+	request ListRequest,
+	entity ListEntity,
+	onlyCount bool) (string, error) {
 
 	jsonTables := make(map[string]string)	
 	whereClause, err := buildWhereClauses(
@@ -43,9 +47,27 @@ func (i *Implementation) BuildListEntityQuery(ctx context.Context, request ListR
 
 	jsonTablesFinal := strings.Join(jsonTablesSlice, " ")
 
-	res := fmt.Sprintf("SELECT DISTINCT %s.* FROM %s %s WHERE %s %s", entity.EntityIdentifier(), entity.EntityIdentifier(), jsonTablesFinal, whereClause, orderByClause)
+	limit := buildLimit(request)
 
-	return res, nil
+	if onlyCount {
+		return fmt.Sprintf(
+			"SELECT DISTINCT count(%s.%s) FROM %s %s WHERE %s",
+			entity.EntityIdentifier(),
+			entity.PrimaryKeyIdentifier(),
+			entity.EntityIdentifier(),
+			jsonTablesFinal,
+			whereClause,			
+		), nil
+	}
+	return fmt.Sprintf(
+		"SELECT DISTINCT %s.* FROM %s %s WHERE %s %s %s",
+		entity.EntityIdentifier(),
+		entity.EntityIdentifier(),
+		jsonTablesFinal,
+		whereClause,
+		orderByClause,
+		limit,
+	), nil
 }
 
 func buildWhereClauses(ex *expr.Expr, entity ListEntity, declarations *filtering.Declarations, jsonTables map[string]string) (string, error) {
@@ -228,4 +250,8 @@ func isValidOrderby(request ListRequest, entity ListEntity) ([]OrderByField, err
 		}
 	}
 	return res, nil
+}
+
+func buildLimit(request ListRequest) string {
+	return fmt.Sprintf("LIMIT %d, %d ", request.GetOffset(), request.GetPageSize())
 }

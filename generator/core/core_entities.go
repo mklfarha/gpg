@@ -14,14 +14,15 @@ import (
 )
 
 type EntityTemplate struct {
-	ProjectName string
-	Package     string
-	Imports     []string
-	EntityName  string
-	Identifier  string
-	Fields      []field.Template
-	JSON        bool
-	JSONField   field.Template
+	ProjectName          string
+	Package              string
+	Imports              []string
+	EntityName           string
+	Identifier           string
+	Fields               []field.Template
+	JSON                 bool
+	JSONField            field.Template
+	PrimaryKeyIdentifier string
 }
 
 type EnumTemplate struct {
@@ -92,13 +93,15 @@ func GenerateCoreEntities(ctx context.Context, rootPath string, project entity.P
 
 func resolveEntityTemplate(e entity.Entity, project entity.Project) (EntityTemplate, map[string]any) {
 	fields, imports := field.ResolveFieldsAndImports(e.Fields, e, nil)
+	primaryKey := helpers.EntityPrimaryKey(e)
 	return EntityTemplate{
-		ProjectName: project.Identifier,
-		Package:     e.Identifier,
-		EntityName:  helpers.ToCamelCase(e.Identifier),
-		Identifier:  e.Identifier,
-		Fields:      fields,
-		Imports:     helpers.MapKeys(imports),
+		ProjectName:          project.Identifier,
+		Package:              e.Identifier,
+		EntityName:           helpers.ToCamelCase(e.Identifier),
+		Identifier:           e.Identifier,
+		Fields:               fields,
+		Imports:              helpers.MapKeys(imports),
+		PrimaryKeyIdentifier: primaryKey.Identifier,
 	}, imports
 }
 

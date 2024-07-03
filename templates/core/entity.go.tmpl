@@ -33,6 +33,12 @@ func (e {{.EntityName}}) EntityIdentifier() string {
     return "{{.Identifier}}"
 }
 
+{{if eq .JSON false}}
+func (e {{.EntityName}}) PrimaryKeyIdentifier() string {    
+    return "{{.PrimaryKeyIdentifier}}"
+}
+{{end}}
+
 func (e {{.EntityName}}) FieldIdentfierToTypeMap() map[string]types.FieldType {
     res := make(map[string]types.FieldType)
     {{range $field := .Fields}}

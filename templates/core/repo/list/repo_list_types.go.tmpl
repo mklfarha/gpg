@@ -13,12 +13,15 @@ type ListEntity interface {
 	FieldIdentfierToTypeMap() map[string]entitytypes.FieldType
 	DependantFieldIdentifierToTypeMap() map[string]map[string]entitytypes.FieldType
 	EntityIdentifier() string
+	PrimaryKeyIdentifier() string
 }
 
 type ListRequest interface {
 	GetFilter() filtering.Filter
 	GetFilteringDeclarations() *filtering.Declarations
 	GetOrderBy() ordering.OrderBy
+	GetPageSize() int32
+	GetOffset() int64
 }
 
 type SingleClauseRequest struct {

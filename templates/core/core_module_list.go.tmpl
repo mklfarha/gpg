@@ -11,7 +11,7 @@ import (
 func (m *module) List(ctx context.Context,
 	request types.ListRequest,
 	opts ...Option) (types.ListResponse, error) {
-	query, err := m.repository.BuildListEntityQuery(ctx, request, entity.{{.EntityName}}{})
+	query, err := m.repository.BuildListEntityQuery(ctx, request, entity.{{.EntityName}}{}, false)
 	if err != nil {
 		return types.ListResponse{}, err
 	}
@@ -26,7 +26,6 @@ func (m *module) List(ctx context.Context,
 	defer rows.Close()
 	var items []repogen.{{.EntityName}}
 	for rows.Next() {
-
 		var i repogen.{{.EntityName}}
 		if err := rows.Scan( {{range $field := .Fields}}
 			&i.{{$field.Name}},{{end}}			
@@ -42,7 +41,46 @@ func (m *module) List(ctx context.Context,
 		return types.ListResponse{}, err
 	}
 
+	hasNextPage, err := m.listHasNextPage(ctx, request, opts...)
+	if err != nil {
+		return types.ListResponse{}, err
+	}
+
 	return types.ListResponse{
 		{{.EntityNamePlural}}: mapModelsToEntities(items),
+		HasNextPage: hasNextPage,
 	}, nil	
+}
+
+func (m *module) ListCount(ctx context.Context,
+	request types.ListRequest,
+	opts ...Option) (int64, error) {
+	query, err := m.repository.BuildListEntityQuery(ctx, request, entity.{{.EntityName}}{}, true)
+	if err != nil {
+		return -1, err
+	}
+
+	fmt.Printf("query count: %s \n", query)
+	
+	var count int64
+	err = m.repository.DB.QueryRow(query).Scan(&count)
+	if err != nil {
+		return -1, err
+	}
+
+	return count, nil
+}
+
+func (m *module) listHasNextPage(ctx context.Context,
+	request types.ListRequest,
+	opts ...Option) (bool, error) {
+		count, err := m.ListCount(ctx, request, opts...)
+		if err != nil {
+			return false, err
+		}
+
+		if request.GetOffset() + int64(request.GetPageSize()) < count {
+			return true, nil
+		}
+		return false, nil
 }

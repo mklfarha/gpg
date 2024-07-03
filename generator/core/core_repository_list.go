@@ -10,6 +10,7 @@ import (
 
 func generateRepositoryListCode(ctx context.Context, repoDir string, project entity.Project) error {
 	listDir := path.Join(repoDir, "list")
+
 	// list
 	err := generator.GenerateFile(ctx, generator.FileRequest{
 		OutputFile:   path.Join(listDir, "list.go"),
