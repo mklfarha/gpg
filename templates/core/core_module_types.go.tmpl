@@ -1,0 +1,11 @@
+package types 
+
+import (
+    "{{.Identifier}}/core/repository"
+    "{{.Identifier}}/monitoring"
+)
+
+type ModuleParams struct {    
+    Repository *repository.Implementation
+    Monitoring *monitoring.Implementation
+}

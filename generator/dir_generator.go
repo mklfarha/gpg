@@ -28,6 +28,7 @@ var (
 	WEB_DIR                   = "web"
 	CUSTOM_DIR                = "custom"
 	CLI_DIR                   = "cli"
+	MONITORING_DIR            = "monitoring"
 )
 
 var projectStructure = []string{

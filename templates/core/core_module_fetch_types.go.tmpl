@@ -4,6 +4,7 @@ import (
     entity "{{.ProjectName}}/core/entity/{{.Package}}"
 	{{range $import := .Imports}}
     "{{$import}}" {{end}}	
+    "go.uber.org/zap/zapcore"
 )
 
 type Fetch{{.Select.Name}}Request struct { {{range $field := .Select.Fields}} 
@@ -14,6 +15,15 @@ type Fetch{{.Select.Name}}Request struct { {{range $field := .Select.Fields}}
     OrderBy string
     Sort string
     {{end}}
+}
+
+func (r Fetch{{.Select.Name}}Request) MarshalLogObject(e zapcore.ObjectEncoder) error {
+     {{range $field := .Select.Fields}} 
+        {{if eq $field.Field.Type "uuid.UUID"}}
+        e.AddString("{{$field.Field.Identifier}}", r.{{$field.Field.Name}}.String())
+        {{end}}
+     {{end}}
+     return nil
 }
 
 type Fetch{{.Select.Name}}Response struct {

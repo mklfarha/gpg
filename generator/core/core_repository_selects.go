@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 
+	"github.com/iancoleman/strcase"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator/field"
 	"github.com/maykel/gpg/generator/helpers"
@@ -84,11 +85,13 @@ func ResolveSelectStatements(project entity.Project, e entity.Entity) []RepoSche
 		}
 
 		selects = append(selects, RepoSchemaSelectStatement{
-			Name:          name,
-			GraphName:     name,
-			Fields:        fields,
-			TimeFields:    timeFields,
-			SortSupported: true,
+			Name:             name,
+			Identifier:       strcase.ToSnake(name),
+			EntityIdentifier: e.Identifier,
+			GraphName:        name,
+			Fields:           fields,
+			TimeFields:       timeFields,
+			SortSupported:    true,
 		})
 	}
 

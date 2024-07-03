@@ -158,8 +158,7 @@ func buildOrderByClause(request ListRequest, entity ListEntity, jsonTables map[s
 	if err != nil {
 		return "", err
 	}
-
-	fmt.Printf("fields: %v \n", ofs)
+	
 	res := ""
 	if len(ofs) > 0 {
 		res = "ORDER BY "

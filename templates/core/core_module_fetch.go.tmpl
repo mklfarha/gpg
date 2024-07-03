@@ -7,6 +7,9 @@ import (
     {{if ne .Select.IsPrimary true}}
     "errors"
     {{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"{{end}}    
+    {{if eq .Select.IsPrimary true}}
+    "{{.ProjectName}}/monitoring"
+    {{end}}
 )
 
 func (m *module) Fetch{{.Select.Name}}(
@@ -19,7 +22,16 @@ func (m *module) Fetch{{.Select.Name}}(
         ctx,{{range $field := .Select.Fields}}
         req.{{$field.Field.Name}}{{$field.Field.RepoToMapper}},{{end}}
     )
-    if err != nil {
+    if err != nil {  
+        m.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "fetch_{{.Select.Identifier}}",
+			Message: "Error in Fetch{{.Select.Name}}",
+			EntityIdentifier: "{{.Select.EntityIdentifier}}",
+			Layer: monitoring.ModuleServiceLayer,
+			Type: monitoring.EmitTypeError,
+			Data: req,
+			Error: err,
+		})      
         return types.Fetch{{.Select.Name}}Response{}, err
     }
     return types.Fetch{{.Select.Name}}Response{

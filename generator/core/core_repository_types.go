@@ -42,12 +42,14 @@ type RepoSchemaSearch struct {
 }
 
 type RepoSchemaSelectStatement struct {
-	Name          string
-	GraphName     string
-	Fields        []RepoSchemaSelectStatementField
-	IsPrimary     bool
-	TimeFields    []field.Template
-	SortSupported bool
+	Name             string
+	Identifier       string
+	EntityIdentifier string
+	GraphName        string
+	Fields           []RepoSchemaSelectStatementField
+	IsPrimary        bool
+	TimeFields       []field.Template
+	SortSupported    bool
 }
 
 type RepoSchemaSelectStatementField struct {

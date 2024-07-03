@@ -91,6 +91,19 @@ func GenerateCoreModules(ctx context.Context, rootPath string, project entity.Pr
 		}
 	}
 
+	// generate module types
+	err = generator.GenerateFile(ctx, generator.FileRequest{
+		OutputFile:   path.Join(projectDir, generator.CORE_DIR, "types", "types.go"),
+		TemplateName: path.Join("core", "core_module_types"),
+		Data:         project,
+		Funcs: template.FuncMap{
+			"ToCamelCase": helpers.ToCamelCase,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
 	// generate main module
 	return generator.GenerateFile(ctx, generator.FileRequest{
 		OutputFile:   path.Join(projectDir, generator.CORE_DIR, "core.go"),

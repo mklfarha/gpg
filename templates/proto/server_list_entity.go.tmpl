@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
-	"encoding/json"
+	//"encoding/json"
 	
 	"{{.ProjectIdentifier}}/core/module/{{.FinalIdentifier}}/types"
 	pb "{{.ProjectIdentifier}}/idl/gen"
@@ -35,20 +35,24 @@ func (s *server) List{{.NamePlural}}(ctx context.Context, request *pb.List{{.Nam
 		return nil, err
 	}
 
+	/* // enable for debugginh
 	if filter.CheckedExpr != nil {
 		b, _ := json.Marshal(filter.CheckedExpr.Expr)
 		fmt.Printf("filtering: %v \n", string(b))
 	}
+	*/
 
 	orderBy, err := ordering.ParseOrderBy(request)
 	if err != nil {
 		return nil, err
 	}
 
+	/* // enable for debugginh
 	if orderBy.Fields != nil {
 		b, _ := json.Marshal(orderBy.Fields)
 		fmt.Printf("ordering: %v \n", string(b))
 	}
+	*/
 
 	// Query the storage.
 	result, err := s.Core.{{.Name}}().List(ctx, types.ListRequest{

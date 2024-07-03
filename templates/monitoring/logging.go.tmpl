@@ -1,0 +1,35 @@
+package monitoring
+
+import "go.uber.org/zap"
+
+func (i *Implementation) emitLog(req EmitRequest) {
+	if i.config.LoggingEnabled {
+		switch req.Type {
+		case EmitTypeError:
+			i.logger.Error(
+				req.Message,
+				zap.String("action", req.ActionIdentifier),
+				zap.String("entity", req.EntityIdentifier),
+				zap.String("layer", string(req.Layer)),
+				zap.Object("data", req.Data),
+				zap.Error(req.Error),
+			)
+		case EmitTypeWarn:
+			i.logger.Warn(
+				req.Message,
+				zap.String("action", req.ActionIdentifier),
+				zap.String("entity", req.EntityIdentifier),
+				zap.String("layer", string(req.Layer)),
+				zap.Object("data", req.Data),
+			)
+		case EmitTypeInfo, EmitTypeSuccess:
+			i.logger.Info(
+				req.Message,
+				zap.String("action", req.ActionIdentifier),
+				zap.String("entity", req.EntityIdentifier),
+				zap.String("layer", string(req.Layer)),
+				zap.Object("data", req.Data),
+			)
+		}
+	}
+}

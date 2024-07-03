@@ -4,7 +4,9 @@ import (
 	"context"
     "sync"
 	"{{.ProjectName}}/core/repository"
+	coretypes "{{.ProjectName}}/core/types"
 	"{{.ProjectName}}/core/module/{{.EntityIdentifier}}/types"
+	"{{.ProjectName}}/monitoring"
 )
 
 type Module interface {
@@ -24,10 +26,12 @@ type Module interface {
 type module struct {
 	repository *repository.Implementation
     mu sync.Mutex
+	monitoring *monitoring.Implementation
 }
 
-func New(repo *repository.Implementation) Module {
+func New(params coretypes.ModuleParams) Module {
 	return &module{
-		repository: repo,
+		repository: params.Repository,
+		monitoring: params.Monitoring,
 	}
 }
