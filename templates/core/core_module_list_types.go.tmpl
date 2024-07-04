@@ -1,10 +1,12 @@
 package types
 
 import (
+	"encoding/json"
 	entity "{{.ProjectIdentifier}}/core/entity/{{.EntityIdentifier}}"
 
 	"go.einride.tech/aip/filtering"
 	"go.einride.tech/aip/ordering"
+	"go.uber.org/zap/zapcore"
 )
 
 type ListRequest struct {
@@ -13,6 +15,22 @@ type ListRequest struct {
 	Filter      		  	filtering.Filter
 	FilteringDeclarations 	*filtering.Declarations
 	OrderBy     			ordering.OrderBy	
+}
+
+func (r ListRequest) MarshalLogObject(e zapcore.ObjectEncoder) error { 
+    e.AddInt32("page-size", r.PageSize)
+	e.AddInt64("offset", r.Offset)
+	filterJson, err := json.Marshal(r.Filter)
+	if err != nil {
+		return err
+	}
+	e.AddString("filter", string(filterJson))
+	orderJson, err := json.Marshal(r.OrderBy)
+	if err != nil {
+		return err
+	}
+	e.AddString("OrderBy", string(orderJson))
+	return nil         
 }
 
 func (r ListRequest) GetPageSize() int32 {

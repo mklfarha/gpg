@@ -18,6 +18,7 @@ import (
 	"github.com/maykel/gpg/generator/core"
 	"github.com/maykel/gpg/generator/graph"
 	"github.com/maykel/gpg/generator/helpers"
+	"github.com/maykel/gpg/generator/monitoring"
 	"github.com/maykel/gpg/generator/proto"
 	"github.com/maykel/gpg/generator/web"
 	"github.com/urfave/cli"
@@ -174,6 +175,7 @@ func generateAPI(targetDir string, project entity.Project) {
 	case API_PROTOCOL_PROTOBUF:
 		proto.Generate(ctx, targetDir, project)
 	}
+	monitoring.GenerateMonitoring(ctx, targetDir, project)
 	generator.GenerateAuth(ctx, targetDir, project)
 	generator.GenerateAPIModule(ctx, targetDir, project)
 	generator.GenerateCustom(ctx, targetDir, project)

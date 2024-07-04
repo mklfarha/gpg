@@ -1,35 +1,44 @@
 package monitoring
 
-import "go.uber.org/zap"
+import (
+	"go.uber.org/zap"
+)
 
 func (i *Implementation) emitLog(req EmitRequest) {
 	if i.config.LoggingEnabled {
+		extraDataField := parseExtraData(req.ExtraData)
+		fields := []zap.Field{
+			zap.String("action", req.ActionIdentifier),
+			zap.String("entity", req.EntityIdentifier),
+			zap.String("layer", string(req.Layer)),
+			zap.Object("data", req.Data),
+		}
+		fields = append(fields, extraDataField...)
 		switch req.Type {
 		case EmitTypeError:
+			fields = append(fields, zap.Error(req.Error))
 			i.logger.Error(
 				req.Message,
-				zap.String("action", req.ActionIdentifier),
-				zap.String("entity", req.EntityIdentifier),
-				zap.String("layer", string(req.Layer)),
-				zap.Object("data", req.Data),
-				zap.Error(req.Error),
+				fields...,
 			)
 		case EmitTypeWarn:
 			i.logger.Warn(
 				req.Message,
-				zap.String("action", req.ActionIdentifier),
-				zap.String("entity", req.EntityIdentifier),
-				zap.String("layer", string(req.Layer)),
-				zap.Object("data", req.Data),
+				fields...,
 			)
 		case EmitTypeInfo, EmitTypeSuccess:
 			i.logger.Info(
 				req.Message,
-				zap.String("action", req.ActionIdentifier),
-				zap.String("entity", req.EntityIdentifier),
-				zap.String("layer", string(req.Layer)),
-				zap.Object("data", req.Data),
+				fields...,
 			)
 		}
 	}
+}
+
+func parseExtraData(data map[string]string) []zap.Field {
+	res := []zap.Field{}
+	for k, d := range data {
+		res = append(res, zap.String(k, d))
+	}
+	return res
 }

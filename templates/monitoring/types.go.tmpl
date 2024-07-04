@@ -29,6 +29,7 @@ type MonitoringConfig struct {
 	MetricsEnabled  bool            `yaml:"metrics-enabled"`
 	MetricsLevel    EmitType        `yaml:"metrics-level"`
 	MetricsProvider MetricsProvider `yaml:"metrics-provider"`
+	DatadogAddr     string          `yaml:"datadog-addr"`
 }
 
 type MetricsProvider string
@@ -61,5 +62,6 @@ type EmitRequest struct {
 	Layer            ServiceLayer
 	Type             EmitType
 	Data             zapcore.ObjectMarshaler
-	Error            error
+	ExtraData        map[string]string
+	Error            error	
 }

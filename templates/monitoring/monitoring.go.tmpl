@@ -1,5 +1,9 @@
 package monitoring
 
+import (
+	"fmt"
+)
+
 func New(params Params) (*Implementation, error) {
 	config := MonitoringConfig{}
 	err := params.Provider.Get("monitoring").Populate(&config)

@@ -15,6 +15,7 @@ import (
 	{{if eq $enableGraph true}}
 	"{{.Identifier}}/graph"
 	{{end}}
+	"{{.Identifier}}/monitoring"
 )
 
 func main() {
@@ -23,6 +24,7 @@ func main() {
 			zap.NewProduction,
 			{{.Identifier}}config.New,
 			core.New,	
+			monitoring.New,
 			{{if eq .Auth.Enabled true}}auth.New,{{end}}	
 			{{if eq $enableGraph true}}graph.New,{{end}}
 		),				
