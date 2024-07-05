@@ -3,6 +3,7 @@ package {{.Package}}
 import (
 	"context"    
     
+    "{{.ProjectName}}/monitoring"
     "{{.ProjectName}}/core/module/{{.EntityIdentifier}}/types"
     {{if ne .Select.IsPrimary true}}    
     {{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"{{end}}    
@@ -24,8 +25,26 @@ func (m *module) {{.CustomQuery.Name}}(
         },
     )
     if err != nil {
+        m.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "custom_{{.CustomQuery.Name}}",
+			Message: "error calling repository for Custom{{.CustomQuery.Name}}",
+			EntityIdentifier: "{{.EntityIdentifier}}",
+			Layer: monitoring.RepositoryServiceLayer,
+			Type: monitoring.EmitTypeError,
+			Data: request,
+			Error: err,
+		})
         return types.{{.CustomQuery.Name}}Response{}, err
     }
+
+    m.monitoring.Emit(monitoring.EmitRequest{
+		ActionIdentifier: "custom_{{.CustomQuery.Name}}",
+		Message: "successfully handled Custom{{.CustomQuery.Name}}",
+		EntityIdentifier: "{{.EntityIdentifier}}",
+		Layer: monitoring.ModuleServiceLayer,
+		Type: monitoring.EmitTypeSuccess,
+		Data: request,			
+	})
     return types.{{.CustomQuery.Name}}Response{
         Results: mapModelsToEntities(models),
     }, nil

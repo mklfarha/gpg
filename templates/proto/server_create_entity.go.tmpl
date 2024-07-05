@@ -6,24 +6,65 @@ import (
 	"{{.ProjectIdentifier}}/core/module/{{.FinalIdentifier}}/types"
 	pb "{{.ProjectIdentifier}}/idl/gen"
 	pbmapper "{{.ProjectIdentifier}}/idl/mapper/{{.FinalIdentifier}}"
+	"{{.ProjectIdentifier}}/monitoring"
 )
 
 func (s *server) Create{{.Name}}(ctx context.Context, req *pb.Create{{.Name}}Request) (*pb.{{.Name}}, error) {
-	res, err := s.Core.{{.Name}}().Upsert(ctx, types.UpsertRequest{
+	res, err := s.core.{{.Name}}().Upsert(ctx, types.UpsertRequest{
 		{{.Name}}: pbmapper.{{.Name}}ProtoToEntity(req.Get{{.Name}}()),
 	}, false)
 	if err != nil {
+		s.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "create_{{.FinalIdentifier}}",
+			Message: "error calling core upsert in Create{{.Name}}",
+			EntityIdentifier: "{{.FinalIdentifier}}",
+			Layer: monitoring.ProtocolServiceLayer,
+			LayerSubtype: "protobuf",
+			Type: monitoring.EmitTypeError,
+			Data: req,			
+			Error: err,		
+		})
 		return nil, err
 	}
 
-	fetchRes, err := s.Core.{{.Name}}().Fetch{{.Name}}By{{.PrimaryKey.Name}}(ctx, types.Fetch{{.Name}}By{{.PrimaryKey.Name}}Request(res))
+	fetchRes, err := s.core.{{.Name}}().Fetch{{.Name}}By{{.PrimaryKey.Name}}(ctx, types.Fetch{{.Name}}By{{.PrimaryKey.Name}}Request(res))
 	if err != nil {
+		s.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "create_{{.FinalIdentifier}}",
+			Message: "error fetching after upsert in Create{{.Name}}",
+			EntityIdentifier: "{{.FinalIdentifier}}",
+			Layer: monitoring.ProtocolServiceLayer,
+			LayerSubtype: "protobuf",
+			Type: monitoring.EmitTypeError,
+			Data: req,			
+			Error: err,		
+		})
 		return nil, err
 	}
 
 	if len(fetchRes.Results) == 0 {
-		return nil, errors.New("error fetching entity")
+		err := errors.New("error fetching entity")
+		s.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "create_{{.FinalIdentifier}}",
+			Message: "entity not found after upsert in Create{{.Name}}",
+			EntityIdentifier: "{{.FinalIdentifier}}",
+			Layer: monitoring.ProtocolServiceLayer,
+			LayerSubtype: "protobuf",
+			Type: monitoring.EmitTypeError,
+			Data: req,			
+			Error: err,		
+		})
+		return nil, err
 	}
 
+	s.monitoring.Emit(monitoring.EmitRequest{
+		ActionIdentifier: "create_{{.FinalIdentifier}}",
+		Message: "successfully handled Create{{.Name}}",
+		EntityIdentifier: "{{.FinalIdentifier}}",
+		Layer: monitoring.ProtocolServiceLayer,
+		LayerSubtype: "protobuf",
+		Type: monitoring.EmitTypeSuccess,
+		Data: req,				
+	})
 	return pbmapper.{{.Name}}EntityToProto(fetchRes.Results[0]), nil
 }

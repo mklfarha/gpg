@@ -23,7 +23,7 @@ func (m *module) Fetch{{.Select.Name}}(
     if err != nil {  
         m.monitoring.Emit(monitoring.EmitRequest{
 			ActionIdentifier: "fetch_{{.Select.Identifier}}",
-			Message: "Error in Fetch{{.Select.Name}}",
+			Message: "error in Fetch{{.Select.Name}}",
 			EntityIdentifier: "{{.Select.EntityIdentifier}}",
 			Layer: monitoring.RepositoryServiceLayer,
 			Type: monitoring.EmitTypeError,
@@ -50,7 +50,7 @@ func (m *module) Fetch{{.Select.Name}}(
         if err != nil {
             m.monitoring.Emit(monitoring.EmitRequest{
                 ActionIdentifier: "fetch_{{.Select.Identifier}}",
-                Message: "Error in Fetch{{.Select.Name}} no order",
+                Message: "error in Fetch{{.Select.Name}} no order",
                 EntityIdentifier: "{{.Select.EntityIdentifier}}",
                 Layer: monitoring.RepositoryServiceLayer,
                 Type: monitoring.EmitTypeError,
@@ -82,7 +82,7 @@ func (m *module) Fetch{{.Select.Name}}(
         err := errors.New("order by field not found")
         m.monitoring.Emit(monitoring.EmitRequest{
 			ActionIdentifier: "fetch_{{.Select.Identifier}}",
-			Message: "Error in Fetch{{.Select.Name}} - order by field not found",
+			Message: "error in Fetch{{.Select.Name}} - order by field not found",
 			EntityIdentifier: "{{.Select.EntityIdentifier}}",
 			Layer: monitoring.ModuleServiceLayer,
 			Type: monitoring.EmitTypeError,
@@ -100,7 +100,7 @@ func (m *module) Fetch{{.Select.Name}}(
             err := errors.New("invalid sort value only ASC or DESC are valid")
             m.monitoring.Emit(monitoring.EmitRequest{
                 ActionIdentifier: "fetch_{{.Select.Identifier}}",
-                Message: "Error in Fetch{{.Select.Name}} - invalid sort value only ASC or DESC are valid",
+                Message: "error in Fetch{{.Select.Name}} - invalid sort value only ASC or DESC are valid",
                 EntityIdentifier: "{{.Select.EntityIdentifier}}",
                 Layer: monitoring.ModuleServiceLayer,
                 Type: monitoring.EmitTypeError,
@@ -128,7 +128,7 @@ func (m *module) Fetch{{.Select.Name}}(
                 if err != nil {
                     m.monitoring.Emit(monitoring.EmitRequest{
                         ActionIdentifier: "fetch_{{$select.Identifier}}",
-                        Message: "Error in Fetch{{$select.Name}} - ordered asc",
+                        Message: "error in Fetch{{$select.Name}} - ordered asc",
                         EntityIdentifier: "{{$select.EntityIdentifier}}",
                         Layer: monitoring.RepositoryServiceLayer,
                         Type: monitoring.EmitTypeError,
@@ -152,7 +152,7 @@ func (m *module) Fetch{{.Select.Name}}(
                 if err != nil {
                     m.monitoring.Emit(monitoring.EmitRequest{
                         ActionIdentifier: "fetch_{{$select.Identifier}}",
-                        Message: "Error in Fetch{{$select.Name}} - ordered desc",
+                        Message: "error in Fetch{{$select.Name}} - ordered desc",
                         EntityIdentifier: "{{$select.EntityIdentifier}}",
                         Layer: monitoring.RepositoryServiceLayer,
                         Type: monitoring.EmitTypeError,
@@ -172,7 +172,7 @@ func (m *module) Fetch{{.Select.Name}}(
     err := errors.New("could not process request")
     m.monitoring.Emit(monitoring.EmitRequest{
         ActionIdentifier: "fetch_{{.Select.Identifier}}_invalid",
-        Message: "Error in Fetch{{.Select.Name}} - invalid request",
+        Message: "error in Fetch{{.Select.Name}} - invalid request",
         EntityIdentifier: "{{.Select.EntityIdentifier}}",
         Layer: monitoring.ModuleServiceLayer,
         Type: monitoring.EmitTypeError,

@@ -16,7 +16,7 @@ func (m *module) List(ctx context.Context,
 	if err != nil {
 		m.monitoring.Emit(monitoring.EmitRequest{
 			ActionIdentifier: "list_{{.EntityIdentifier}}_query",
-			Message: "Error in building query for List{{.EntityName}}",
+			Message: "error in building query for List{{.EntityName}}",
 			EntityIdentifier: "{{.EntityIdentifier}}",
 			Layer: monitoring.RepositoryServiceLayer,
 			Type: monitoring.EmitTypeError,
@@ -32,7 +32,7 @@ func (m *module) List(ctx context.Context,
 	if err != nil {
 		m.monitoring.Emit(monitoring.EmitRequest{
 			ActionIdentifier: "list_{{.EntityIdentifier}}_db",
-			Message: "Error in executing query for List{{.EntityName}}",
+			Message: "error in executing query for List{{.EntityName}}",
 			EntityIdentifier: "{{.EntityIdentifier}}",
 			Layer: monitoring.RepositoryServiceLayer,
 			Type: monitoring.EmitTypeError,
@@ -52,7 +52,7 @@ func (m *module) List(ctx context.Context,
 		); err != nil {
 			m.monitoring.Emit(monitoring.EmitRequest{
 				ActionIdentifier: "list_{{.EntityIdentifier}}_scan",
-				Message: "Error in scanning rows for List{{.EntityName}}",
+				Message: "error in scanning rows for List{{.EntityName}}",
 				EntityIdentifier: "{{.EntityIdentifier}}",
 				Layer: monitoring.ModuleServiceLayer,
 				Type: monitoring.EmitTypeError,
@@ -67,7 +67,7 @@ func (m *module) List(ctx context.Context,
 	if err := rows.Close(); err != nil {
 		m.monitoring.Emit(monitoring.EmitRequest{
 			ActionIdentifier: "list_{{.EntityIdentifier}}_rows",
-			Message: "Error closing rows for List{{.EntityName}}",
+			Message: "error closing rows for List{{.EntityName}}",
 			EntityIdentifier: "{{.EntityIdentifier}}",
 			Layer: monitoring.ModuleServiceLayer,
 			Type: monitoring.EmitTypeError,
@@ -80,7 +80,7 @@ func (m *module) List(ctx context.Context,
 	if err := rows.Err(); err != nil {
 		m.monitoring.Emit(monitoring.EmitRequest{
 			ActionIdentifier: "list_{{.EntityIdentifier}}_rows",
-			Message: "Error in rows for List{{.EntityName}}",
+			Message: "error in rows for List{{.EntityName}}",
 			EntityIdentifier: "{{.EntityIdentifier}}",
 			Layer: monitoring.ModuleServiceLayer,
 			Type: monitoring.EmitTypeError,
@@ -95,7 +95,7 @@ func (m *module) List(ctx context.Context,
 	if err != nil {
 		m.monitoring.Emit(monitoring.EmitRequest{
 			ActionIdentifier: "list_{{.EntityIdentifier}}_next",
-			Message: "Error determining if list has next page for List{{.EntityName}}",
+			Message: "error determining if list has next page for List{{.EntityName}}",
 			EntityIdentifier: "{{.EntityIdentifier}}",
 			Layer: monitoring.ModuleServiceLayer,
 			Type: monitoring.EmitTypeError,
@@ -108,7 +108,7 @@ func (m *module) List(ctx context.Context,
 
 	m.monitoring.Emit(monitoring.EmitRequest{
 		ActionIdentifier: "list_{{.EntityIdentifier}}",
-		Message: "Successfully handled List{{.EntityName}}",
+		Message: "successfully handled List{{.EntityName}}",
 		EntityIdentifier: "{{.EntityIdentifier}}",
 		Layer: monitoring.ModuleServiceLayer,
 		Type: monitoring.EmitTypeSuccess,

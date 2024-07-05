@@ -12,7 +12,8 @@ import (
     {{$entity.Identifier}} "{{$projectName}}/core/module/{{$entity.Identifier}}/types"    
     {{$entity.Identifier}}entity "{{$projectName}}/core/entity/{{$entity.Identifier}}"    
     {{end}}	     
-    "{{.ProjectName}}/graph/mapper" 	
+    "{{.ProjectName}}/graph/mapper"
+    "{{.ProjectName}}/monitoring" 	
 )
 {{range $entity := .Entities}}
 {{range $select := $entity.Selects}}
@@ -26,10 +27,7 @@ func (r *queryResolver) {{$select.Name}}(
     sort *string,
     {{end}}
 ) ([]*model.{{$entity.EntityType}}, error) {
-	res, err := r.Core.{{$entity.EntityType}}().
-    Fetch{{$select.Name}}(
-        ctx, 
-        {{$entity.Identifier}}.Fetch{{$select.Name}}Request{ {{range $field := $select.Fields}}
+    request := {{$entity.Identifier}}.Fetch{{$select.Name}}Request{ {{range $field := $select.Fields}}
             {{$field.Field.Name}}: {{$field.Field.GraphGenFromMapperParam}},{{end}}
             {{if ne $select.IsPrimary true}}
             Limit: resolveLimit(limit),
@@ -37,9 +35,37 @@ func (r *queryResolver) {{$select.Name}}(
             OrderBy: stringPointerToString(orderBy),
             Sort: stringPointerToString(sort),
             {{end}}
-	    },
+	    }
+	res, err := r.core.{{$entity.EntityType}}().
+    Fetch{{$select.Name}}(
+        ctx, 
+        request,
     )
-	return mapper.Map{{$entity.EntityType}}(res.Results), err
+
+    if err != nil {
+        r.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "fetch_{{$select.Identifier}}",
+			Message: "error calling core in {{$select.Name}}",
+			EntityIdentifier: "{{$entity.Identifier}}",
+			Layer: monitoring.ProtocolServiceLayer,
+            LayerSubtype: "graphql",
+			Type: monitoring.EmitTypeError,
+			Data: request,			
+			Error: err,		
+		})
+        return nil, err
+    }
+
+    r.monitoring.Emit(monitoring.EmitRequest{
+        ActionIdentifier: "fetch_{{$select.Identifier}}",
+        Message: "succesfully handled {{$select.Name}}",
+        EntityIdentifier: "{{$entity.Identifier}}",
+        Layer: monitoring.ProtocolServiceLayer,
+        LayerSubtype: "graphql",
+        Type: monitoring.EmitTypeSuccess,
+        Data: request,			
+    })
+	return mapper.Map{{$entity.EntityType}}(res.Results), nil
 }
 {{end}}
 
@@ -50,14 +76,36 @@ func (r *queryResolver) Search{{$entity.EntityType}}(
     limit *int, 
     offset *int,
 ) ([]*model.{{$entity.EntityType}}, error) {
-    res, err := r.Core.{{$entity.EntityType}}().
+    res, err := r.core.{{$entity.EntityType}}().
         Search(
             ctx, 
             query,
             resolveLimit(limit),
             resolveOffset(offset),
         )
-	return mapper.Map{{$entity.EntityType}}(res.Results), err
+    if err != nil {
+        r.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "search_{{$entity.Identifier}}",
+			Message: "error calling core in Search{{$entity.Identifier}}",
+			EntityIdentifier: "{{$entity.Identifier}}",
+			Layer: monitoring.ProtocolServiceLayer,
+            LayerSubtype: "graphql",
+			Type: monitoring.EmitTypeError,
+			ExtraData: map[string]string{"query":query},			
+			Error: err,		
+		})
+        return nil, err
+    }
+    r.monitoring.Emit(monitoring.EmitRequest{
+        ActionIdentifier: "search_{{$entity.Identifier}}",
+        Message: "succesfully handled Search{{$entity.Identifier}}",
+        EntityIdentifier: "{{$entity.Identifier}}",
+        Layer: monitoring.ProtocolServiceLayer,
+        LayerSubtype: "graphql",
+        Type: monitoring.EmitTypeSuccess,
+        ExtraData: map[string]string{"query":query},        
+    })
+	return mapper.Map{{$entity.EntityType}}(res.Results), nil
 }
 {{end}}
 
@@ -69,15 +117,40 @@ func (r *queryResolver) {{$cq.Name}}(
     limit *int,
     offset *int,    
 ) ([]*model.{{$entity.EntityType}}, error) {
-	res, err := r.Core.{{$entity.EntityType}}().
-    {{$cq.Name}}(
-        ctx, 
-        {{$entity.Identifier}}.{{$cq.Name}}Request{ {{range $field := $inputFields}}
+    request := {{$entity.Identifier}}.{{$cq.Name}}Request{ {{range $field := $inputFields}}
             {{$field.Name}}: {{$field.GraphGenFromMapperParam}},{{end}}            
             Limit: resolveLimit(limit),
             Offset: resolveOffset(offset),            
-	    },
+	    }
+	res, err := r.core.{{$entity.EntityType}}().
+    {{$cq.Name}}(
+        ctx, 
+        request,
     )
+
+    if err != nil {
+        r.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "custom_{{$cq.Identifier}}",
+			Message: "error calling core in custom {{$cq.Name}}",
+			EntityIdentifier: "{{$entity.Identifier}}",
+			Layer: monitoring.ProtocolServiceLayer,
+            LayerSubtype: "graphql",
+			Type: monitoring.EmitTypeError,
+			Data: request,					
+			Error: err,		
+		})
+        return nil, err
+    }
+
+    r.monitoring.Emit(monitoring.EmitRequest{
+        ActionIdentifier: "custom_{{$cq.Identifier}}",
+        Message: "succesfully handled custom {{$cq.Name}}",
+        EntityIdentifier: "{{$entity.Identifier}}",
+        Layer: monitoring.ProtocolServiceLayer,
+        LayerSubtype: "graphql",
+        Type: monitoring.EmitTypeSuccess,
+        Data: request,			        
+    })
 	return mapper.Map{{$entity.EntityType}}(res.Results), err
 }
 {{end}}

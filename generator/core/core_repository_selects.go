@@ -15,8 +15,10 @@ func ResolveSelectStatements(project entity.Project, e entity.Entity) []RepoSche
 	resolvedField := field.ResolveFieldType(primaryKey, e, nil)
 	nameByID := fmt.Sprintf("%sBy%s", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(primaryKey.Identifier))
 	selects = append(selects, RepoSchemaSelectStatement{
-		Name:      nameByID,
-		GraphName: nameByID,
+		Name:             nameByID,
+		Identifier:       strcase.ToSnake(nameByID),
+		EntityIdentifier: e.Identifier,
+		GraphName:        nameByID,
 		Fields: []RepoSchemaSelectStatementField{
 			{
 				Name:   primaryKey.Identifier,
@@ -110,11 +112,13 @@ func ResolveSelectStatements(project entity.Project, e entity.Entity) []RepoSche
 			},
 		}
 		selects = append(selects, RepoSchemaSelectStatement{
-			Name:          name,
-			GraphName:     name,
-			Fields:        fields,
-			TimeFields:    timeFields,
-			SortSupported: true,
+			Name:             name,
+			Identifier:       strcase.ToSnake(name),
+			EntityIdentifier: e.Identifier,
+			GraphName:        name,
+			Fields:           fields,
+			TimeFields:       timeFields,
+			SortSupported:    true,
 		})
 		for _, combination := range combinations {
 			name := fmt.Sprintf("%sBy%s", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(resolvedIDField.Identifier))
@@ -141,11 +145,13 @@ func ResolveSelectStatements(project entity.Project, e entity.Entity) []RepoSche
 			}
 
 			selects = append(selects, RepoSchemaSelectStatement{
-				Name:          name,
-				GraphName:     name,
-				Fields:        fields,
-				TimeFields:    timeFields,
-				SortSupported: true,
+				Name:             name,
+				Identifier:       strcase.ToSnake(name),
+				EntityIdentifier: e.Identifier,
+				GraphName:        name,
+				Fields:           fields,
+				TimeFields:       timeFields,
+				SortSupported:    true,
 			})
 		}
 	}

@@ -4,8 +4,7 @@ import (
 	"github.com/DataDog/datadog-go/v5/statsd"
 	"go.uber.org/config"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"go.uber.org/zap"	
 )
 
 type Implementation struct {
@@ -60,8 +59,9 @@ type EmitRequest struct {
 	Message          string // used for logs
 	EntityIdentifier string
 	Layer            ServiceLayer
+	LayerSubtype     string
 	Type             EmitType
-	Data             zapcore.ObjectMarshaler
+	Data             interface{}
 	ExtraData        map[string]string
 	Error            error	
 }

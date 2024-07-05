@@ -4,5 +4,9 @@ import "fmt"
 
 func (i *Implementation) emitDatadogMetric(req EmitRequest) error {
 	name := fmt.Sprintf("%s.%s.%s.%s", req.Layer, req.EntityIdentifier, req.ActionIdentifier, req.Type)
-	return i.datadogClient.Incr(name, []string{}, 1)
+	if req.LayerSubtype != "" {
+		name = fmt.Sprintf("%s.%s.%s.%s.%s", req.Layer, req.LayerSubtype, req.EntityIdentifier, req.ActionIdentifier, req.Type)
+	}
+	fmt.Printf("emitting metric: %v \n", name)
+	return i.datadogClient.Incr(name, []string{}, 1)	
 }

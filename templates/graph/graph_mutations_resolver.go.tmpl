@@ -13,30 +13,76 @@ import (
     {{$entity.Identifier}} "{{$projectName}}/core/module/{{$entity.Identifier}}/types"    
     {{end}}	     
     "{{.ProjectName}}/graph/mapper"
+    "{{.ProjectName}}/monitoring" 	
 )
 {{range $entity := .Entities}}
 func (r *mutationResolver) Upsert{{$entity.EntityType}}(
     ctx context.Context, 
     input model.{{$entity.EntityType}}Input,
 ) (*model.{{$entity.EntityType}}, error) {
-	res, err := r.Core.{{$entity.EntityType}}().Upsert(
+    request := mapper.Map{{$entity.EntityType}}Upsert(input)
+	res, err := r.core.{{$entity.EntityType}}().Upsert(
         ctx, 
-        mapper.Map{{$entity.EntityType}}Upsert(input),
+        request,
         false,
     )
 	if err != nil {
+        r.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "upsert_{{$entity.Identifier}}",
+			Message: "error calling core in Upsert{{$entity.EntityType}}",
+			EntityIdentifier: "{{$entity.Identifier}}",
+			Layer: monitoring.ProtocolServiceLayer,
+            LayerSubtype: "graphql",
+			Type: monitoring.EmitTypeError,
+			Data: request,			
+			Error: err,		
+		})
 		return nil, err
 	}
-	read, err := r.Core.{{$entity.EntityType}}().
+	read, err := r.core.{{$entity.EntityType}}().
         Fetch{{$entity.EntityType}}By{{$entity.PrimaryKey.Name}}(
             ctx, 
             {{$entity.Identifier}}.Fetch{{$entity.EntityType}}By{{$entity.PrimaryKey.Name}}Request{
 		        {{$entity.PrimaryKey.Name}}: res.{{$entity.PrimaryKey.Name}},
 	        },
         )
-    if len(read.Results) == 0 {
-        return nil, errors.New("entity not found after upsert")
+    if err != nil {
+        r.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "upsert_{{$entity.Identifier}}",
+			Message: "error reading after writing in Upsert{{$entity.EntityType}}",
+			EntityIdentifier: "{{$entity.Identifier}}",
+			Layer: monitoring.ProtocolServiceLayer,
+            LayerSubtype: "graphql",
+			Type: monitoring.EmitTypeError,
+			Data: request,			
+			Error: err,		
+		})
+        return nil, err
     }
+    if len(read.Results) == 0 {
+        err := errors.New("entity not found after upsert")
+        r.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "upsert_{{$entity.Identifier}}",
+			Message: "not found after writing in Upsert{{$entity.EntityType}}",
+			EntityIdentifier: "{{$entity.Identifier}}",
+			Layer: monitoring.ProtocolServiceLayer,
+            LayerSubtype: "graphql",
+			Type: monitoring.EmitTypeError,
+			Data: request,			
+			Error: err,		
+		})
+        return nil, err
+    }
+
+    r.monitoring.Emit(monitoring.EmitRequest{
+        ActionIdentifier: "upsert_{{$entity.Identifier}}",
+        Message: "succesfully handled Upsert{{$entity.EntityType}}",
+        EntityIdentifier: "{{$entity.Identifier}}",
+        Layer: monitoring.ProtocolServiceLayer,
+        LayerSubtype: "graphql",
+        Type: monitoring.EmitTypeSuccess,
+        Data: request,			
+    })
 	return mapper.Map{{$entity.EntityType}}(read.Results)[0], err
     
 }
@@ -45,24 +91,68 @@ func (r *mutationResolver) UpsertPartial{{$entity.EntityType}}(
     ctx context.Context, 
     input model.{{$entity.EntityType}}PartialInput,
 ) (*model.{{$entity.EntityType}}, error) {
-	res, err := r.Core.{{$entity.EntityType}}().Upsert(
+    request := mapper.Map{{$entity.EntityType}}UpsertPartial(input)
+	res, err := r.core.{{$entity.EntityType}}().Upsert(
         ctx, 
-        mapper.Map{{$entity.EntityType}}UpsertPartial(input),
+        request,
         true,
     )
 	if err != nil {
+        r.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "upsert_partial_{{$entity.Identifier}}",
+			Message: "error calling core in UpsertPartial{{$entity.EntityType}}",
+			EntityIdentifier: "{{$entity.Identifier}}",
+			Layer: monitoring.ProtocolServiceLayer,
+            LayerSubtype: "graphql",
+			Type: monitoring.EmitTypeError,
+			Data: request,			
+			Error: err,		
+		})
 		return nil, err
 	}
-	read, err := r.Core.{{$entity.EntityType}}().
+	read, err := r.core.{{$entity.EntityType}}().
         Fetch{{$entity.EntityType}}By{{$entity.PrimaryKey.Name}}(
             ctx, 
             {{$entity.Identifier}}.Fetch{{$entity.EntityType}}By{{$entity.PrimaryKey.Name}}Request{
 		        {{$entity.PrimaryKey.Name}}: res.{{$entity.PrimaryKey.Name}},
 	        },
         )
-    if len(read.Results) == 0 {
-        return nil, errors.New("entity not found after upsert")
+    if err != nil {
+        r.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "upsert_partial_{{$entity.Identifier}}",
+			Message: "error reading after writing in UpsertPartial{{$entity.EntityType}}",
+			EntityIdentifier: "{{$entity.Identifier}}",
+			Layer: monitoring.ProtocolServiceLayer,
+            LayerSubtype: "graphql",
+			Type: monitoring.EmitTypeError,
+			Data: request,			
+			Error: err,		
+		})
+        return nil, err
     }
+    if len(read.Results) == 0 {
+        err := errors.New("entity not found after upsert")
+        r.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "upsert_partial_{{$entity.Identifier}}",
+			Message: "not found after writing in UpsertPartial{{$entity.EntityType}}",
+			EntityIdentifier: "{{$entity.Identifier}}",
+			Layer: monitoring.ProtocolServiceLayer,
+            LayerSubtype: "graphql",
+			Type: monitoring.EmitTypeError,
+			Data: request,			
+			Error: err,		
+		})
+        return nil, err
+    }
+    r.monitoring.Emit(monitoring.EmitRequest{
+        ActionIdentifier: "upsert_partial_{{$entity.Identifier}}",
+        Message: "succesfully handled UpsertPartial{{$entity.EntityType}}",
+        EntityIdentifier: "{{$entity.Identifier}}",
+        Layer: monitoring.ProtocolServiceLayer,
+        LayerSubtype: "graphql",
+        Type: monitoring.EmitTypeSuccess,
+        Data: request,			
+    })
 	return mapper.Map{{$entity.EntityType}}(read.Results)[0], err
     
 }

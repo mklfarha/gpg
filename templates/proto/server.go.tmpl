@@ -6,6 +6,7 @@ import (
 	"net"
 	"{{.Identifier}}/core"
 	pb "{{.Identifier}}/idl/gen"
+	"{{.Identifier}}/monitoring"
 
 	"go.uber.org/config"
 	"go.uber.org/fx"
@@ -19,7 +20,8 @@ import (
 
 type server struct {
 	pb.Unimplemented{{.Name}}Server
-	Core *core.Implementation
+	core *core.Implementation
+	monitoring *monitoring.Implementation
 }
 
 type Params struct {
@@ -28,6 +30,7 @@ type Params struct {
 	Lifecycle fx.Lifecycle
 	Core   *core.Implementation
 	Config config.Provider
+	Monitoring *monitoring.Implementation
 }
 
 func New(params Params) *grpc.Server {	
@@ -48,7 +51,8 @@ func New(params Params) *grpc.Server {
 			// register grpc servers
 			grpc_health_v1.RegisterHealthServer(s, health.NewServer())
 			pb.Register{{.Name}}Server(s, &server{
-				Core: params.Core,
+				core: params.Core,
+				monitoring: params.Monitoring,
 			})
 			reflection.Register(s)
 

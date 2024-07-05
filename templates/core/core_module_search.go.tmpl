@@ -6,6 +6,7 @@ import (
 
     "{{.ProjectName}}/core/module/{{.EntityIdentifier}}/types"
     {{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"
+    "{{.ProjectName}}/monitoring"
 )
 
 func (m *module) Search(
@@ -14,17 +15,36 @@ func (m *module) Search(
     limit int32, 
     offset int32,
 ) (types.Search{{.EntityName}}Response, error) {
-    models, err := m.repository.Queries.Search{{.EntityName}}(
-        ctx,
-        {{.ProjectName}}db.Search{{.EntityName}}Params{ {{range $field := .SearchFields}}
+    request := {{.ProjectName}}db.Search{{.EntityName}}Params{ {{range $field := .SearchFields}}
             {{$field.Name}}: fmt.Sprintf("%%%s%%", query),{{end}}
             Offset: offset,
             Limit: limit,            
-        },
+        }
+    models, err := m.repository.Queries.Search{{.EntityName}}(
+        ctx,
+        request,
     )
     if err != nil {
+        m.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "search_{{.EntityIdentifier}}",
+			Message: "error calling repository for Search{{.EntityName}}",
+			EntityIdentifier: "{{.EntityIdentifier}}",
+			Layer: monitoring.RepositoryServiceLayer,
+			Type: monitoring.EmitTypeError,
+			Data: request,
+			Error: err,
+		})
         return types.Search{{.EntityName}}Response{}, err
     }
+
+    m.monitoring.Emit(monitoring.EmitRequest{
+		ActionIdentifier: "search_{{.EntityIdentifier}}",
+		Message: "successfully handled Search{{.EntityName}}",
+		EntityIdentifier: "{{.EntityIdentifier}}",
+		Layer: monitoring.ModuleServiceLayer,
+		Type: monitoring.EmitTypeSuccess,
+		Data: request,			
+	})
     return types.Search{{.EntityName}}Response{
         Results: mapModelsToEntities(models),
     }, nil	

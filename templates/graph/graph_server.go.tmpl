@@ -1,8 +1,8 @@
 package graph
 
-import (
-	"fmt"
-	"{{.Identifier}}/core"	
+import (	
+	"{{.Identifier}}/core"
+	"{{.Identifier}}/monitoring"
 
 	"go.uber.org/config"
 	"go.uber.org/fx"
@@ -27,6 +27,7 @@ type Params struct {
     {{ if eq .Auth.Enabled true}}
 	Auth   auth.Interface
 	{{ end }}
+	Monitoring *monitoring.Implementation
 }
 
 func New(params Params) *handler.Server {
@@ -34,7 +35,8 @@ func New(params Params) *handler.Server {
                     generated.NewExecutableSchema(
                         generated.Config{
                             Resolvers: &Resolver{
-                                Core: *params.Core,
+                                core: params.Core,
+								monitoring: params.Monitoring,
                             }}))
    
 	{{ if eq .Auth.Enabled true}}
@@ -52,8 +54,7 @@ func serverHTTPHandler(server *handler.Server,
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		origin := r.Header.Get("origin")
-		method := r.Method
-		fmt.Printf("method: %v\n", method)
+		method := r.Method		
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")

@@ -14,8 +14,7 @@ import (
 
 func (i *Implementation) SignIn(w http.ResponseWriter, r *http.Request) {
 	origin := r.Header.Get("origin")
-	method := r.Method
-	fmt.Printf("method: %v\n", method)
+	method := r.Method	
 	w.Header().Set("Access-Control-Allow-Origin", origin)
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")

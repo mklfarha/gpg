@@ -8,6 +8,7 @@ import (
     "errors"
 	
 	"github.com/gofrs/uuid"
+	"{{.ProjectName}}/monitoring"
 	"{{.ProjectName}}/core/module/{{.EntityIdentifier}}/types"	
 	{{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"   
 	{{$firstGen := true}}
@@ -41,9 +42,26 @@ func (m *module) Upsert(
 			params,
 		)
 		if err != nil {
+			m.monitoring.Emit(monitoring.EmitRequest{
+				ActionIdentifier: "upsert_{{.EntityIdentifier}}",
+				Message: "error calling repository for Upsert{{.EntityName}} - no uuid",
+				EntityIdentifier: "{{.EntityIdentifier}}",
+				Layer: monitoring.RepositoryServiceLayer,
+				Type: monitoring.EmitTypeError,
+				Data: req,
+				Error: err,
+			})
 			return types.UpsertResponse{}, err
 		}
 
+		m.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "upsert_{{.EntityIdentifier}}",
+			Message: "successfully handled Upsert{{.EntityName}} - no uuid",
+			EntityIdentifier: "{{.EntityIdentifier}}",
+			Layer: monitoring.ModuleServiceLayer,
+			Type: monitoring.EmitTypeSuccess,
+			Data: req,			
+		})
 		return types.UpsertResponse{
 			{{.PrimaryKey.Name}}: uuid.FromStringOrNil(params.{{.PrimaryKey.Name}}),
 		}, nil
@@ -51,20 +69,56 @@ func (m *module) Upsert(
 
 	existing, err := m.repository.Queries.Fetch{{.EntityName}}By{{.PrimaryKey.Name}}(ctx, req.{{.EntityName}}.{{.PrimaryKey.Name}}.String())
 	if err != nil {
+		m.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "upsert_{{.EntityIdentifier}}",
+			Message: "error fetching existing record for Upsert{{.EntityName}} - with uuid",
+			EntityIdentifier: "{{.EntityIdentifier}}",
+			Layer: monitoring.ModuleServiceLayer,
+			Type: monitoring.EmitTypeError,
+			Data: req,
+			Error: err,
+		})
 		return types.UpsertResponse{}, err
 	}
 
 	if len(existing) == 0 {
-		return types.UpsertResponse{}, errors.New("entity not found")
+		err := errors.New("entity not found")
+		m.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "upsert_{{.EntityIdentifier}}",
+			Message: "not found existing record for Upsert{{.EntityName}} - with uuid",
+			EntityIdentifier: "{{.EntityIdentifier}}",
+			Layer: monitoring.ModuleServiceLayer,
+			Type: monitoring.EmitTypeError,
+			Data: req,
+			Error: err,
+		})
+		return types.UpsertResponse{}, err
 	}
 	err = m.repository.Queries.Update{{.EntityName}}(
 		ctx,
 		mapUpsertRequestToUpdateParams(req, existing[0], partial),
 	)
 	if err != nil {
+		m.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "upsert_{{.EntityIdentifier}}",
+			Message: "error calling repository for Upsert{{.EntityName}} - with uuid",
+			EntityIdentifier: "{{.EntityIdentifier}}",
+			Layer: monitoring.RepositoryServiceLayer,
+			Type: monitoring.EmitTypeError,
+			Data: req,
+			Error: err,
+		})			
 		return types.UpsertResponse{}, err
 	}
 
+	m.monitoring.Emit(monitoring.EmitRequest{
+		ActionIdentifier: "upsert_{{.EntityIdentifier}}",
+		Message: "successfully handled Upsert{{.EntityName}} - with uuid",
+		EntityIdentifier: "{{.EntityIdentifier}}",
+		Layer: monitoring.ModuleServiceLayer,
+		Type: monitoring.EmitTypeSuccess,
+		Data: req,			
+	})
 	return types.UpsertResponse{
 		{{.PrimaryKey.Name}}: req.{{.EntityName}}.{{.PrimaryKey.Name}},
 	}, nil

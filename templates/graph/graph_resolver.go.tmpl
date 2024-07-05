@@ -2,8 +2,10 @@ package graph
 
 import (
     "{{.Identifier}}/core"
+    "{{.Identifier}}/monitoring"
 )
 
 type Resolver struct{
-    Core core.Implementation
+    core *core.Implementation
+    monitoring *monitoring.Implementation
 }

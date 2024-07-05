@@ -25,11 +25,11 @@ func main() {
 			{{.Identifier}}config.New,
 			core.New,	
 			monitoring.New,
-			{{if eq .Auth.Enabled true}}auth.New,{{end}}	
-			{{if eq $enableGraph true}}graph.New,{{end}}
+			{{if eq .Auth.Enabled true}}auth.New,{{end}}			
 		),				
 		fx.Invoke(httpServer),
 		{{ if eq $enableProto true}}fx.Invoke(pbserver.New),{{end}}
+		{{ if eq $enableGraph true}}fx.Invoke(graph.New),{{end}}
 	).Run()
 }
 
