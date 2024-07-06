@@ -38,6 +38,9 @@ func GenerateCLIModule(ctx context.Context, rootPath string, project entity.Proj
 		Data:         project,
 		Funcs: template.FuncMap{
 			"ToCamelCase": helpers.ToCamelCase,
+			"PrimaryKey": func(e entity.Entity) string {
+				return helpers.ToCamelCase(helpers.EntityPrimaryKey(e).Identifier)
+			},
 		},
 	})
 

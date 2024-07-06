@@ -31,10 +31,12 @@ const (
 
 	FLAG_PROTOCOL            = "protocol"
 	FLAG_SELECT_COMBINATIONS = "enable_select_combinations"
+	FLAG_SKIP_SKEEMA         = "skip_skeema"
 )
 
 var protocol string
 var enableSelectCombinations bool
+var skipSkeema bool
 
 func main() {
 	app := cli.NewApp()
@@ -51,6 +53,11 @@ func main() {
 			Name:        FLAG_SELECT_COMBINATIONS,
 			Usage:       "Enable the generation of all select combination methods",
 			Destination: &enableSelectCombinations,
+		},
+		&cli.BoolFlag{
+			Name:        FLAG_SKIP_SKEEMA,
+			Usage:       "Use flag to disable skeem sync with DB",
+			Destination: &skipSkeema,
 		},
 	}
 
@@ -161,7 +168,7 @@ func generateAPI(targetDir string, project entity.Project) {
 	generator.GenerateProjectDirectories(ctx, targetDir, project)
 	generator.GenerateConfig(ctx, targetDir, project)
 	core.GenerateCoreEntities(ctx, targetDir, project)
-	core.GenerateCoreRepository(ctx, targetDir, project)
+	core.GenerateCoreRepository(ctx, targetDir, project, skipSkeema)
 	err := core.GenerateCoreModules(ctx, targetDir, project)
 	if err != nil {
 		fmt.Printf("ERROR: Error generating core modules: %v", err)

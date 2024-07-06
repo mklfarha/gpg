@@ -25,6 +25,23 @@ func (i *Implementation) BuildListEntityQuery(
 	entity ListEntity,
 	onlyCount bool) (string, error) {
 
+	if request.GetFilter().CheckedExpr == nil || request.GetFilter().CheckedExpr.Expr == nil {
+		if onlyCount {
+			return fmt.Sprintf(
+				"SELECT DISTINCT count(%s.%s) FROM %s",
+				entity.EntityIdentifier(),
+				entity.PrimaryKeyIdentifier(),
+				entity.EntityIdentifier(),				
+			), nil
+		} else {
+			return fmt.Sprintf(
+				"SELECT DISTINCT %s.* FROM %s limit 10",
+				entity.EntityIdentifier(),
+				entity.EntityIdentifier(),									
+			), nil
+		}
+	}
+
 	jsonTables := make(map[string]string)	
 	whereClause, err := buildWhereClauses(
 		request.GetFilter().CheckedExpr.Expr,

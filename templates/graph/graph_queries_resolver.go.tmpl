@@ -130,7 +130,7 @@ func (r *queryResolver) {{$cq.Name}}(
 
     if err != nil {
         r.monitoring.Emit(monitoring.EmitRequest{
-			ActionIdentifier: "custom_{{$cq.Identifier}}",
+			ActionIdentifier: "custom_{{$cq.Name}}",
 			Message: "error calling core in custom {{$cq.Name}}",
 			EntityIdentifier: "{{$entity.Identifier}}",
 			Layer: monitoring.ProtocolServiceLayer,
@@ -143,7 +143,7 @@ func (r *queryResolver) {{$cq.Name}}(
     }
 
     r.monitoring.Emit(monitoring.EmitRequest{
-        ActionIdentifier: "custom_{{$cq.Identifier}}",
+        ActionIdentifier: "custom_{{$cq.Name}}",
         Message: "succesfully handled custom {{$cq.Name}}",
         EntityIdentifier: "{{$entity.Identifier}}",
         Layer: monitoring.ProtocolServiceLayer,

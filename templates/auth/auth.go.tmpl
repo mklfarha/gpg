@@ -1,12 +1,9 @@
 package auth
 
-import (
-	"context"
+import (	
 	"net/http"
 	"time"
-
-	"{{.Identifier}}/core"
-	"net/http"
+	"{{.Identifier}}/core"	
 )
 
 var jwtKey = []byte("{{.Auth.JWTKey}}")
@@ -27,13 +24,13 @@ type Implementation struct {
 	core *core.Implementation
 }
 
-func New(ctx context.Context, c *core.Implementation) (Interface, error) {
+func New(c *core.Implementation) (Interface, error) {
 	i := Implementation{
 		core: c,
-	}, nil
+	}
 
 	http.HandleFunc("/signin", i.SignIn)
 	http.HandleFunc("/validate", i.Validate)
 	http.HandleFunc("/refresh", i.Refresh)
-	return &i
+	return &i, nil
 }

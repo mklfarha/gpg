@@ -59,5 +59,7 @@ func FloatFieldTemplate(f entity.Field, e entity.Entity) Template {
 		ProtoType:                  "double",
 		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
 		ProtoGenName:               strcase.ToCamel(f.Identifier),
+		ProtoToMapper:              fmt.Sprintf("e.%s", strcase.ToCamel(f.Identifier)),
+		ProtoFromMapper:            fmt.Sprintf("m.%s", strcase.ToCamel(f.Identifier)),
 	}
 }

@@ -31,7 +31,7 @@ func (m *module) {{.CustomQuery.Name}}(
 			EntityIdentifier: "{{.EntityIdentifier}}",
 			Layer: monitoring.RepositoryServiceLayer,
 			Type: monitoring.EmitTypeError,
-			Data: request,
+			Data: req,
 			Error: err,
 		})
         return types.{{.CustomQuery.Name}}Response{}, err
@@ -43,7 +43,7 @@ func (m *module) {{.CustomQuery.Name}}(
 		EntityIdentifier: "{{.EntityIdentifier}}",
 		Layer: monitoring.ModuleServiceLayer,
 		Type: monitoring.EmitTypeSuccess,
-		Data: request,			
+		Data: req,			
 	})
     return types.{{.CustomQuery.Name}}Response{
         Results: mapModelsToEntities(models),

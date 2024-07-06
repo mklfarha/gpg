@@ -1,17 +1,15 @@
 package main
-
-{{$userEntity := "" }}
+{{$hasUserEntity := false }}
+{{$userEntity := index .Entities 0 }}
 {{range $entity := .Entities}}
 	{{if eq $entity.Identifier "user" }}
+		{{$hasUserEntity = true }}
 		{{$userEntity = $entity}}
 	{{end}}
 {{end}}
 {{$projectIdentifier := .Identifier}}
 import (
-	"bytes"
-	{{if ne $userEntity ""}}
-	"context"
-	{{end}}
+	"bytes"	
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -55,7 +53,7 @@ func main() {
 			Action: func(cliCtx *cli.Context) error {
 				
                 
-				{{if ne $userEntity ""}}
+				{{if eq $hasUserEntity true}}
 				ctx := context.Background()				
 				fields := map[string]promptContent{                    
                     {{range $field := $userEntity.Fields}}
@@ -85,14 +83,16 @@ func main() {
 					fields[k] = f
 				}
 				
-				res, err := c.User().Upsert(ctx, types.UpsertRequest{
+				res, err := c.User().Upsert(ctx, {{$userEntity.Identifier}}types.UpsertRequest{
+					{{$userEntity.Identifier | ToCamelCase}}: {{$userEntity.Identifier}}.{{$userEntity.Identifier | ToCamelCase}}{
                     {{range $field := $userEntity.Fields}}                                               
                         {{if eq $field.Identifier "status"}}
                             {{$field.Identifier | ToCamelCase}}: user.STATUS_ENABLED,                                                
                         {{else if eq (printf "%s" $field.Type) "string"}}
                             {{$field.Identifier | ToCamelCase}}: fields["{{$field.Identifier}}"].value,                        
                         {{end}}
-                    {{end}}					
+                    {{end}}		
+					},			
 				}, false)
 
 				if err != nil {
@@ -179,8 +179,8 @@ func main() {
 					case "{{$entity.Identifier}}":
 						entities := {{$entity.Identifier}}.New{{$entity.Identifier | ToCamelCase}}SliceWithRandomValues(100)
 						for _, e := range entities {
-							e.UUID = uuid.Nil
-							res, err := c.Team().Upsert(context.Background(), {{$entity.Identifier}}types.UpsertRequest{
+							e.{{$entity | PrimaryKey}} = uuid.Nil
+							res, err := c.{{$entity.Identifier | ToCamelCase}}().Upsert(context.Background(), {{$entity.Identifier}}types.UpsertRequest{
 								{{$entity.Identifier | ToCamelCase}}: e,
 							}, false)
 							if err != nil {

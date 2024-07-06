@@ -10,7 +10,7 @@ import (
 	"github.com/maykel/gpg/generator"
 )
 
-func GenerateCoreRepository(ctx context.Context, rootPath string, project entity.Project) error {
+func GenerateCoreRepository(ctx context.Context, rootPath string, project entity.Project, skipSkeema bool) error {
 	fmt.Printf("--[GPG] Generating core repository\n")
 	projectDir := generator.ProjectDir(ctx, rootPath, project)
 	repoDir := path.Join(projectDir, generator.CORE_REPO_DIR)
@@ -34,9 +34,10 @@ func GenerateCoreRepository(ctx context.Context, rootPath string, project entity
 		return err
 	}
 
-	// TODO: make this optional
-	// ignoring error on purpose
-	executeSkeema(ctx, project, sqlDir)
+	if !skipSkeema {
+		// ignoring error on purpose
+		executeSkeema(ctx, project, sqlDir)
+	}
 
 	// list module
 	err = generateRepositoryListCode(ctx, repoDir, project)
