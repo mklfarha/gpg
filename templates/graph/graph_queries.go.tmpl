@@ -12,6 +12,9 @@ type Query { {{range $entity := .Entities}}
     Search{{$entity.EntityType}}(query:String!, limit:Int, offset:Int): [{{$entity.EntityType}}]
     {{end}}
 
+    # List {{$entity.EntityType}}
+    List{{$entity.EntityType}}(filter:String!, orderBy:String!, pageSize:Int!, pageToken:String!): List{{$entity.EntityType}}
+
     {{range $cq := $entity.CustomQueries}}
     {{$inputFields := ($cq | CustomQueryInputFields)}}
     {{$cq.Name}}({{range $field := $inputFields}}{{$field.GraphName}}:{{$field.GraphInType}},{{end}} limit:Int, offset:Int): [{{$entity.EntityType}}]

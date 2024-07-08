@@ -16,6 +16,7 @@ import (
 type GraphEntityTemplate struct {
 	Identifier       string
 	EntityType       string
+	EntityTypePlural string
 	JSON             bool
 	JSONMany         bool
 	Required         bool

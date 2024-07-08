@@ -4,6 +4,13 @@ type {{if eq .JSON true}}{{.ParentEntityName}}{{end}}{{.EntityType}} { {{range $
     {{$field.GraphName}}: {{$field.GraphOutType}}{{end}}   
 }
 
+{{if eq .JSON false}}
+type List{{.EntityType}} {
+    List: [{{.EntityType}}]
+    NextPageToken: String!
+}
+{{end}}
+
 input {{if eq .JSON true}}{{.ParentEntityName}}{{end}}{{.EntityType}}Input { {{range $field := .InFields}}
     {{$field.GraphName}}: {{$field.GraphInType}}{{end}}
 }

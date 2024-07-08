@@ -8,6 +8,8 @@ import (
 	"context"
 	"{{.ProjectName}}/graph/generated"
 	"{{.ProjectName}}/graph/model"
+    proto "{{.ProjectName}}/idl/server"
+    protogen "{{.ProjectName}}/idl/gen"
     {{range $entity := .Entities}}
     {{$entity.Identifier}} "{{$projectName}}/core/module/{{$entity.Identifier}}/types"    
     {{$entity.Identifier}}entity "{{$projectName}}/core/entity/{{$entity.Identifier}}"    
@@ -108,6 +110,75 @@ func (r *queryResolver) Search{{$entity.EntityType}}(
 	return mapper.Map{{$entity.EntityType}}(res.Results), nil
 }
 {{end}}
+
+func (r *queryResolver) List{{$entity.EntityType}}(
+    ctx context.Context,
+    filter string,
+    orderBy string,
+    pageSize int, 
+    pageToken string,
+) (*model.List{{$entity.EntityType}}, error) {
+    protoRequest := &protogen.List{{$entity.EntityTypePlural}}Request{
+		PageSize:  int32(pageSize),
+		PageToken: pageToken,
+		Filter:    filter,
+		OrderBy:   orderBy,
+	}
+
+    entityRequest, pt, err := proto.BuildList{{$entity.EntityTypePlural}}Request(ctx, protoRequest)
+	if err != nil {
+		r.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "list_{{$entity.Identifier}}_request",
+			Message:          "error building List{{$entity.EntityTypePlural}} request",
+			EntityIdentifier: "team",
+			Layer:            monitoring.ProtocolServiceLayer,
+			LayerSubtype:     "graphql",
+			Type:             monitoring.EmitTypeError,
+			ExtraData:        map[string]string{"filter": filter, "orderBy": orderBy, "pageToken": pageToken},
+			Error:            err,
+		})
+		return nil, err
+	}
+
+    res, err := r.core.{{$entity.EntityType}}().
+        List(
+            ctx, 
+            entityRequest,
+        )
+    if err != nil {
+        r.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "list_{{$entity.Identifier}}",
+			Message: "error calling core in List{{$entity.Identifier}}",
+			EntityIdentifier: "{{$entity.Identifier}}",
+			Layer: monitoring.ProtocolServiceLayer,
+            LayerSubtype: "graphql",
+			Type: monitoring.EmitTypeError,
+			ExtraData:map[string]string{"filter": filter, "orderBy": orderBy, "pageToken": pageToken},		
+			Error: err,		
+		})
+        return nil, err
+    }
+    r.monitoring.Emit(monitoring.EmitRequest{
+        ActionIdentifier: "list_{{$entity.Identifier}}",
+        Message: "succesfully handled List{{$entity.Identifier}}",
+        EntityIdentifier: "{{$entity.Identifier}}",
+        Layer: monitoring.ProtocolServiceLayer,
+        LayerSubtype: "graphql",
+        Type: monitoring.EmitTypeSuccess,
+        ExtraData:        map[string]string{"filter": filter, "orderBy": orderBy, "pageToken": pageToken},    
+    })
+
+    response := model.List{{$entity.EntityType}}{
+		List: mapper.Map{{$entity.EntityType}}(res.{{$entity.EntityTypePlural}}),
+	}
+
+	// Set the next page token.
+	if res.HasNextPage {
+		response.NextPageToken = pt.Next(protoRequest).String()
+	}
+
+	return &response, nil
+}
 
 {{range $cq := $entity.CustomQueries}}
 func (r *queryResolver) {{$cq.Name}}(

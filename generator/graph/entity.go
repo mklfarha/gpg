@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path"
 
+	"github.com/gertd/go-pluralize"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator"
 	"github.com/maykel/gpg/generator/core"
@@ -19,6 +20,7 @@ type graphGenEntitiesResponse struct {
 }
 
 func generateEntities(ctx context.Context, graphDir string, project entity.Project) (graphGenEntitiesResponse, error) {
+	pl := pluralize.NewClient()
 	entityTemplates := []GraphEntityTemplate{}
 	jsonEntityTemplates := []GraphEntityTemplate{}
 	enumTemplates := []field.Template{}
@@ -45,6 +47,7 @@ func generateEntities(ctx context.Context, graphDir string, project entity.Proje
 					jsonEntityTemplate := GraphEntityTemplate{
 						Identifier:       f.Identifier,
 						EntityType:       ft.Type,
+						EntityTypePlural: pl.Plural(ft.Type),
 						JSON:             true,
 						JSONMany:         f.JSONConfig.Type == entity.ManyJSONConfigType,
 						Required:         f.Required,
@@ -79,13 +82,14 @@ func generateEntities(ctx context.Context, graphDir string, project entity.Proje
 			}
 		}
 		entityTemplate := GraphEntityTemplate{
-			Identifier:    e.Identifier,
-			EntityType:    helpers.ToCamelCase(e.Identifier),
-			PrimaryKey:    field.ResolveFieldType(helpers.EntityPrimaryKey(e), e, nil),
-			InFields:      inFields,
-			OutFields:     outFields,
-			Search:        searchable,
-			CustomQueries: e.CustomQueries,
+			Identifier:       e.Identifier,
+			EntityType:       helpers.ToCamelCase(e.Identifier),
+			EntityTypePlural: pl.Plural(helpers.ToCamelCase(e.Identifier)),
+			PrimaryKey:       field.ResolveFieldType(helpers.EntityPrimaryKey(e), e, nil),
+			InFields:         inFields,
+			OutFields:        outFields,
+			Search:           searchable,
+			CustomQueries:    e.CustomQueries,
 		}
 		err := generator.GenerateFile(ctx, generator.FileRequest{
 			OutputFile:      path.Join(graphDir, "gqls", fmt.Sprintf("model_%s.graphqls", e.Identifier)),

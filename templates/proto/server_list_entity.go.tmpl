@@ -17,53 +17,23 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *server) List{{.NamePlural}}(ctx context.Context, request *pb.List{{.NamePlural}}Request) (*pb.List{{.NamePlural}}Response, error) {
+func BuildList{{.NamePlural}}Request(ctx context.Context, request *pb.List{{.NamePlural}}Request) (types.ListRequest, *pagination.PageToken, error) {
 	err := validatePageSizeForList{{.NamePlural}}(request)
-	if err != nil {
-		s.monitoring.Emit(monitoring.EmitRequest{
-			ActionIdentifier: "list_{{.FinalIdentifier}}",
-			Message: "error validating page size in List{{.NamePlural}}",
-			EntityIdentifier: "{{.FinalIdentifier}}",
-			Layer: monitoring.ProtocolServiceLayer,
-			LayerSubtype: "protobuf",
-			Type: monitoring.EmitTypeError,
-			Data: request,			
-			Error: err,		
-		})
-		return nil, err
+	if err != nil {		
+		return types.ListRequest{}, nil, err
 	}
 
 	// Use pagination.PageToken for offset-based page tokens.
 	pageToken, err := pagination.ParsePageToken(request)
-	if err != nil {
-		s.monitoring.Emit(monitoring.EmitRequest{
-			ActionIdentifier: "list_{{.FinalIdentifier}}",
-			Message: "invalid page token in List{{.NamePlural}}",
-			EntityIdentifier: "{{.FinalIdentifier}}",
-			Layer: monitoring.ProtocolServiceLayer,
-			LayerSubtype: "protobuf",
-			Type: monitoring.EmitTypeError,
-			Data: request,			
-			Error: err,		
-		})
-		return nil, status.Errorf(codes.InvalidArgument, "invalid page token")
+	if err != nil {		
+		return types.ListRequest{}, nil, status.Errorf(codes.InvalidArgument, "invalid page token")
 	}
 
 	// parse filters
 	declarations := {{.FinalIdentifier}}Declarations()	
 	filter, err := filtering.ParseFilter(request, declarations)
-	if err != nil {
-		s.monitoring.Emit(monitoring.EmitRequest{
-			ActionIdentifier: "list_{{.FinalIdentifier}}",
-			Message: "error parsing filters in List{{.NamePlural}}",
-			EntityIdentifier: "{{.FinalIdentifier}}",
-			Layer: monitoring.ProtocolServiceLayer,
-			LayerSubtype: "protobuf",
-			Type: monitoring.EmitTypeError,
-			Data: request,			
-			Error: err,		
-		})
-		return nil, err
+	if err != nil {		
+		return types.ListRequest{}, nil, err
 	}
 
 	/* // enable for debugginh
@@ -74,10 +44,33 @@ func (s *server) List{{.NamePlural}}(ctx context.Context, request *pb.List{{.Nam
 	*/
 
 	orderBy, err := ordering.ParseOrderBy(request)
+	if err != nil {		
+		return types.ListRequest{}, nil, err
+	}
+
+	/* // enable for debugginh
+	if orderBy.Fields != nil {
+		b, _ := json.Marshal(orderBy.Fields)
+		fmt.Printf("ordering: %v \n", string(b))
+	}
+	*/
+
+	return types.ListRequest{
+		Offset:                pageToken.Offset,
+		PageSize:              request.GetPageSize(),
+		Filter:                filter,
+		FilteringDeclarations: declarations,
+		OrderBy:               orderBy,
+	}, &pageToken, nil
+}
+
+func (s *server) List{{.NamePlural}}(ctx context.Context, request *pb.List{{.NamePlural}}Request) (*pb.List{{.NamePlural}}Response, error) {
+	
+	req, pageToken, err := BuildList{{.NamePlural}}Request(ctx, request)
 	if err != nil {
 		s.monitoring.Emit(monitoring.EmitRequest{
-			ActionIdentifier: "list_{{.FinalIdentifier}}",
-			Message: "error parsing order by in List{{.NamePlural}}",
+			ActionIdentifier: "list_{{.FinalIdentifier}}_request",
+			Message: "error building List{{.NamePlural}} request",
 			EntityIdentifier: "{{.FinalIdentifier}}",
 			Layer: monitoring.ProtocolServiceLayer,
 			LayerSubtype: "protobuf",
@@ -88,21 +81,8 @@ func (s *server) List{{.NamePlural}}(ctx context.Context, request *pb.List{{.Nam
 		return nil, err
 	}
 
-	/* // enable for debugginh
-	if orderBy.Fields != nil {
-		b, _ := json.Marshal(orderBy.Fields)
-		fmt.Printf("ordering: %v \n", string(b))
-	}
-	*/
-
 	// Query the storage.
-	result, err := s.core.{{.Name}}().List(ctx, types.ListRequest{
-		Offset:                pageToken.Offset,
-		PageSize:              request.GetPageSize(),
-		Filter:                filter,
-		FilteringDeclarations: declarations,
-		OrderBy:               orderBy,
-	})
+	result, err := s.core.{{.Name}}().List(ctx, req)
 	if err != nil {
 		s.monitoring.Emit(monitoring.EmitRequest{
 			ActionIdentifier: "list_{{.FinalIdentifier}}",
