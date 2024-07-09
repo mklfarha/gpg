@@ -19,4 +19,12 @@ aws:
     key_id: {{.AWS.Key}}
     secret: {{.AWS.Secret}}
     bucket: {{.AWS.Bucket}}
+    
+monitoring:
+  logging-enabled: true
+  logging-level: success
+  metrics-enabled: true
+  metrics-level: success
+  metrics-provider: datadog
+  datadog-addr: localhost:8125
 `

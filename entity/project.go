@@ -27,16 +27,43 @@ const (
 	ProjectProtocolProtobuf = "protobuf"
 )
 
-func (p Project) BasicAuth() (bool, Auth) {
-	return p.AuthByType(BASIC_AUTH_TYPE)
+func (p Project) HasBasicAuth() bool {
+	found, config := p.AuthByType(BASIC_AUTH_TYPE)
+	if found && config.Config.Basic != nil {
+		return true
+	}
+	return false
 }
 
-func (p Project) JWTAuth() (bool, Auth) {
-	return p.AuthByType(JWT_SERVER_AUTH_TYPE)
+func (p Project) BasicAuth() Auth {
+	_, config := p.AuthByType(BASIC_AUTH_TYPE)
+	return config
 }
 
-func (p Project) KeycloakAuth() (bool, Auth) {
-	return p.AuthByType(KEYCLOAK_AUTH_TYPE)
+func (p Project) HasJWTAuth() bool {
+	found, config := p.AuthByType(JWT_SERVER_AUTH_TYPE)
+	if found && config.Config.JWT != nil {
+		return true
+	}
+	return false
+}
+
+func (p Project) JWTAuth() Auth {
+	_, config := p.AuthByType(JWT_SERVER_AUTH_TYPE)
+	return config
+}
+
+func (p Project) HasKeycloakAuth() bool {
+	found, config := p.AuthByType(KEYCLOAK_AUTH_TYPE)
+	if found && config.Config.JWT != nil {
+		return true
+	}
+	return false
+}
+
+func (p Project) KeycloakAuth() Auth {
+	_, config := p.AuthByType(KEYCLOAK_AUTH_TYPE)
+	return config
 }
 
 func (p Project) AuthByType(t AuthType) (bool, Auth) {
@@ -49,13 +76,11 @@ func (p Project) AuthByType(t AuthType) (bool, Auth) {
 }
 
 func (p Project) AuthImport() string {
-	jwtFound, jwtConfig := p.JWTAuth()
-	if jwtFound && jwtConfig.Config.JWT != nil {
+	if p.HasJWTAuth() && p.JWTAuth().Config.JWT != nil {
 		return fmt.Sprintf("auth \"%s/auth/jwtserver\"", p.Identifier)
 	}
 
-	kcFound, kcConfig := p.KeycloakAuth()
-	if kcFound && kcConfig.Config.Keycloak != nil {
+	if p.HasKeycloakAuth() && p.KeycloakAuth().Config.Keycloak != nil {
 		return fmt.Sprintf("auth \"%s/auth/keycloak\"", p.Identifier)
 	}
 	return ""

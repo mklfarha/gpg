@@ -1,6 +1,13 @@
+
 ports:
   http: 8085
   grpc: 6005
+
+auth: {{if eq .HasBasicAuth true}} 
+  basic:
+    username: {{ .BasicAuth.Config.Basic.Username }}
+    password: {{ .BasicAuth.Config.Basic.Password }}{{end}}
+
 
 db:
   - name: {{.Database.Name}} 

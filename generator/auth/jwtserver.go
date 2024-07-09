@@ -10,13 +10,13 @@ import (
 	"github.com/maykel/gpg/generator"
 )
 
-func generateBasicJWTServer(ctx context.Context, authDir string, project entity.Project, auth entity.Auth) error {
+func generateBasicJWTServer(ctx context.Context, authDir string, project entity.Project) error {
 
-	if auth.Type != entity.JWT_SERVER_AUTH_TYPE {
+	if !project.HasJWTAuth() {
 		return errors.New("invalid auth type")
 	}
 
-	if auth.Config.JWT == nil {
+	if project.JWTAuth().Config.JWT == nil {
 		return errors.New("missing JWT config")
 	}
 
@@ -34,7 +34,7 @@ func generateBasicJWTServer(ctx context.Context, authDir string, project entity.
 	err = generator.GenerateFile(ctx, generator.FileRequest{
 		OutputFile:   path.Join(jwtServerDir, "types.go"),
 		TemplateName: path.Join("auth", "jwtserver", "jwt_types"),
-		Data:         auth.Config.JWT,
+		Data:         project.JWTAuth().Config.JWT,
 	})
 	if err != nil {
 		return err

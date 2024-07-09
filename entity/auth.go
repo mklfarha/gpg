@@ -14,14 +14,14 @@ const (
 )
 
 type AuthConfig struct {
-	Basic    *BasicAuthConfig
-	JWT      *JWTConfig
-	Keycloak *KeycloakConfig
+	Basic    *BasicAuthConfig `json:"basic"`
+	JWT      *JWTConfig       `json:"jwt"`
+	Keycloak *KeycloakConfig  `json:"keycloak"`
 }
 
 type BasicAuthConfig struct {
-	BasicUsername string `json:"basic_username"`
-	BasicPassword string `json:"basic_password"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type JWTConfig struct {
