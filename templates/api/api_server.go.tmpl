@@ -2,11 +2,12 @@ package main
 
 import (
 	"net/http"
-	"log"			
+			
 	"go.uber.org/config"
+	"go.uber.org/zap"
 )
 
-func httpServer(config config.Provider){
+func httpServer(config config.Provider, logger *zap.Logger){
 	// http port from config 
 	httpPort := config.Get("ports.http").String()
 
@@ -15,7 +16,7 @@ func httpServer(config config.Provider){
 
 	go http.ListenAndServe(":"+httpPort, nil)
 
-	log.Printf(`Serving HTTP on PORT: %s`, httpPort)
+	logger.Info(`Serving HTTP on PORT: %s`, zap.String("port", httpPort))
 }
 
 

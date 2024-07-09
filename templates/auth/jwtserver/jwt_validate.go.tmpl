@@ -72,7 +72,7 @@ func (i *Implementation) ClaimsFromHeader(w http.ResponseWriter, r *http.Request
 	}
 	
 	// Initialize a new instance of `Claims`
-	claims, err :=  ParseToken(tknStr, &w)
+	claims, err :=  i.ParseToken(tknStr, &w)
 	if err != nil {
 		fmt.Printf("error parsing token: %v\n", err)
 		return nil, err

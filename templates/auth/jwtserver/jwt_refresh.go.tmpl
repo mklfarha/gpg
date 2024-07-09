@@ -20,7 +20,7 @@ func (i *Implementation) Refresh(w http.ResponseWriter, r *http.Request) {
 	tknStr := tknReq.Token
 	claims := &Claims{}
 	tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (interface{}, error) {
-		return jwtKey, nil
+		return i.key, nil
 	})
 	if !tkn.Valid {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -48,7 +48,7 @@ func (i *Implementation) Refresh(w http.ResponseWriter, r *http.Request) {
 	expirationTime := time.Now().Add(30 * 24 * time.Hour)
 	claims.ExpiresAt = expirationTime.Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(jwtKey)
+	tokenString, err := token.SignedString(i.key)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

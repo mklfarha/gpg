@@ -6,8 +6,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtKey = []byte("{{.JWTKey}}")
-
 type TokenResponse struct {
 	Token   string
 	Expires time.Time

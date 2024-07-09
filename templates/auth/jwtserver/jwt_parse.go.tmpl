@@ -7,7 +7,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-func ParseToken(tknStr string, w *http.ResponseWriter) (*Claims, error) {
+func (i *Implementation) ParseToken(tknStr string, w *http.ResponseWriter) (*Claims, error) {
 	claims := &Claims{}
 
 	// Parse the JWT string and store the result in `claims`.
@@ -16,7 +16,7 @@ func ParseToken(tknStr string, w *http.ResponseWriter) (*Claims, error) {
 	// or if the signature does not match
 	tkn, err := jwt.ParseWithClaims(tknStr, claims,
 		func(token *jwt.Token) (interface{}, error) {
-			return jwtKey, nil
+			return i.key, nil
 		})
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {

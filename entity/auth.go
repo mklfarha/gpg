@@ -25,7 +25,7 @@ type BasicAuthConfig struct {
 }
 
 type JWTConfig struct {
-	JWTKey string `json:"jwt_key"`
+	Key string `json:"key"`
 }
 
 type KeycloakConfig struct {

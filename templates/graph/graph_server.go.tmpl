@@ -41,11 +41,7 @@ func New(params Params) *handler.Server {
 	
     http.Handle("/gplay", auth.BasicAuth(params.Config, playground.Handler("GraphQL playground", "/query")))		
     http.Handle("/query", serverHTTPHandler(server {{ if ne .AuthImport ""}}, params.Auth {{end}}))
-	log.Info(`
-		Serving GRAPHQL HTTP: 			
-			/gplay
-			/query					
-			`)
+	log.Info(`Serving GRAPHQL HTTP: /gplay, /query`)
     return server
 }
 

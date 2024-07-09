@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+	"go.uber.org/config"
 )
 
 
@@ -20,18 +21,22 @@ type Interface interface {
 type Implementation struct {
 	core *core.Implementation
 	logger *zap.Logger
+	key string 
 }
 
 type Params struct {
 	fx.In
 	Core *core.Implementation
-	Logger *zap.Logger
+	Logger *zap.Logger	
+	Config config.Provider
 }
 
 func New(params Params) (base.Interface, error) {
+	key := params.Config.Get("auth.jwt.key").String()
 	i := Implementation{
 		core: params.Core,
 		logger: params.Logger,
+		key: key,
 	}
 
 	http.HandleFunc("/signin", i.SignIn)
@@ -39,11 +44,6 @@ func New(params Params) (base.Interface, error) {
 	http.HandleFunc("/refresh", i.Refresh)
 
 	log := params.Logger
-	log.Info(`
-		Serving AUTH HTTP: 			
-			/signin
-			/refresh
-			/validate		
-			`)
+	log.Info(`Serving JWT AUTH HTTP: /signin, /refresh, /validate`)
 	return &i, nil
 }
