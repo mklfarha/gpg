@@ -12,10 +12,8 @@ import (
     "{{.Identifier}}/graph/generated"
     "net/http"
     "github.com/99designs/gqlgen/graphql/playground"
-    
-    {{ if eq .Auth.Enabled true}}
-	"{{.Identifier}}/auth"
-    {{ end }}
+
+	"{{.Identifier}}/auth"    
 )
 
 type Params struct {
@@ -31,6 +29,7 @@ type Params struct {
 }
 
 func New(params Params) *handler.Server {
+	log := params.Logger
     server := handler.NewDefaultServer(
                     generated.NewExecutableSchema(
                         generated.Config{
@@ -39,12 +38,14 @@ func New(params Params) *handler.Server {
 								monitoring: params.Monitoring,
                             }}))
    
-	{{ if eq .Auth.Enabled true}}
-    http.Handle("/gplay", auth.BasicAuth(params.Config, playground.Handler("GraphQL playground", "/query")))	
-	{{else}}
-	http.Handle("/gplay", playground.Handler("GraphQL playground", "/query"))
-	{{end}}
+	
+    http.Handle("/gplay", auth.BasicAuth(params.Config, playground.Handler("GraphQL playground", "/query")))		
     http.Handle("/query", serverHTTPHandler(server {{ if eq .Auth.Enabled true}}, params.Auth {{end}}))
+	log.Info(`
+		Serving GRAPHQL HTTP: 			
+			/gplay
+			/query					
+			`)
     return server
 }
 
@@ -65,15 +66,11 @@ func serverHTTPHandler(server *handler.Server,
 			return
 		}
 
-		{{ if eq .Auth.Enabled true }}
-		_, err := auth.ClaimsFromHeader(w, r)
-		if err != nil {		
-			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		}				
+		{{ if eq .Auth.Enabled true }}	
+		// the client will set the corresponding header 		
+		auth.HandleHTTP(w, r)		
 		{{ end }}
-		
-		
+
 		server.ServeHTTP(w, r)
 	})
 

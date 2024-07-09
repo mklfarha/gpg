@@ -10,7 +10,9 @@ import (
 	pbserver "{{.Identifier}}/idl/server"		
 	{{end}}
 	{{ if eq .Auth.Enabled true}}
-	"{{.Identifier}}/auth"
+		{{ if eq .Auth.Type "basic-jwt"}}
+			auth "{{.Identifier}}/auth/jwtserver"
+		{{end}}
     {{ end }}
 	{{if eq $enableGraph true}}
 	"{{.Identifier}}/graph"

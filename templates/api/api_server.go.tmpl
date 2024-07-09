@@ -1,5 +1,5 @@
 package main
-{{$enableGraph := or (eq .Protocol "graphql") (eq .Protocol "all")}}
+
 import (
 	"net/http"
 	"log"			
@@ -15,14 +15,7 @@ func httpServer(config config.Provider){
 
 	go http.ListenAndServe(":"+httpPort, nil)
 
-	log.Printf(`
-		Serving HTTP: %s			
-			{{if eq .Auth.Enabled true}}/signin
-			/refresh{{end}}
-			{{if eq $enableGraph true}}/gplay
-			/query{{end}}
-			/upload	
-			`, httpPort)
+	log.Printf(`Serving HTTP on PORT: %s`, httpPort)
 }
 
 

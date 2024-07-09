@@ -1,0 +1,9 @@
+package auth
+
+import(
+    "net/http"
+)
+
+type Interface interface {
+    HandleHTTP(w http.ResponseWriter, r *http.Request) error
+}

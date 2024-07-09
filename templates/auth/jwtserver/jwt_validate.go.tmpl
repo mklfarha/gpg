@@ -1,4 +1,4 @@
-package auth
+package jwtserver
 
 import (
 	"context"
@@ -53,6 +53,15 @@ func (i *Implementation) Validate(w http.ResponseWriter, r *http.Request) {
 	user.Password = ""
 	resJson, _ := json.Marshal(user)
 	w.Write(resJson)
+}
+
+func (i *Implementation) HandleHTTP(w http.ResponseWriter, r *http.Request) error {
+	_, err := i.ClaimsFromHeader(w, r)
+	if err != nil {		
+		w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	}	
+	return err
 }
 
 func (i *Implementation) ClaimsFromHeader(w http.ResponseWriter, r *http.Request) (*Claims, error) {

@@ -1,36 +1,49 @@
-package auth
+package jwtserver
 
-import (	
+import (
+	"{{.Identifier}}/core"
+	base "{{.Identifier}}/auth"
 	"net/http"
-	"time"
-	"{{.Identifier}}/core"	
+	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
-var jwtKey = []byte("{{.Auth.JWTKey}}")
-
-type TokenResponse struct {
-	Token   string
-	Expires time.Time
-}
 
 type Interface interface {
 	SignIn(w http.ResponseWriter, r *http.Request)
 	Validate(w http.ResponseWriter, r *http.Request)
 	Refresh(w http.ResponseWriter, r *http.Request)
 	ClaimsFromHeader(w http.ResponseWriter, r *http.Request) (*Claims, error)
+	HandleHTTP(w http.ResponseWriter, r *http.Request) error
 }
 
 type Implementation struct {
 	core *core.Implementation
+	logger *zap.Logger
 }
 
-func New(c *core.Implementation) (Interface, error) {
+type Params struct {
+	fx.In
+	Core *core.Implementation
+	Logger *zap.Logger
+}
+
+func New(params Params) (base.Interface, error) {
 	i := Implementation{
-		core: c,
+		core: params.Core,
+		logger: params.Logger,
 	}
 
 	http.HandleFunc("/signin", i.SignIn)
 	http.HandleFunc("/validate", i.Validate)
 	http.HandleFunc("/refresh", i.Refresh)
+
+	log := params.Logger
+	log.Info(`
+		Serving AUTH HTTP: 			
+			/signin
+			/refresh
+			/validate		
+			`)
 	return &i, nil
 }

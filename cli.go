@@ -14,6 +14,7 @@ import (
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/files"
 	"github.com/maykel/gpg/generator"
+	"github.com/maykel/gpg/generator/auth"
 	gcli "github.com/maykel/gpg/generator/cli"
 	"github.com/maykel/gpg/generator/core"
 	"github.com/maykel/gpg/generator/graph"
@@ -183,7 +184,7 @@ func generateAPI(targetDir string, project entity.Project) {
 		proto.Generate(ctx, targetDir, project)
 	}
 	monitoring.GenerateMonitoring(ctx, targetDir, project)
-	generator.GenerateAuth(ctx, targetDir, project)
+	auth.GenerateAuth(ctx, targetDir, project)
 	generator.GenerateAPIModule(ctx, targetDir, project)
 	generator.GenerateCustom(ctx, targetDir, project)
 	generator.GoModTidy(context.Background(), targetDir, project)

@@ -1,8 +1,17 @@
-package auth
+package jwtserver
 
 import (
+	"time"
+	
 	"github.com/dgrijalva/jwt-go"
 )
+
+var jwtKey = []byte("{{.Auth.JWTKey}}")
+
+type TokenResponse struct {
+	Token   string
+	Expires time.Time
+}
 
 // Create a struct that models the structure of a user, both in the request body, and in the DB
 type Credentials struct {
