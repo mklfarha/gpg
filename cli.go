@@ -9,8 +9,8 @@ import (
 	"os"
 	"path"
 	"sort"
-	"strings"
 
+	"github.com/iancoleman/strcase"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/files"
 	"github.com/maykel/gpg/generator"
@@ -18,7 +18,6 @@ import (
 	gcli "github.com/maykel/gpg/generator/cli"
 	"github.com/maykel/gpg/generator/core"
 	"github.com/maykel/gpg/generator/graph"
-	"github.com/maykel/gpg/generator/helpers"
 	"github.com/maykel/gpg/generator/monitoring"
 	"github.com/maykel/gpg/generator/proto"
 	"github.com/maykel/gpg/generator/web"
@@ -145,11 +144,7 @@ func loadProject(configPath string) (entity.Project, error) {
 	}
 
 	fmt.Printf("--[GPG] Project Loaded \n")
-	project.Identifier = strings.ReplaceAll(project.Identifier, "-", "_")
-	if helpers.ProjectHasUserEntity(project) {
-		// in the future add a flag
-		project.Auth.Enabled = true
-	}
+	project.Identifier = strcase.ToSnake(project.Identifier)
 	return project, nil
 }
 

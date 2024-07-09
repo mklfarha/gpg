@@ -9,11 +9,7 @@ import (
 	{{ if eq $enableProto true}}
 	pbserver "{{.Identifier}}/idl/server"		
 	{{end}}
-	{{ if eq .Auth.Enabled true}}
-		{{ if eq .Auth.Type "basic-jwt"}}
-			auth "{{.Identifier}}/auth/jwtserver"
-		{{end}}
-    {{ end }}
+	{{.AuthImport}}
 	{{if eq $enableGraph true}}
 	"{{.Identifier}}/graph"
 	{{end}}
@@ -27,7 +23,7 @@ func main() {
 			{{.Identifier}}config.New,
 			core.New,	
 			monitoring.New,
-			{{if eq .Auth.Enabled true}}auth.New,{{end}}			
+			{{if ne .AuthImport ""}}auth.New,{{end}}			
 		),				
 		fx.Invoke(httpServer),
 		{{ if eq $enableProto true}}fx.Invoke(pbserver.New),{{end}}

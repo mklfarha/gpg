@@ -27,12 +27,17 @@ func GenerateAuth(ctx context.Context, rootPath string, project entity.Project) 
 		return err
 	}
 
-	err = generateBasicAuth(ctx, authDir, project)
-	if err != nil {
-		return err
+	basicFound, _ := project.BasicAuth()
+	if basicFound {
+		err = generateBasicAuth(ctx, authDir, project)
+		if err != nil {
+			return err
+		}
 	}
-	if project.Auth.Enabled {
-		err := generateBasicJWTServer(ctx, authDir, project)
+
+	jwtFound, jwtConfig := project.JWTAuth()
+	if jwtFound {
+		err := generateBasicJWTServer(ctx, authDir, project, jwtConfig)
 		if err != nil {
 			return err
 		}

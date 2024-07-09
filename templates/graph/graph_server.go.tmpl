@@ -22,7 +22,7 @@ type Params struct {
 	Lifecycle fx.Lifecycle
 	Core   *core.Implementation
 	Config config.Provider
-    {{ if eq .Auth.Enabled true}}
+    {{ if ne .AuthImport ""}}
 	Auth   auth.Interface
 	{{ end }}
 	Monitoring *monitoring.Implementation
@@ -40,7 +40,7 @@ func New(params Params) *handler.Server {
    
 	
     http.Handle("/gplay", auth.BasicAuth(params.Config, playground.Handler("GraphQL playground", "/query")))		
-    http.Handle("/query", serverHTTPHandler(server {{ if eq .Auth.Enabled true}}, params.Auth {{end}}))
+    http.Handle("/query", serverHTTPHandler(server {{ if ne .AuthImport ""}}, params.Auth {{end}}))
 	log.Info(`
 		Serving GRAPHQL HTTP: 			
 			/gplay
@@ -50,7 +50,7 @@ func New(params Params) *handler.Server {
 }
 
 func serverHTTPHandler(server *handler.Server,
-            {{ if eq .Auth.Enabled true}}auth   auth.Interface, {{end}}
+            {{ if ne .AuthImport ""}}auth   auth.Interface, {{end}}
             ) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -66,7 +66,7 @@ func serverHTTPHandler(server *handler.Server,
 			return
 		}
 
-		{{ if eq .Auth.Enabled true }}	
+		{{ if ne .AuthImport ""}}
 		// the client will set the corresponding header 		
 		auth.HandleHTTP(w, r)		
 		{{ end }}

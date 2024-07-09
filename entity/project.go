@@ -1,11 +1,13 @@
 package entity
 
+import "fmt"
+
 type Project struct {
 	Identifier                string          `json:"identifier"`
 	Render                    Render          `json:"render"`
 	Entities                  []Entity        `json:"entities"`
 	Database                  DB              `json:"database"`
-	Auth                      Auth            `json:"auth"`
+	Auth                      []Auth          `json:"auth"`
 	API                       API             `json:"api"`
 	AWS                       AWS             `json:"aws"`
 	Protocol                  ProjectProtocol `json:"protocol"`
@@ -24,3 +26,37 @@ const (
 	ProjectProtocolGraphQL  = "graphql"
 	ProjectProtocolProtobuf = "protobuf"
 )
+
+func (p Project) BasicAuth() (bool, Auth) {
+	return p.AuthByType(BASIC_AUTH_TYPE)
+}
+
+func (p Project) JWTAuth() (bool, Auth) {
+	return p.AuthByType(JWT_SERVER_AUTH_TYPE)
+}
+
+func (p Project) KeycloakAuth() (bool, Auth) {
+	return p.AuthByType(KEYCLOAK_AUTH_TYPE)
+}
+
+func (p Project) AuthByType(t AuthType) (bool, Auth) {
+	for _, a := range p.Auth {
+		if a.Type == t {
+			return true, a
+		}
+	}
+	return false, Auth{}
+}
+
+func (p Project) AuthImport() string {
+	jwtFound, jwtConfig := p.JWTAuth()
+	if jwtFound && jwtConfig.Config.JWT != nil {
+		return fmt.Sprintf("auth \"%s/auth/jwtserver\"", p.Identifier)
+	}
+
+	kcFound, kcConfig := p.KeycloakAuth()
+	if kcFound && kcConfig.Config.Keycloak != nil {
+		return fmt.Sprintf("auth \"%s/auth/keycloak\"", p.Identifier)
+	}
+	return ""
+}

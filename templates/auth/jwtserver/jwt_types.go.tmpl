@@ -2,11 +2,11 @@ package jwtserver
 
 import (
 	"time"
-	
+
 	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtKey = []byte("{{.Auth.JWTKey}}")
+var jwtKey = []byte("{{.JWTKey}}")
 
 type TokenResponse struct {
 	Token   string
