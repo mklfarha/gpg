@@ -29,7 +29,8 @@ type JWTConfig struct {
 }
 
 type KeycloakConfig struct {
-	Realm        string `json:"realm"`
-	ClientID     string `json:"client_id"`
-	ClientSecret string `json:"client_secret"`
+	Hostname     string `json:"hostname" yaml:"hostname"`
+	Realm        string `json:"realm" yaml:"realm"`
+	ClientID     string `json:"client_id" yaml:"client_id"`
+	ClientSecret string `json:"client_secret" yaml:"client_secret"`
 }

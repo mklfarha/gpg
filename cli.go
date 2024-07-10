@@ -22,6 +22,7 @@ import (
 	"github.com/maykel/gpg/generator/proto"
 	"github.com/maykel/gpg/generator/web"
 	"github.com/urfave/cli"
+	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -148,6 +149,12 @@ func loadProject(configPath string) (entity.Project, error) {
 	return project, nil
 }
 
+type APIGenerator struct {
+	Name     string
+	Func     func() error
+	Blocking bool
+}
+
 func generateAPI(targetDir string, project entity.Project) {
 	ctx := context.Background()
 	switch protocol {
@@ -161,29 +168,106 @@ func generateAPI(targetDir string, project entity.Project) {
 
 	project.DisableSelectCombinations = !enableSelectCombinations
 
-	generator.GenerateProjectDirectories(ctx, targetDir, project)
-	generator.GenerateConfig(ctx, targetDir, project)
-	core.GenerateCoreEntities(ctx, targetDir, project)
-	core.GenerateCoreRepository(ctx, targetDir, project, skipSkeema)
-	err := core.GenerateCoreModules(ctx, targetDir, project)
+	generators := []APIGenerator{
+		{
+			Name: "directories",
+			Func: func() error {
+				return generator.GenerateProjectDirectories(ctx, targetDir, project)
+			},
+			Blocking: true,
+		},
+		{
+			Name: "configuration",
+			Func: func() error {
+				return generator.GenerateConfig(ctx, targetDir, project)
+			},
+			Blocking: true,
+		},
+		{
+			Name: "core entities",
+			Func: func() error {
+				return core.GenerateCoreEntities(ctx, targetDir, project)
+			},
+			Blocking: true,
+		},
+		{
+			Name: "core repo",
+			Func: func() error {
+				return core.GenerateCoreRepository(ctx, targetDir, project, skipSkeema)
+			},
+			Blocking: true,
+		},
+		{
+			Name: "core modules",
+			Func: func() error {
+				return core.GenerateCoreModules(ctx, targetDir, project)
+			},
+			Blocking: true,
+		},
+		{
+			Name: "graphql",
+			Func: func() error {
+				return graph.GenerateGraph(ctx, targetDir, project)
+			},
+			Blocking: true,
+		},
+		{
+			Name: "proto",
+			Func: func() error {
+				return proto.Generate(ctx, targetDir, project)
+			},
+			Blocking: true,
+		},
+		{
+			Name: "monitoring",
+			Func: func() error {
+				return monitoring.GenerateMonitoring(ctx, targetDir, project)
+			},
+			Blocking: true,
+		},
+		{
+			Name: "auth",
+			Func: func() error {
+				return auth.GenerateAuth(ctx, targetDir, project)
+			},
+			Blocking: true,
+		},
+		{
+			Name: "api",
+			Func: func() error {
+				return generator.GenerateAPIModule(ctx, targetDir, project)
+			},
+			Blocking: true,
+		},
+		{
+			Name: "custom",
+			Func: func() error {
+				return generator.GenerateCustom(ctx, targetDir, project)
+			},
+			Blocking: true,
+		},
+		{
+			Name: "cli",
+			Func: func() error {
+				return gcli.GenerateCLIModule(ctx, targetDir, project)
+			},
+			Blocking: true,
+		},
+	}
+
+	eg := errgroup.Group{}
+	for _, g := range generators {
+		eg.Go(g.Func)
+	}
+	if err := eg.Wait(); err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	err := generator.GoModTidy(ctx, targetDir, project)
 	if err != nil {
-		fmt.Printf("ERROR: Error generating core modules: %v", err)
+		fmt.Printf("error running go mod tidy: %v", err)
 	}
-	switch protocol {
-	case API_PROTOCOL_ALL:
-		graph.GenerateGraph(ctx, targetDir, project)
-		proto.Generate(ctx, targetDir, project)
-	case API_PROTOCOL_GRAPHQL:
-		graph.GenerateGraph(ctx, targetDir, project)
-	case API_PROTOCOL_PROTOBUF:
-		proto.Generate(ctx, targetDir, project)
-	}
-	monitoring.GenerateMonitoring(ctx, targetDir, project)
-	auth.GenerateAuth(ctx, targetDir, project)
-	generator.GenerateAPIModule(ctx, targetDir, project)
-	generator.GenerateCustom(ctx, targetDir, project)
-	generator.GoModTidy(context.Background(), targetDir, project)
-	gcli.GenerateCLIModule(ctx, targetDir, project)
+
 }
 
 func generateWeb(targetDir string, project entity.Project) {

@@ -117,7 +117,7 @@ func initModule(ctx context.Context, rootPath string, project entity.Project) {
 
 }
 
-func GoModTidy(ctx context.Context, rootPath string, project entity.Project) {
+func GoModTidy(ctx context.Context, rootPath string, project entity.Project) error {
 	fmt.Printf("--[GPG] Go Mod Tidy \n")
 	projectDir := ProjectDir(ctx, rootPath, project)
 	// go mod tidy
@@ -125,8 +125,9 @@ func GoModTidy(ctx context.Context, rootPath string, project entity.Project) {
 	cmd.Dir = projectDir
 	err := cmd.Run()
 	if err != nil {
-		fmt.Printf("error running go mod tidy: %v\n", err)
+		return err
 	}
+	return nil
 }
 
 func ProjectDir(ctx context.Context, rootPath string, project entity.Project) string {

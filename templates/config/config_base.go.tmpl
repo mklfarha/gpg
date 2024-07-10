@@ -9,6 +9,11 @@ auth: {{if eq .HasBasicAuth true}}
     password: {{ .BasicAuth.Config.Basic.Password }}{{end}}
   {{if eq .HasJWTAuth true}}jwt:
     key: {{ .JWTAuth.Config.JWT.Key }}{{end}}
+  {{if eq .HasKeycloakAuth true}}keycloak:
+    hostname: {{ .KeycloakAuth.Config.Keycloak.Hostname }}
+    realm: {{ .KeycloakAuth.Config.Keycloak.Realm }}
+    client_id: {{ .KeycloakAuth.Config.Keycloak.ClientID }}
+    client_secret: {{ .KeycloakAuth.Config.Keycloak.ClientSecret }}{{end}}
 
 
 db:

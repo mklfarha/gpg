@@ -1,0 +1,45 @@
+package keycloak
+
+import (
+    "context"
+    "net/http"
+    "fmt"
+    "errors"
+    "strings"
+)
+
+func (i *Implementation) HandleHTTP(w http.ResponseWriter, r *http.Request) error {
+    ctx := context.Background()
+    headerToken, err := i.TokenFromHeader(r)
+    if err != nil {
+        w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+        return err
+    }
+    rptResult, err := i.client.RetrospectToken(ctx, headerToken, i.config.ClientID, i.config.ClientSecret, i.config.Realm)
+    if err != nil {
+        w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+        return err
+    }
+
+    if !*rptResult.Active {
+        w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+        return errors.New("inactive token")
+    }
+
+    permissions := rptResult.Permissions
+    fmt.Printf("permissions: %v", permissions)		
+	return nil
+}
+
+func (i *Implementation) TokenFromHeader(r *http.Request) (string, error) {
+	reqToken := r.Header.Get("Authorization")	
+	splitToken := strings.Split(reqToken, "bearer ")
+	if len(splitToken) < 2 {		
+		return "", errors.New("invalid token len")
+	}
+
+	return splitToken[1], nil
+}

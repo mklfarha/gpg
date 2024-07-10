@@ -1,0 +1,23 @@
+package keycloak
+
+import (
+    base "{{.Identifier}}/auth"	
+    "github.com/Nerzal/gocloak/v13"
+)
+
+func New(params Params) (base.Interface, error) {
+    var config Config
+	if err := params.Config.Get("auth.keycloak").Populate(&config); err != nil {
+		return nil, err
+	}
+    
+	i := Implementation{		
+		logger: params.Logger,	
+        config: config,	
+        client: gocloak.NewClient(config.Hostname),
+	}
+	return &i, nil
+}
+
+
+

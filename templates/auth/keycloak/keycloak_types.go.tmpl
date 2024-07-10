@@ -1,0 +1,33 @@
+package keycloak
+
+import (    
+    "net/http"
+	"go.uber.org/fx"
+	"go.uber.org/zap"
+	"go.uber.org/config"
+    "github.com/Nerzal/gocloak/v13"    
+)
+
+
+type Interface interface {	
+	HandleHTTP(w http.ResponseWriter, r *http.Request) error
+}
+
+type Implementation struct {	
+	logger *zap.Logger
+    config Config	
+    client *gocloak.GoCloak
+}
+
+type Params struct {
+	fx.In	
+	Logger *zap.Logger	
+	Config config.Provider 
+}
+
+type Config struct {
+	Hostname     string `yaml:"hostname"`
+	Realm        string `yaml:"realm"`
+	ClientID     string `yaml:"client_id"`
+	ClientSecret string `yaml:"client_secret"`
+}

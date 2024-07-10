@@ -32,6 +32,8 @@ func GenerateAuth(ctx context.Context, rootPath string, project entity.Project) 
 		if err != nil {
 			return err
 		}
+	} else {
+		fmt.Printf("--[GPG][AUTH] Skip basic auth\n")
 	}
 
 	if project.HasJWTAuth() {
@@ -40,7 +42,16 @@ func GenerateAuth(ctx context.Context, rootPath string, project entity.Project) 
 			return err
 		}
 	} else {
-		fmt.Printf("--[GPG] Auth not enabled\n")
+		fmt.Printf("--[GPG][AUTH] Skip jwt auth \n")
+	}
+
+	if project.HasKeycloakAuth() {
+		err := generateKeycloakClient(ctx, authDir, project)
+		if err != nil {
+			return err
+		}
+	} else {
+		fmt.Printf("--[GPG][AUTH] Skipp keycloak auth \n")
 	}
 
 	return nil

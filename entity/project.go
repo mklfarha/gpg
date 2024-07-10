@@ -55,7 +55,7 @@ func (p Project) JWTAuth() Auth {
 
 func (p Project) HasKeycloakAuth() bool {
 	found, config := p.AuthByType(KEYCLOAK_AUTH_TYPE)
-	if found && config.Config.JWT != nil {
+	if found && config.Config.Keycloak != nil {
 		return true
 	}
 	return false

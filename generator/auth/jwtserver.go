@@ -21,7 +21,7 @@ func generateBasicJWTServer(ctx context.Context, authDir string, project entity.
 	}
 
 	jwtServerDir := path.Join(authDir, "jwtserver")
-	fmt.Printf("--[GPG] Generating basic JWT server\n")
+	fmt.Printf("--[GPG][AUTH] Generating JWT server\n")
 	err := generator.GenerateFile(ctx, generator.FileRequest{
 		OutputFile:   path.Join(jwtServerDir, "server.go"),
 		TemplateName: path.Join("auth", "jwtserver", "jwt_server"),
