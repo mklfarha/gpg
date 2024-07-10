@@ -13,7 +13,8 @@ import (
     "net/http"
     "github.com/99designs/gqlgen/graphql/playground"
 
-	"{{.Identifier}}/auth"    
+	"{{.Identifier}}/auth"  
+	"fmt"  
 )
 
 type Params struct {
@@ -40,12 +41,13 @@ func New(params Params) *handler.Server {
    
 	
     http.Handle("/gplay", auth.BasicAuth(params.Config, playground.Handler("GraphQL playground", "/query")))		
-    http.Handle("/query", serverHTTPHandler(server {{ if ne .AuthImport ""}}, params.Auth {{end}}))
+    http.Handle("/query", serverHTTPHandler(server, params.Monitoring {{ if ne .AuthImport ""}}, params.Auth {{end}}))
 	log.Info(`Serving GRAPHQL HTTP: /gplay, /query`)
     return server
 }
 
 func serverHTTPHandler(server *handler.Server,
+			m *monitoring.Implementation,
             {{ if ne .AuthImport ""}}auth   auth.Interface, {{end}}
             ) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +66,19 @@ func serverHTTPHandler(server *handler.Server,
 
 		{{ if ne .AuthImport ""}}
 		// the client will set the corresponding header 		
-		auth.HandleHTTP(w, r)		
+		err := auth.HandleHTTP(w, r)		
+		if err != nil {
+			fmt.Printf("error handling auth for request: %v\n\n",err)
+			m.Emit(monitoring.EmitRequest{
+				ActionIdentifier: "invalid_auth",
+				Message: "error handling auth",				
+				Layer: monitoring.ProtocolServiceLayer,
+				LayerSubtype: "graphql",
+				Type: monitoring.EmitTypeError,				
+				Error: err,		
+			})
+			return 
+		}
 		{{ end }}
 
 		server.ServeHTTP(w, r)
