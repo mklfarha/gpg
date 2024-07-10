@@ -18,6 +18,22 @@ func generateServer(ctx context.Context, protoDir string, project entity.Project
 		Data: ProtoServiceTemplate{
 			Identifier: project.Identifier,
 			Name:       helpers.ToCamelCase(project.Identifier),
+			AuthImport: project.AuthImport(),
+		},
+		DisableGoFormat: false,
+	})
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("--[GPG][Proto] Generating auth.go\n")
+	err = generator.GenerateFile(ctx, generator.FileRequest{
+		OutputFile:   path.Join(protoDir, "server", "auth.go"),
+		TemplateName: path.Join("proto", "server_auth"),
+		Data: ProtoServiceTemplate{
+			Identifier: project.Identifier,
+			Name:       helpers.ToCamelCase(project.Identifier),
+			AuthImport: project.AuthImport(),
 		},
 		DisableGoFormat: false,
 	})

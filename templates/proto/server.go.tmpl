@@ -15,6 +15,9 @@ import (
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
+	{{ if ne .AuthImport ""}}
+	"{{.Identifier}}/auth"
+	{{ end }}
 	
 )
 
@@ -31,11 +34,18 @@ type Params struct {
 	Core   *core.Implementation
 	Config config.Provider
 	Monitoring *monitoring.Implementation
+	{{ if ne .AuthImport ""}}
+	Auth   auth.Interface
+	{{ end }}
 }
 
 func New(params Params) *grpc.Server {	
 	log := params.Logger
-	s := grpc.NewServer()
+	s := grpc.NewServer(
+		{{ if ne .AuthImport ""}}
+		grpc.UnaryInterceptor(AuthUnaryServerInterceptor(params.Auth, params.Monitoring)),
+		{{ end }}
+	)
 	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			// GRPC port from config

@@ -63,6 +63,16 @@ func (i *Implementation) HandleHTTP(w http.ResponseWriter, r *http.Request) erro
 	return err
 }
 
+func (i *Implementation) HandleToken(ctx context.Context, token string) error {
+	_, err :=  i.ParseToken(token, nil)
+	if err != nil {
+		fmt.Printf("error parsing token: %v\n", err)
+		return err
+	}
+
+	return nil
+}
+
 func (i *Implementation) ClaimsFromHeader(w http.ResponseWriter, r *http.Request) (*Claims, error) {
 	tknStr, err := i.TokenFromHeader(r)
 	if err != nil {
@@ -71,7 +81,7 @@ func (i *Implementation) ClaimsFromHeader(w http.ResponseWriter, r *http.Request
 	}
 	
 	// Initialize a new instance of `Claims`
-	claims, err :=  i.ParseToken(tknStr, &w)
+	claims, err :=  i.ParseToken(tknStr, nil)
 	if err != nil {
 		fmt.Printf("error parsing token: %v\n", err)
 		return nil, err
@@ -82,7 +92,14 @@ func (i *Implementation) ClaimsFromHeader(w http.ResponseWriter, r *http.Request
 
 
 func (i *Implementation) TokenFromHeader(r *http.Request) (string, error) {
-	reqToken := r.Header.Get("Authorization")	
+	reqToken := r.Header.Get("Authorization")
+    if reqToken == "" {
+        reqToken = r.Header.Get("authorization")
+    }	
+
+    if reqToken == "" {
+        return "", errors.New("invalid token len")
+    }
 	splitToken := strings.Split(reqToken, "bearer ")
 	if len(splitToken) < 2 {		
 		return "", errors.New("invalid token len")

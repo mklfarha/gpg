@@ -51,6 +51,7 @@ type ProtoServiceTemplate struct {
 	Identifier string
 	Name       string
 	Entities   []ProtoEntityTemplate
+	AuthImport string
 }
 
 func Generate(ctx context.Context, rootPath string, project entity.Project) error {
