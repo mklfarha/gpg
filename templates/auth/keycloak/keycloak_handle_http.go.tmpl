@@ -23,8 +23,7 @@ func (i *Implementation) HandleHTTP(w http.ResponseWriter, r *http.Request) erro
         return err
     }
 
-    if !*rptResult.Active {
-        w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+    if !*rptResult.Active {        
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
         return errors.New("inactive token")
     }

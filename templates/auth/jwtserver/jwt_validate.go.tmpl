@@ -57,8 +57,7 @@ func (i *Implementation) Validate(w http.ResponseWriter, r *http.Request) {
 
 func (i *Implementation) HandleHTTP(w http.ResponseWriter, r *http.Request) error {
 	_, err := i.ClaimsFromHeader(w, r)
-	if err != nil {		
-		w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+	if err != nil {				
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 	}	
 	return err
