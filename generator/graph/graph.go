@@ -9,7 +9,7 @@ import (
 
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator"
-	"github.com/maykel/gpg/generator/core"
+	"github.com/maykel/gpg/generator/core/repo"
 	"github.com/maykel/gpg/generator/field"
 )
 
@@ -26,7 +26,7 @@ type GraphEntityTemplate struct {
 	PrimaryKey       field.Template
 	InFields         []field.Template
 	OutFields        []field.Template
-	Selects          []core.RepoSchemaSelectStatement
+	Selects          []repo.SchemaSelectStatement
 	CustomQueries    []entity.CustomQuery
 	Search           bool
 }

@@ -1,0 +1,56 @@
+package events 
+
+import (
+    {{if eq .KafkaEnabled true}}
+	saramafx "github.com/mklfarha/sarama-fx"
+	{{end}}
+
+    "golang.org/x/sync/errgroup"     
+    "{{.Identifier}}/monitoring"   
+)
+
+func (i *Implementation) Produce(message []byte) error {
+	eg := errgroup.Group{}
+    {{if eq .KafkaEnabled true}}
+        {{range $t := .KafkaConfig.Topics}}  
+            eg.Go(func() error {
+                return i.produceToKafkaTopic("{{$t}}", message)
+            })
+        {{end}}	
+        if err := eg.Wait(); err != nil {           
+            return err
+        }    
+    {{end}}
+    return nil
+}
+
+{{if eq .KafkaEnabled true}}
+func (i *Implementation) produceToKafkaTopic(topic string, message []byte) error {
+    err := i.client.SendMessage(saramafx.SendMessageRequest{
+		Topic:   topic,
+		Message: message,
+	})
+
+    if err != nil {
+        i.monitoring.Emit(monitoring.EmitRequest{
+            ActionIdentifier: "event_produce",
+            Message: "error producing message",            
+            Layer: monitoring.EventServiceLayer,
+            LayerSubtype: "kafka",
+            Type: monitoring.EmitTypeError,
+            ExtraData: map[string]string{"message":string(message), "topic":topic},
+            Error: err,
+        })
+    }
+
+    i.monitoring.Emit(monitoring.EmitRequest{
+        ActionIdentifier: "event_produce",
+        Message: "produced message successfully",            
+        Layer: monitoring.EventServiceLayer,
+        LayerSubtype: "kafka",
+        Type: monitoring.EmitTypeSuccess,
+        ExtraData: map[string]string{"message":string(message),"topic":topic},            
+    })
+    return nil
+}
+{{end}}

@@ -8,7 +8,7 @@ import (
 	"github.com/gertd/go-pluralize"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator"
-	"github.com/maykel/gpg/generator/core"
+	"github.com/maykel/gpg/generator/core/repo"
 	"github.com/maykel/gpg/generator/field"
 	"github.com/maykel/gpg/generator/helpers"
 )
@@ -101,7 +101,7 @@ func generateEntities(ctx context.Context, graphDir string, project entity.Proje
 			return graphGenEntitiesResponse{}, err
 		}
 
-		selects := core.ResolveSelectStatements(project, e)
+		selects := repo.ResolveSelectStatements(project, e)
 		entityTemplate.Selects = selects
 		entityTemplates = append(entityTemplates, entityTemplate)
 	}

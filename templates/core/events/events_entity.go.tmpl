@@ -1,0 +1,43 @@
+package events 
+
+import(
+    "time"
+    "encoding/json"
+)
+
+func (i *Implementation) ProduceEntityCreated(e EventEntity) error {
+    event := Event{
+        Type: "entity",
+        Identifier: e.EntityIdentifier(),
+        SubIdentifier: e.PrimaryKeyValue(),
+        Action:"create",
+        NewData: e.String(),    
+        Timestamp: time.Now(),
+    }
+
+    res, err := json.Marshal(event)
+    if err != nil {
+        return err
+    }
+
+    return i.Produce(res)
+}
+
+func (i *Implementation) ProduceEntityUpdated(new EventEntity, old EventEntity) error {
+    event := Event{
+        Type: "entity",
+        Identifier: new.EntityIdentifier(),
+        SubIdentifier: new.PrimaryKeyValue(),
+        Action:"update",
+        NewData: new.String(),  
+        OldData: old.String(),  
+        Timestamp: time.Now(),
+    }
+
+    res, err := json.Marshal(event)
+    if err != nil {
+        return err
+    }
+
+    return i.Produce(res)
+}

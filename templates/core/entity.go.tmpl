@@ -37,6 +37,10 @@ func (e {{.EntityName}}) EntityIdentifier() string {
 func (e {{.EntityName}}) PrimaryKeyIdentifier() string {    
     return "{{.PrimaryKeyIdentifier}}"
 }
+
+func (e {{.EntityName}}) PrimaryKeyValue() string {    
+    return e.{{.PrimaryKeyName}}.String()
+}
 {{end}}
 
 func (e {{.EntityName}}) FieldIdentfierToTypeMap() map[string]types.FieldType {

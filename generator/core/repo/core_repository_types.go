@@ -1,26 +1,26 @@
-package core
+package repo
 
 import (
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator/field"
 )
 
-type RepoSchemaTemplate struct {
-	Entities []RepoSchemaEntity
+type SchemaTemplate struct {
+	Entities []SchemaEntity
 }
 
-type RepoSchemaEntity struct {
+type SchemaEntity struct {
 	Name             string
 	NameTitle        string
 	PrimaryKey       string
-	Fields           []RepoSchemaField
-	Indexes          []RepoSchemaIndex
-	Search           []RepoSchemaSearch
-	SelectStatements []RepoSchemaSelectStatement
+	Fields           []SchemaField
+	Indexes          []SchemaIndex
+	Search           []SchemaSearch
+	SelectStatements []SchemaSelectStatement
 	CustomQueries    []entity.CustomQuery
 }
 
-type RepoSchemaField struct {
+type SchemaField struct {
 	Name     string
 	Type     string
 	Null     string
@@ -29,30 +29,30 @@ type RepoSchemaField struct {
 	Unique   string
 }
 
-type RepoSchemaIndex struct {
+type SchemaIndex struct {
 	Name      string
 	FieldName string
 	HasComma  bool
 }
 
-type RepoSchemaSearch struct {
+type SchemaSearch struct {
 	Name      string
 	FieldName string
 	IsLast    bool
 }
 
-type RepoSchemaSelectStatement struct {
+type SchemaSelectStatement struct {
 	Name             string
 	Identifier       string
 	EntityIdentifier string
 	GraphName        string
-	Fields           []RepoSchemaSelectStatementField
+	Fields           []SchemaSelectStatementField
 	IsPrimary        bool
 	TimeFields       []field.Template
 	SortSupported    bool
 }
 
-type RepoSchemaSelectStatementField struct {
+type SchemaSelectStatementField struct {
 	Name   string
 	Field  field.Template
 	IsLast bool

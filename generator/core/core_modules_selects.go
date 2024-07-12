@@ -7,6 +7,7 @@ import (
 
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator"
+	"github.com/maykel/gpg/generator/core/repo"
 	"github.com/maykel/gpg/generator/field"
 	"github.com/maykel/gpg/generator/helpers"
 )
@@ -16,7 +17,7 @@ type fetchModuleTemplate struct {
 	EntityName       string
 	EntityIdentifier string
 	ProjectName      string
-	Select           RepoSchemaSelectStatement
+	Select           repo.SchemaSelectStatement
 	CustomQuery      entity.CustomQuery
 	Fields           []field.Template
 	Imports          []string

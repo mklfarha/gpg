@@ -33,7 +33,7 @@ func main() {
 			monitoring.New,
 			{{if ne .AuthImport ""}}auth.New,{{end}}			
 		),	
-		saramafx.Module,			
+		{{if eq .KafkaEnabled true}}saramafx.Module,{{end}}
 		fx.Invoke(httpServer),
 		{{ if eq $enableProto true}}fx.Invoke(pbserver.New),{{end}}
 		{{ if eq $enableGraph true}}fx.Invoke(graph.New),{{end}}

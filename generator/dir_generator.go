@@ -22,6 +22,7 @@ var (
 	CORE_ENTITY_DIR           = path.Join(CORE_DIR, "entity")
 	CORE_MODULE_DIR           = path.Join(CORE_DIR, "module")
 	CORE_REPO_DIR             = path.Join(CORE_DIR, "repository")
+	EVENTS_REPO_DIR           = path.Join(CORE_DIR, "events")
 	CORE_REPO_SQL_DIR         = "sql"
 	CORE_REPO_SQL_QUERIES_DIR = "queries"
 	CORE_TOOLS                = "tools"

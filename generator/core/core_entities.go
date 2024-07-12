@@ -23,6 +23,7 @@ type EntityTemplate struct {
 	JSON                 bool
 	JSONField            field.Template
 	PrimaryKeyIdentifier string
+	PrimaryKeyName       string
 }
 
 type EnumTemplate struct {
@@ -103,6 +104,7 @@ func resolveEntityTemplate(e entity.Entity, project entity.Project) (EntityTempl
 		Fields:               fields,
 		Imports:              helpers.MapKeys(imports),
 		PrimaryKeyIdentifier: primaryKey.Identifier,
+		PrimaryKeyName:       helpers.ToCamelCase(primaryKey.Identifier),
 	}
 
 	return tpl, imports

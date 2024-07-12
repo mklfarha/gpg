@@ -9,6 +9,7 @@ import (
 
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator"
+	"github.com/maykel/gpg/generator/core/repo"
 	"github.com/maykel/gpg/generator/field"
 	"github.com/maykel/gpg/generator/helpers"
 )
@@ -19,7 +20,7 @@ type coreSubModuleRequest struct {
 	ModuleDir    string
 	Fields       []field.Template
 	Imports      map[string]any
-	Selects      []RepoSchemaSelectStatement
+	Selects      []repo.SchemaSelectStatement
 	SearchFields []field.Template
 }
 
@@ -34,7 +35,7 @@ func GenerateCoreModules(ctx context.Context, rootPath string, project entity.Pr
 
 	fmt.Printf("--[GPG] Generating core modules\n")
 	for _, e := range project.Entities {
-		selects := ResolveSelectStatements(project, e)
+		selects := repo.ResolveSelectStatements(project, e)
 		searchFields := GetSearchFields(e)
 		fields, imports := field.ResolveFieldsAndImports(e.Fields, e, nil)
 

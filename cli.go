@@ -17,6 +17,8 @@ import (
 	"github.com/maykel/gpg/generator/auth"
 	gcli "github.com/maykel/gpg/generator/cli"
 	"github.com/maykel/gpg/generator/core"
+	"github.com/maykel/gpg/generator/core/events"
+	"github.com/maykel/gpg/generator/core/repo"
 	"github.com/maykel/gpg/generator/graph"
 	"github.com/maykel/gpg/generator/monitoring"
 	"github.com/maykel/gpg/generator/proto"
@@ -193,7 +195,14 @@ func generateAPI(targetDir string, project entity.Project) {
 		{
 			Name: "core repo",
 			Func: func() error {
-				return core.GenerateCoreRepository(ctx, targetDir, project, skipSkeema)
+				return repo.GenerateCoreRepository(ctx, targetDir, project, skipSkeema)
+			},
+			Blocking: true,
+		},
+		{
+			Name: "core events",
+			Func: func() error {
+				return events.GenerateCoreEvents(ctx, targetDir, project)
 			},
 			Blocking: true,
 		},
@@ -259,6 +268,7 @@ func generateAPI(targetDir string, project entity.Project) {
 	for _, g := range generators {
 		eg.Go(g.Func)
 	}
+
 	if err := eg.Wait(); err != nil {
 		log.Fatalf("error: %v", err)
 	}

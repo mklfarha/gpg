@@ -1,0 +1,45 @@
+package events
+
+import (
+    "go.uber.org/fx"
+
+    {{if eq .KafkaEnabled true}}
+	saramafx "github.com/mklfarha/sarama-fx"
+	{{end}}
+
+    "{{.Identifier}}/monitoring"
+    "time"
+)
+
+type Implementation struct {
+    {{if eq .KafkaEnabled true}}
+    client *saramafx.Client
+    {{end}}
+    monitoring *monitoring.Implementation
+}
+
+type Params struct {
+    fx.In
+
+    {{if eq .KafkaEnabled true}}
+    Client *saramafx.Client
+    {{end}}
+    Monitoring *monitoring.Implementation
+}
+
+type EventEntity interface {
+    EntityIdentifier() string
+    PrimaryKeyValue() string
+    String() string
+}
+
+type Event struct {
+    Type string `json:"type"`
+    Identifier string `json:"identifier"`
+    SubIdentifier string `json:"sub-identifier"`
+    Action string `json:"action"`
+    NewData string `json:"new-data"`
+    OldData string `json:"old-data"`
+    Timestamp time.Time `json:"timestamp"`
+}
+

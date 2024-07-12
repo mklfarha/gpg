@@ -1,4 +1,4 @@
-package core
+package repo
 
 import (
 	"fmt"
@@ -9,17 +9,17 @@ import (
 	"github.com/maykel/gpg/generator/helpers"
 )
 
-func ResolveSelectStatements(project entity.Project, e entity.Entity) []RepoSchemaSelectStatement {
-	selects := []RepoSchemaSelectStatement{}
+func ResolveSelectStatements(project entity.Project, e entity.Entity) []SchemaSelectStatement {
+	selects := []SchemaSelectStatement{}
 	primaryKey := helpers.EntityPrimaryKey(e)
 	resolvedField := field.ResolveFieldType(primaryKey, e, nil)
 	nameByID := fmt.Sprintf("%sBy%s", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(primaryKey.Identifier))
-	selects = append(selects, RepoSchemaSelectStatement{
+	selects = append(selects, SchemaSelectStatement{
 		Name:             nameByID,
 		Identifier:       strcase.ToSnake(nameByID),
 		EntityIdentifier: e.Identifier,
 		GraphName:        nameByID,
-		Fields: []RepoSchemaSelectStatementField{
+		Fields: []SchemaSelectStatementField{
 			{
 				Name:   primaryKey.Identifier,
 				Field:  resolvedField,
@@ -65,7 +65,7 @@ func ResolveSelectStatements(project entity.Project, e entity.Entity) []RepoSche
 	combinations := helpers.Combinations(indexes)
 	for _, combination := range combinations {
 		name := fmt.Sprintf("%sBy", helpers.ToCamelCase(e.Identifier))
-		fields := []RepoSchemaSelectStatementField{}
+		fields := []SchemaSelectStatementField{}
 		first := true
 		for i, f := range combination {
 			isLast := true
@@ -73,7 +73,7 @@ func ResolveSelectStatements(project entity.Project, e entity.Entity) []RepoSche
 				isLast = false
 			}
 			resolvedField := field.ResolveFieldType(indexFields[f], e, nil)
-			fields = append(fields, RepoSchemaSelectStatementField{
+			fields = append(fields, SchemaSelectStatementField{
 				Name:   f,
 				Field:  resolvedField,
 				IsLast: isLast,
@@ -86,7 +86,7 @@ func ResolveSelectStatements(project entity.Project, e entity.Entity) []RepoSche
 			}
 		}
 
-		selects = append(selects, RepoSchemaSelectStatement{
+		selects = append(selects, SchemaSelectStatement{
 			Name:             name,
 			Identifier:       strcase.ToSnake(name),
 			EntityIdentifier: e.Identifier,
@@ -104,14 +104,14 @@ func ResolveSelectStatements(project entity.Project, e entity.Entity) []RepoSche
 	for _, indexID := range indexesIDs {
 		resolvedIDField := field.ResolveFieldType(indexIDsFields[indexID], e, nil)
 		name := fmt.Sprintf("%sBy%s", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(resolvedIDField.Identifier))
-		fields := []RepoSchemaSelectStatementField{
+		fields := []SchemaSelectStatementField{
 			{
 				Name:   indexID,
 				Field:  resolvedIDField,
 				IsLast: true,
 			},
 		}
-		selects = append(selects, RepoSchemaSelectStatement{
+		selects = append(selects, SchemaSelectStatement{
 			Name:             name,
 			Identifier:       strcase.ToSnake(name),
 			EntityIdentifier: e.Identifier,
@@ -122,7 +122,7 @@ func ResolveSelectStatements(project entity.Project, e entity.Entity) []RepoSche
 		})
 		for _, combination := range combinations {
 			name := fmt.Sprintf("%sBy%s", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(resolvedIDField.Identifier))
-			fields := []RepoSchemaSelectStatementField{
+			fields := []SchemaSelectStatementField{
 				{
 					Name:   indexID,
 					Field:  resolvedIDField,
@@ -135,7 +135,7 @@ func ResolveSelectStatements(project entity.Project, e entity.Entity) []RepoSche
 					isLast = false
 				}
 				resolvedField := field.ResolveFieldType(indexFields[f], e, nil)
-				fields = append(fields, RepoSchemaSelectStatementField{
+				fields = append(fields, SchemaSelectStatementField{
 					Name:   f,
 					Field:  resolvedField,
 					IsLast: isLast,
@@ -144,7 +144,7 @@ func ResolveSelectStatements(project entity.Project, e entity.Entity) []RepoSche
 				name = fmt.Sprintf("%sAnd%s", name, helpers.ToCamelCase(f))
 			}
 
-			selects = append(selects, RepoSchemaSelectStatement{
+			selects = append(selects, SchemaSelectStatement{
 				Name:             name,
 				Identifier:       strcase.ToSnake(name),
 				EntityIdentifier: e.Identifier,

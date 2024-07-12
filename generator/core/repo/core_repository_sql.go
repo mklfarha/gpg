@@ -1,4 +1,4 @@
-package core
+package repo
 
 import (
 	"context"
@@ -12,11 +12,11 @@ import (
 )
 
 func generateRepositorySQL(ctx context.Context, project entity.Project, sqlDir string) error {
-	entities := make([]RepoSchemaEntity, len(project.Entities))
+	entities := make([]SchemaEntity, len(project.Entities))
 	for i, e := range project.Entities {
 		fields, indexes, search := resolveSchemaFieldsAndIndexes(e)
 		selects := ResolveSelectStatements(project, e)
-		entityTemplate := RepoSchemaEntity{
+		entityTemplate := SchemaEntity{
 			Name:             e.Identifier,
 			NameTitle:        helpers.ToCamelCase(e.Identifier),
 			PrimaryKey:       helpers.EntityPrimaryKey(e).Identifier,
@@ -28,7 +28,7 @@ func generateRepositorySQL(ctx context.Context, project entity.Project, sqlDir s
 		}
 		entities[i] = entityTemplate
 	}
-	tpl := RepoSchemaTemplate{
+	tpl := SchemaTemplate{
 		Entities: entities,
 	}
 	fmt.Printf("----[GPG] Generating SQL files\n")
@@ -38,7 +38,7 @@ func generateRepositorySQL(ctx context.Context, project entity.Project, sqlDir s
 			OutputFile:   path.Join(sqlDir, "schemas", fmt.Sprintf("%s.sql", e.Name)),
 			TemplateName: path.Join("core", "repo", "repo_schema"),
 			Data: struct {
-				Entity RepoSchemaEntity
+				Entity SchemaEntity
 			}{
 				Entity: e,
 			},
@@ -88,13 +88,13 @@ func generateRepositorySQL(ctx context.Context, project entity.Project, sqlDir s
 	})
 }
 
-func resolveSchemaFieldsAndIndexes(e entity.Entity) ([]RepoSchemaField, []RepoSchemaIndex, []RepoSchemaSearch) {
-	fields := []RepoSchemaField{}
-	index := []RepoSchemaIndex{}
-	search := []RepoSchemaSearch{}
+func resolveSchemaFieldsAndIndexes(e entity.Entity) ([]SchemaField, []SchemaIndex, []SchemaSearch) {
+	fields := []SchemaField{}
+	index := []SchemaIndex{}
+	search := []SchemaSearch{}
 	for _, f := range e.Fields {
 		if f.Stored {
-			ft := RepoSchemaField{
+			ft := SchemaField{
 				Name: f.Identifier,
 				Type: resolveRepoFieldType(f),
 				Null: "NOT NULL",
@@ -114,14 +114,14 @@ func resolveSchemaFieldsAndIndexes(e entity.Entity) ([]RepoSchemaField, []RepoSc
 			fields = append(fields, ft)
 
 			if f.StorageConfig.Index && !f.StorageConfig.Unique {
-				index = append(index, RepoSchemaIndex{
+				index = append(index, SchemaIndex{
 					Name:      f.Identifier,
 					FieldName: f.Identifier,
 				})
 			}
 
 			if f.StorageConfig.Search {
-				search = append(search, RepoSchemaSearch{
+				search = append(search, SchemaSearch{
 					Name:      f.Identifier,
 					FieldName: f.Identifier,
 				})
