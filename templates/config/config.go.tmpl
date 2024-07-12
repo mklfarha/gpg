@@ -49,7 +49,7 @@ func NewWithPath(path string) config.Provider {
 	yaml, err := config.NewYAML(config.File(envPath))
 	if err != nil {
 		fmt.Printf("error loading config: %v", err)
-		provider, err := config.NewYAMLProviderFromBytes([]byte(configDev))
+		provider, err := config.NewYAML(config.Static(configDev))
 		if err != nil {
 			fmt.Printf("error loading config 2: %v", err)
 		}

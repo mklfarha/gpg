@@ -1,10 +1,11 @@
 package entity
 
 type Events struct {
-	Enabled           bool           `json:"enabled"`
-	Transport         EventTransport `json:"transport"`
-	AllEntities       bool           `json:"all-entities"`
-	EntityIdentifiers []string       `json:"entity-identifiers"`
+	Enabled           bool            `json:"enabled"`
+	Transport         EventTransport  `json:"transport"`
+	TransportConfig   TransportConfig `json:"transport-config"`
+	AllEntities       bool            `json:"all-entities"`
+	EntityIdentifiers []string        `json:"entity-identifiers"`
 }
 
 type EventTransport string
@@ -15,6 +16,7 @@ const (
 )
 
 type TransportConfig struct {
+	Kafka *KafkaTransportConfig `json:"kafka"`
 }
 
 type KafkaTransportConfig struct {

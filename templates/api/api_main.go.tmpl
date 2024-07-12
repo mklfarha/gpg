@@ -1,19 +1,27 @@
 package main
-{{$enableProto := or (eq .Protocol "protobuf") (eq .Protocol "all")}}
-{{$enableGraph := or (eq .Protocol "graphql") (eq .Protocol "all")}}
+{{$enableProto := or (eq .API.Protocol "protobuf") (eq .API.Protocol "all")}}
+{{$enableGraph := or (eq .API.Protocol "graphql") (eq .API.Protocol "all")}}
 import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	{{.Identifier}}config "{{.Identifier}}/config"
 	"{{.Identifier}}/core"
+
 	{{ if eq $enableProto true}}
 	pbserver "{{.Identifier}}/idl/server"		
 	{{end}}
+
 	{{.AuthImport}}
+
 	{{if eq $enableGraph true}}
 	"{{.Identifier}}/graph"
 	{{end}}
+
 	"{{.Identifier}}/monitoring"
+	
+	{{if eq .KafkaEnabled true}}
+	saramafx "github.com/mklfarha/sarama-fx"
+	{{end}}
 )
 
 func main() {
@@ -24,7 +32,8 @@ func main() {
 			core.New,	
 			monitoring.New,
 			{{if ne .AuthImport ""}}auth.New,{{end}}			
-		),				
+		),	
+		saramafx.Module,			
 		fx.Invoke(httpServer),
 		{{ if eq $enableProto true}}fx.Invoke(pbserver.New),{{end}}
 		{{ if eq $enableGraph true}}fx.Invoke(graph.New),{{end}}
