@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path"
 
+	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator"
 	"github.com/maykel/gpg/generator/field"
 	"github.com/maykel/gpg/generator/helpers"
@@ -18,6 +19,8 @@ type upsertModuleTemplate struct {
 	PrimaryKey       field.Template
 	Fields           []field.Template
 	Imports          []string
+	HasVersionField  bool
+	VersionField     field.Template
 }
 
 func generateUpsert(ctx context.Context, req coreSubModuleRequest) error {
@@ -33,6 +36,12 @@ func generateUpsert(ctx context.Context, req coreSubModuleRequest) error {
 		Imports:          helpers.MapKeys(req.Imports),
 	}
 
+	versionField := versionField(req.Fields)
+	if versionField != nil {
+		upsertTemplate.HasVersionField = true
+		upsertTemplate.VersionField = *versionField
+	}
+
 	err := generator.GenerateFile(ctx, generator.FileRequest{
 		OutputFile:   path.Join(req.ModuleDir, req.Entity.Identifier, "types", "upsert.go"),
 		TemplateName: path.Join("core", "core_module_upsert_types"),
@@ -46,4 +55,13 @@ func generateUpsert(ctx context.Context, req coreSubModuleRequest) error {
 		TemplateName: path.Join("core", "core_module_upsert"),
 		Data:         upsertTemplate,
 	})
+}
+
+func versionField(fields []field.Template) *field.Template {
+	for _, f := range fields {
+		if f.Identifier == "version" && f.InternalType == entity.IntFieldType {
+			return &f
+		}
+	}
+	return nil
 }

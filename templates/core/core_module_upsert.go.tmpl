@@ -27,6 +27,9 @@ import (
 			{{end}}
 		{{end}}
 	{{end}}
+	{{if eq .HasVersionField true}}
+	"time"
+	{{end}}
 )
 
 func (m *module) Upsert(
@@ -67,7 +70,14 @@ func (m *module) Upsert(
 		}, nil
 	}
 
-	existing, err := m.repository.Queries.Fetch{{.EntityName}}By{{.PrimaryKey.Name}}(ctx, req.{{.EntityName}}.{{.PrimaryKey.Name}}.String())
+	tx, err := m.repository.DB.Begin()
+	if err != nil {
+		return types.UpsertResponse{}, err
+	}
+	defer tx.Rollback()
+	qtx := m.repository.Queries.WithTx(tx)
+
+	existing, err := qtx.Fetch{{.EntityName}}By{{.PrimaryKey.Name}}ForUpdate(ctx, req.{{.EntityName}}.{{.PrimaryKey.Name}}.String())
 	if err != nil {
 		m.monitoring.Emit(monitoring.EmitRequest{
 			ActionIdentifier: "upsert_{{.EntityIdentifier}}",
@@ -94,7 +104,27 @@ func (m *module) Upsert(
 		})
 		return types.UpsertResponse{}, err
 	}
-	err = m.repository.Queries.Update{{.EntityName}}(
+
+	{{if eq .HasVersionField true}}
+	if existing[0].Version != req.{{.EntityName}}.Version {
+		err := errors.New("upsert version conflict")
+		m.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "upsert_{{.EntityIdentifier}}",
+			Message: "version conflict Upsert{{.EntityName}}",
+			EntityIdentifier: "{{.EntityIdentifier}}",
+			Layer: monitoring.ModuleServiceLayer,
+			Type: monitoring.EmitTypeError,
+			Data: req,
+			Error: err,
+		})
+		return types.UpsertResponse{}, err
+	}
+
+	req.Team.Version = time.Now().Unix()
+	{{end}}
+
+
+	err = qtx.Update{{.EntityName}}(
 		ctx,
 		mapUpsertRequestToUpdateParams(req, existing[0], partial),
 	)
@@ -108,6 +138,20 @@ func (m *module) Upsert(
 			Data: req,
 			Error: err,
 		})			
+		return types.UpsertResponse{}, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		m.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "upsert_{{.EntityIdentifier}}",
+			Message:          "error commiting for Upsert{{.EntityName}}",
+			EntityIdentifier: "{{.EntityIdentifier}}",
+			Layer:            monitoring.RepositoryServiceLayer,
+			Type:             monitoring.EmitTypeError,
+			Data:             req,
+			Error:            err,
+		})
 		return types.UpsertResponse{}, err
 	}
 

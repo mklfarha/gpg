@@ -16,7 +16,7 @@ func IntFieldTemplate(f entity.Field, e entity.Entity) Template {
 		graphRequired = "!"
 	}
 	graphGenToMapper := fmt.Sprintf("int(i.%s)", helpers.ToCamelCase(f.Identifier))
-	graphGenFromMapper := fmt.Sprintf("int32(i.%s)", helpers.ToCamelCase(f.Identifier))
+	graphGenFromMapper := fmt.Sprintf("int64(i.%s)", helpers.ToCamelCase(f.Identifier))
 	graphGenFromMapperOptional := fmt.Sprintf("IntFromPointer(i.%s)", helpers.ToCamelCase(f.Identifier))
 	if !f.Required {
 		graphGenToMapper = fmt.Sprintf("IntPointer(i.%s)", helpers.ToCamelCase(f.Identifier))
@@ -26,7 +26,7 @@ func IntFieldTemplate(f entity.Field, e entity.Entity) Template {
 		Identifier:                 f.Identifier,
 		SingularIdentifier:         pl.Singular(f.Identifier),
 		Name:                       helpers.ToCamelCase(f.Identifier),
-		Type:                       "int32",
+		Type:                       "int64",
 		EntityIdentifier:           e.Identifier,
 		InternalType:               entity.IntFieldType,
 		GenFieldType:               "IntFieldType",
@@ -46,7 +46,7 @@ func IntFieldTemplate(f entity.Field, e entity.Entity) Template {
 		GraphInType:                fmt.Sprintf("Int%s", graphRequired),
 		GraphInTypeOptional:        "Int",
 		GraphOutType:               fmt.Sprintf("Int%s", graphRequired),
-		GraphGenType:               "int32",
+		GraphGenType:               "int64",
 		GraphGenToMapper:           graphGenToMapper,
 		GraphGenFromMapperParam:    f.Identifier,
 		GraphGenFromMapper:         graphGenFromMapper,
@@ -55,6 +55,6 @@ func IntFieldTemplate(f entity.Field, e entity.Entity) Template {
 		ProtoName:                  helpers.ToSnakeCase(f.Identifier),
 		ProtoGenName:               strcase.ToCamel(f.Identifier),
 		ProtoToMapper:              fmt.Sprintf("int64(e.%s)", helpers.ToCamelCase(f.Identifier)),
-		ProtoFromMapper:            fmt.Sprintf("int32(m.Get%s())", strcase.ToCamel(f.Identifier)),
+		ProtoFromMapper:            fmt.Sprintf("int64(m.Get%s())", strcase.ToCamel(f.Identifier)),
 	}
 }

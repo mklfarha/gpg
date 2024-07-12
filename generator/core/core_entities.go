@@ -94,7 +94,8 @@ func GenerateCoreEntities(ctx context.Context, rootPath string, project entity.P
 func resolveEntityTemplate(e entity.Entity, project entity.Project) (EntityTemplate, map[string]any) {
 	fields, imports := field.ResolveFieldsAndImports(e.Fields, e, nil)
 	primaryKey := helpers.EntityPrimaryKey(e)
-	return EntityTemplate{
+
+	tpl := EntityTemplate{
 		ProjectName:          project.Identifier,
 		Package:              e.Identifier,
 		EntityName:           helpers.ToCamelCase(e.Identifier),
@@ -102,7 +103,9 @@ func resolveEntityTemplate(e entity.Entity, project entity.Project) (EntityTempl
 		Fields:               fields,
 		Imports:              helpers.MapKeys(imports),
 		PrimaryKeyIdentifier: primaryKey.Identifier,
-	}, imports
+	}
+
+	return tpl, imports
 }
 
 func generateJSONEntities(ctx context.Context, entityDir string, e entity.Entity, project entity.Project) {
@@ -122,6 +125,7 @@ func generateJSONEntities(ctx context.Context, entityDir string, e entity.Entity
 				JSON:        true,
 				JSONField:   ft,
 			}
+
 			generator.GenerateFile(ctx, generator.FileRequest{
 				OutputFile:   path.Join(entityDir, fmt.Sprintf("%s.go", ft.SingularIdentifier)),
 				TemplateName: path.Join("core", "entity"),

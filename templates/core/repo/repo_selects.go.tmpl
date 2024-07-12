@@ -6,6 +6,14 @@ SELECT * FROM {{$entity.Name}}
 WHERE 
     {{range $field := $select.Fields}} {{$field.Name}} = ? {{if ne $field.IsLast true}}AND{{end}}{{end}} 
     {{if eq $select.IsPrimary false}}LIMIT ?, ?{{end}};
+
+{{ if eq $select.IsPrimary true}}
+-- name: Fetch{{$select.Name}}ForUpdate :many
+SELECT * FROM {{$entity.Name}}
+WHERE 
+    {{range $field := $select.Fields}} {{$field.Name}} = ? {{if ne $field.IsLast true}}AND{{end}}{{end}}     
+FOR UPDATE;
+{{ end }}
 {{end}}
 
 {{range $select := $entity.SelectStatements}}

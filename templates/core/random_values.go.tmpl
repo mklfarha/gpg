@@ -20,11 +20,11 @@ func GetRandomFloatValue() float64 {
     return rand.Float64()
 }
 
-func GetRandomIntValue() int32{
-    return rand.Int31n(100)
+func GetRandomIntValue() int64{
+    return rand.Int63n(100)
 }
 
-func GetRandomOptionsValues[EnumType ~int32](max int)[]EnumType {
+func GetRandomOptionsValues[EnumType ~int64](max int)[]EnumType {
     numberOfValues := rand.Intn(max+1)
     res := []int{}
     for i := 0; i < numberOfValues; i++ {
@@ -41,7 +41,7 @@ func GetRandomOptionsValues[EnumType ~int32](max int)[]EnumType {
     return finalRes
 }
 
-func GetRandomOptionValue[EnumType ~int32](max int)EnumType {
+func GetRandomOptionValue[EnumType ~int64](max int)EnumType {
     return EnumType(rand.Intn(max+1))
 }
 

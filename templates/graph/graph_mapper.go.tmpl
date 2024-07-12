@@ -183,14 +183,14 @@ func StringFromPointer(in *string) string {
     return *in
 }
 
-func IntFromPointer(in *int) int32 {
+func IntFromPointer(in *int) int64 {
     if in == nil {
-        return int32(0)
+        return int64(0)
     }
-    return int32(*in)
+    return int64(*in)
 }
 
-func IntPointer(in int32) *int {    
+func IntPointer(in int64) *int {    
     res := int(in)    
     return &res
 }

@@ -46,7 +46,7 @@ func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, dependantEntity
 		GeneratedFuncInsert:        resolveGeneratedFuncInsert(e, f),
 		GeneratedFuncUpdate:        resolveGeneratedFuncUpdate(e, f),
 		Enum:                       true,
-		RepoToMapper:               ".ToInt32()",
+		RepoToMapper:               ".ToInt64()",
 		RepoFromMapper:             fmt.Sprintf("entity.%s(model.%s)", helpers.ToCamelCase(f.Identifier), helpers.ToCamelCase(f.Identifier)),
 		GraphName:                  f.Identifier,
 		GraphModelName:             helpers.ToCamelCase(f.Identifier),

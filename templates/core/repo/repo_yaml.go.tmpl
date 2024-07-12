@@ -11,4 +11,9 @@ sql:
         emit_json_tags: true
         rename:{{range $identifier, $camelCase := .Fields}}
           {{$identifier}}: {{ $camelCase }}{{end}}
+        overrides:
+          - db_type: "int"            
+            engine: "mysql"
+            go_type:              
+              type: "int64"
           
