@@ -52,7 +52,7 @@ class {{.Entity.Identifier | ToCamelCase}}Form extends React.Component {
             var imageFile = imageList[0]
             var formData = new FormData();            
             formData.append("file", imageFile.file);
-            axios.post('{{.Project.API.URL}}/upload', formData, {
+            axios.post('{{.Project.API.Domain}}/upload', formData, {
                 headers: {
                 'Content-Type': 'multipart/form-data'
                 }

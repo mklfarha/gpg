@@ -97,7 +97,7 @@ func ResolveSelectStatements(project entity.Project, e entity.Entity) []RepoSche
 		})
 	}
 
-	if project.Protocol == entity.ProjectProtocolProtobuf || project.DisableSelectCombinations {
+	if project.API.Protocol == entity.APIProtocolProtobuf || project.DisableSelectCombinations {
 		return selects
 	}
 

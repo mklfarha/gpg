@@ -159,11 +159,11 @@ func generateAPI(targetDir string, project entity.Project) {
 	ctx := context.Background()
 	switch protocol {
 	case API_PROTOCOL_ALL:
-		project.Protocol = entity.ProjectProtocolAll
+		project.API.Protocol = entity.APIProtocolAll
 	case API_PROTOCOL_GRAPHQL:
-		project.Protocol = entity.ProjectProtocolGraphQL
+		project.API.Protocol = entity.APIProtocolGraphQL
 	case API_PROTOCOL_PROTOBUF:
-		project.Protocol = entity.ProjectProtocolProtobuf
+		project.API.Protocol = entity.APIProtocolProtobuf
 	}
 
 	project.DisableSelectCombinations = !enableSelectCombinations

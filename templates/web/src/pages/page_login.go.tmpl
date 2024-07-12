@@ -32,7 +32,7 @@ class LoginBasic extends React.Component {
     this.state.invalidPassword = false
     this.setState(this.state)
 
-    axios.post('{{.API.URL}}/signin', this.state)
+    axios.post('{{.API.Domain}}/signin', this.state)
       .then(response => {        
         if (response && response.data && response.data.Token) {
           const token = response.data.Token

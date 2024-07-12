@@ -6,7 +6,7 @@ const FetchUser = () => {
         window.location.href = "/login"            
     }
 
-    return axios.post('{{.API.URL}}/validate', {}, { headers:{
+    return axios.post('{{.API.Domain}}/validate', {}, { headers:{
             'Content-Type': 'application/json',
             'Authorization': 'bearer '+token,
         }

@@ -3,29 +3,18 @@ package entity
 import "fmt"
 
 type Project struct {
-	Identifier                string          `json:"identifier"`
-	Render                    Render          `json:"render"`
-	Entities                  []Entity        `json:"entities"`
-	Database                  DB              `json:"database"`
-	Auth                      []Auth          `json:"auth"`
-	API                       API             `json:"api"`
-	AWS                       AWS             `json:"aws"`
-	Protocol                  ProjectProtocol `json:"protocol"`
-	DisableSelectCombinations bool            `json:"select_combinations"`
+	Identifier string `json:"identifier"`
+	Render     Render `json:"render"`
+
+	Database DB       `json:"database"`
+	Entities []Entity `json:"entities"`
+	Auth     []Auth   `json:"auth"`
+	API      API      `json:"api"`
+	Events   Events   `json:"events"`
+
+	DisableSelectCombinations bool `json:"select_combinations"`
+	AWS                       AWS  `json:"aws"`
 }
-
-type API struct {
-	URL string `json:"url"`
-}
-
-type ProjectProtocol string
-
-const (
-	ProjectProtocolInvalid  = "invalid"
-	ProjectProtocolAll      = "all"
-	ProjectProtocolGraphQL  = "graphql"
-	ProjectProtocolProtobuf = "protobuf"
-)
 
 func (p Project) HasBasicAuth() bool {
 	found, config := p.AuthByType(BASIC_AUTH_TYPE)
@@ -68,7 +57,7 @@ func (p Project) KeycloakAuth() Auth {
 
 func (p Project) AuthByType(t AuthType) (bool, Auth) {
 	for _, a := range p.Auth {
-		if a.Type == t {
+		if a.Type == t && a.Enabled {
 			return true, a
 		}
 	}

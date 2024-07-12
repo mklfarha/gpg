@@ -1,8 +1,9 @@
 package entity
 
 type Auth struct {
-	Type   AuthType   `json:"type"`
-	Config AuthConfig `json:"config"`
+	Enabled bool       `json:"enabled"`
+	Type    AuthType   `json:"type"`
+	Config  AuthConfig `json:"config"`
 }
 
 type AuthType string

@@ -108,7 +108,7 @@ func main() {
 			Name:  "create-token",
 			Usage: "Creates a token for a given user",
 			Action: func(c *cli.Context) error {
-                url := "{{.API.URL}}/signin"
+                url := "{{.API.Domain}}/signin"
 				fmt.Println("URL: ", url)
 
 				fields := map[string]promptContent{
