@@ -6,6 +6,8 @@ import (
 	"os"
 	"path"
 
+	"slices"
+
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator"
 )
@@ -61,4 +63,20 @@ func GenerateCoreEvents(ctx context.Context, rootPath string, project entity.Pro
 	}
 
 	return nil
+}
+
+func ShouldPublishEvents(project entity.Project, identifier string) bool {
+	if !project.Events.Enabled {
+		return false
+	}
+
+	if project.Events.AllEntities {
+		return true
+	}
+
+	if slices.Contains(project.Events.EntityIdentifiers, identifier) {
+		return true
+	}
+
+	return false
 }

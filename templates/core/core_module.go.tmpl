@@ -7,6 +7,9 @@ import (
 	coretypes "{{.ProjectName}}/core/types"
 	"{{.ProjectName}}/core/module/{{.EntityIdentifier}}/types"
 	"{{.ProjectName}}/monitoring"
+	{{if eq .Project.Events.Enabled true}}
+	"{{.ProjectName}}/core/events"
+	{{end}}
 )
 
 type Module interface {
@@ -24,14 +27,20 @@ type Module interface {
 }
 
 type module struct {
-	repository *repository.Implementation
-    mu sync.Mutex
+	mu sync.Mutex
+	repository *repository.Implementation    
 	monitoring *monitoring.Implementation
+	{{if eq .Project.Events.Enabled true}}
+	events     *events.Implementation
+	{{end}}
 }
 
 func New(params coretypes.ModuleParams) Module {
 	return &module{
 		repository: params.Repository,
 		monitoring: params.Monitoring,
+		{{if eq .Project.Events.Enabled true}}
+		events: params.Events,
+		{{end}}
 	}
 }

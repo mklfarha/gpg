@@ -13,6 +13,7 @@ import (
 )
 
 type coreModuleTemplate struct {
+	Project          entity.Project
 	Package          string
 	ProjectName      string
 	EntityIdentifier string
@@ -25,6 +26,7 @@ type coreModuleTemplate struct {
 func generateBaseCoreModule(ctx context.Context, req coreSubModuleRequest) error {
 	fmt.Printf("--[GPG] Generating core module base: %s\n", req.Entity.Identifier)
 	moduleTemplate := coreModuleTemplate{
+		Project:          req.Project,
 		Package:          req.Entity.Identifier,
 		ProjectName:      req.Project.Identifier,
 		EntityIdentifier: req.Entity.Identifier,

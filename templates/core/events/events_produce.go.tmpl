@@ -6,15 +6,16 @@ import (
 	{{end}}
 
     "golang.org/x/sync/errgroup"     
-    "{{.Identifier}}/monitoring"   
+    "{{.Identifier}}/monitoring"  
+    "fmt" 
 )
 
-func (i *Implementation) Produce(message []byte) error {
+func (i *Implementation) Produce(message []byte, entityIdentifier string, action string) error {
 	eg := errgroup.Group{}
     {{if eq .KafkaEnabled true}}
         {{range $t := .KafkaConfig.Topics}}  
             eg.Go(func() error {
-                return i.produceToKafkaTopic("{{$t}}", message)
+                return i.produceToKafkaTopic("{{$t}}", message, entityIdentifier, action)
             })
         {{end}}	
         if err := eg.Wait(); err != nil {           
@@ -25,7 +26,7 @@ func (i *Implementation) Produce(message []byte) error {
 }
 
 {{if eq .KafkaEnabled true}}
-func (i *Implementation) produceToKafkaTopic(topic string, message []byte) error {
+func (i *Implementation) produceToKafkaTopic(topic string, message []byte, entityIdentifier string, action string) error {
     err := i.client.SendMessage(saramafx.SendMessageRequest{
 		Topic:   topic,
 		Message: message,
@@ -33,7 +34,8 @@ func (i *Implementation) produceToKafkaTopic(topic string, message []byte) error
 
     if err != nil {
         i.monitoring.Emit(monitoring.EmitRequest{
-            ActionIdentifier: "event_produce",
+            ActionIdentifier: fmt.Sprintf("event_produce_%s", action),
+            EntityIdentifier: entityIdentifier,
             Message: "error producing message",            
             Layer: monitoring.EventServiceLayer,
             LayerSubtype: "kafka",
@@ -44,7 +46,8 @@ func (i *Implementation) produceToKafkaTopic(topic string, message []byte) error
     }
 
     i.monitoring.Emit(monitoring.EmitRequest{
-        ActionIdentifier: "event_produce",
+        ActionIdentifier: fmt.Sprintf("event_produce_%s", action),
+        EntityIdentifier: entityIdentifier,
         Message: "produced message successfully",            
         Layer: monitoring.EventServiceLayer,
         LayerSubtype: "kafka",

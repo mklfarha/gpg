@@ -7,6 +7,12 @@ func (i *Implementation) emitDatadogMetric(req EmitRequest) error {
 	if req.LayerSubtype != "" {
 		name = fmt.Sprintf("%s.%s.%s.%s.%s", req.Layer, req.LayerSubtype, req.EntityIdentifier, req.ActionIdentifier, req.Type)
 	}
+	if req.EntityIdentifier == "" {
+		name = fmt.Sprintf("%s.%s.%s", req.Layer, req.ActionIdentifier, req.Type)
+		if req.LayerSubtype != "" {
+			name = fmt.Sprintf("%s.%s.%s.%s", req.Layer, req.LayerSubtype, req.ActionIdentifier, req.Type)
+		}
+	}
 	fmt.Printf("emitting metric: %v \n", name)
 
 	tags := []string{

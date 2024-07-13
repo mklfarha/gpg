@@ -5,7 +5,7 @@ import(
     "encoding/json"
 )
 
-func (i *Implementation) ProduceEntityCreated(e EventEntity) error {
+func (i *Implementation) ProduceEntityInserted(e EventEntity) error {
     event := Event{
         Type: "entity",
         Identifier: e.EntityIdentifier(),
@@ -20,7 +20,7 @@ func (i *Implementation) ProduceEntityCreated(e EventEntity) error {
         return err
     }
 
-    return i.Produce(res)
+    return i.Produce(res, e.EntityIdentifier(), "insert")
 }
 
 func (i *Implementation) ProduceEntityUpdated(new EventEntity, old EventEntity) error {
@@ -39,5 +39,5 @@ func (i *Implementation) ProduceEntityUpdated(new EventEntity, old EventEntity) 
         return err
     }
 
-    return i.Produce(res)
+    return i.Produce(res, new.EntityIdentifier(), "update")
 }

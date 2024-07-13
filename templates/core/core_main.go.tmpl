@@ -17,7 +17,9 @@ import (
     {{end}}	
 	"{{.Identifier}}/core/repository"
 	"{{.Identifier}}/monitoring"
-	
+	{{if eq .Events.Enabled true}}
+	"{{.Identifier}}/core/events"
+	{{end}}
 	
 )
 
@@ -28,6 +30,9 @@ type Implementation struct {
     {{$entity.Identifier}}       {{$entity.Identifier}}.Module
     {{end}}	
 	monitoring *monitoring.Implementation
+	{{if eq .Events.Enabled true}}
+	events *events.Implementation
+	{{end}}
 }
 
 type Params struct {
@@ -35,6 +40,9 @@ type Params struct {
 	Provider config.Provider
 	Lifecycle fx.Lifecycle	
 	Monitoring *monitoring.Implementation
+	{{if eq .Events.Enabled true}}
+	Events *events.Implementation
+	{{end}}
 }
 
 func New(params Params) (*Implementation, error) {
@@ -71,6 +79,9 @@ func New(params Params) (*Implementation, error) {
 		db: db,
 		repository: repository,
 		monitoring: params.Monitoring,
+		{{if eq .Events.Enabled true}}
+		events: params.Events,
+		{{end}}
 	}, nil
 }
 
@@ -78,13 +89,16 @@ func (i *Implementation) Destroy() {
 	i.db.Close()
 }
 
-
+{{$events := .Events}}
 {{range $entity := .Entities}}
 func (i Implementation) {{$entity.Identifier | ToCamelCase}}() {{$entity.Identifier}}.Module {
 	if i.{{$entity.Identifier}} == nil {
 		i.{{$entity.Identifier}} = {{$entity.Identifier}}.New(coretypes.ModuleParams{
 		 Repository:i.repository,
 		 Monitoring: i.monitoring,
+		 {{if eq $events.Enabled true}}
+		 Events: i.events,
+		 {{end}}
 		})
 	}
 	return i.{{$entity.Identifier}}

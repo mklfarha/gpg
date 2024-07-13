@@ -19,8 +19,12 @@ import (
 
 	"{{.Identifier}}/monitoring"
 	
+	{{if eq .Events.Enabled true}}
+	"{{.Identifier}}/core/events"
+	{{end}}
+
 	{{if eq .KafkaEnabled true}}
-	saramafx "github.com/mklfarha/sarama-fx"
+	saramafx "github.com/mklfarha/sarama-fx"	
 	{{end}}
 )
 
@@ -32,6 +36,7 @@ func main() {
 			core.New,	
 			monitoring.New,
 			{{if ne .AuthImport ""}}auth.New,{{end}}			
+			{{if eq .Events.Enabled true}}events.New,{{end}}
 		),	
 		{{if eq .KafkaEnabled true}}saramafx.Module,{{end}}
 		fx.Invoke(httpServer),
