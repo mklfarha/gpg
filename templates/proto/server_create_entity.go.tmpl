@@ -10,9 +10,9 @@ import (
 )
 
 func (s *server) Create{{.Name}}(ctx context.Context, req *pb.Create{{.Name}}Request) (*pb.{{.Name}}, error) {
-	res, err := s.core.{{.Name}}().Upsert(ctx, types.UpsertRequest{
+	res, err := s.core.{{.Name}}().Insert(ctx, types.UpsertRequest{
 		{{.Name}}: pbmapper.{{.Name}}ProtoToEntity(req.Get{{.Name}}()),
-	}, false)
+	})
 	if err != nil {
 		s.monitoring.Emit(monitoring.EmitRequest{
 			ActionIdentifier: "create_{{.FinalIdentifier}}",

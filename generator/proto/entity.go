@@ -10,6 +10,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator"
+	"github.com/maykel/gpg/generator/core"
 	"github.com/maykel/gpg/generator/field"
 	"github.com/maykel/gpg/generator/helpers"
 )
@@ -65,6 +66,11 @@ func generateEntityProtoFile(
 		if dependantEntity != nil && dependantEntity.EntityIdentifier != "" {
 			finalIdentifier = fmt.Sprintf("%s_%s", dependantEntity.EntityIdentifier, dependantEntity.SingularIdentifier)
 		}
+		versionField := core.VersionField(fields)
+		hasVersionField := false
+		if versionField != nil {
+			hasVersionField = true
+		}
 		entityTemplate = ProtoEntityTemplate{
 			ProjectIdentifier:     project.Identifier,
 			ParentIdentifier:      parentIdentifier,
@@ -79,6 +85,7 @@ func generateEntityProtoFile(
 			Search:                searchable,
 			Enums:                 enums,
 			Imports:               imports,
+			HasVersionField:       hasVersionField,
 		}
 
 		err = generator.GenerateFile(ctx, generator.FileRequest{

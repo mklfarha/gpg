@@ -26,6 +26,7 @@ type ProtoEntityTemplate struct {
 	Enums                 map[string]ProtoEnumTemplate
 	Imports               map[string]interface{}
 	Declarations          []ProtoEntityDeclaration
+	HasVersionField       bool
 }
 
 type ProtoEntityDeclaration struct {

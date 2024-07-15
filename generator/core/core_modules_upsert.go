@@ -39,7 +39,7 @@ func generateUpsert(ctx context.Context, req coreSubModuleRequest) error {
 		ShouldPublishEvents: events.ShouldPublishEvents(req.Project, req.Entity.Identifier),
 	}
 
-	versionField := versionField(req.Fields)
+	versionField := VersionField(req.Fields)
 	if versionField != nil {
 		upsertTemplate.HasVersionField = true
 		upsertTemplate.VersionField = *versionField
@@ -53,14 +53,36 @@ func generateUpsert(ctx context.Context, req coreSubModuleRequest) error {
 	if err != nil {
 		return err
 	}
-	return generator.GenerateFile(ctx, generator.FileRequest{
+	err = generator.GenerateFile(ctx, generator.FileRequest{
+		OutputFile:   path.Join(req.ModuleDir, req.Entity.Identifier, "upsert_insert.go"),
+		TemplateName: path.Join("core", "core_module_upsert_insert"),
+		Data:         upsertTemplate,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = generator.GenerateFile(ctx, generator.FileRequest{
+		OutputFile:   path.Join(req.ModuleDir, req.Entity.Identifier, "upsert_update.go"),
+		TemplateName: path.Join("core", "core_module_upsert_update"),
+		Data:         upsertTemplate,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = generator.GenerateFile(ctx, generator.FileRequest{
 		OutputFile:   path.Join(req.ModuleDir, req.Entity.Identifier, "upsert.go"),
 		TemplateName: path.Join("core", "core_module_upsert"),
 		Data:         upsertTemplate,
 	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func versionField(fields []field.Template) *field.Template {
+func VersionField(fields []field.Template) *field.Template {
 	for _, f := range fields {
 		if f.Identifier == "version" && f.InternalType == entity.IntFieldType {
 			return &f

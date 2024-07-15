@@ -1,0 +1,156 @@
+package {{.Package}}
+
+{{$entityName := .EntityName}}
+{{$projectName := .ProjectName}}
+{{$entityIdenfier := .EntityIdentifier}}
+import (
+	"context"
+    "errors"
+	
+	"github.com/gofrs/uuid"
+	"{{.ProjectName}}/monitoring"
+	"{{.ProjectName}}/core/module/{{.EntityIdentifier}}/types"	
+	{{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"   
+	{{$firstGen := true}}
+	{{$firstJSONMany := true}}
+	{{range $field := .Fields}}	
+		{{if eq $firstGen true}}
+			{{ if eq $field.Generated true}}
+				"{{$projectName}}/custom"
+				{{$firstGen = false}}				
+			{{end}}			
+		{{end}}		
+		{{if eq $firstJSONMany true}}
+			{{if eq $field.JSONMany true}}
+				entity "{{$projectName}}/core/entity/{{$entityIdenfier}}"	
+				{{$firstJSONMany = false}}
+			{{end}}
+		{{end}}
+	{{end}}
+	{{if eq .HasVersionField true}}
+	"time"
+	{{end}}
+)
+
+func (m *module) Insert(
+	ctx context.Context, 
+	req types.UpsertRequest,	
+	opts ...Option,
+) (types.UpsertResponse, error) {
+	tx, err := m.repository.DB.Begin()
+	if err != nil {
+		return types.UpsertResponse{}, err
+	}
+	defer tx.Rollback()
+	qtx := m.repository.Queries.WithTx(tx)
+
+	params := mapUpsertRequestToInsertParams(req)
+	{{if eq .HasVersionField true}}
+	params.Version = time.Now().Unix()
+	{{end}}
+	_, err = qtx.Insert{{.EntityName}}(
+		ctx,
+		params,
+	)
+	if err != nil {
+		m.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "upsert_{{.EntityIdentifier}}",
+			Message: "error calling repository for Upsert{{.EntityName}} - no uuid",
+			EntityIdentifier: "{{.EntityIdentifier}}",
+			Layer: monitoring.RepositoryServiceLayer,
+			Type: monitoring.EmitTypeError,
+			Data: req,
+			Error: err,
+		})
+		return types.UpsertResponse{}, err
+	}
+
+	{{if eq .ShouldPublishEvents true}}
+	err = m.publishInsertEvent(ctx, req, qtx, params.{{.PrimaryKey.Name}})
+	if err != nil {
+		return types.UpsertResponse{}, err
+	}
+	{{end}}
+
+	err = tx.Commit()
+	if err != nil {
+		m.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "upsert_{{.EntityIdentifier}}",
+			Message:          "error commiting for Upsert{{.EntityName}} (1)",
+			EntityIdentifier: "{{.EntityIdentifier}}",
+			Layer:            monitoring.RepositoryServiceLayer,
+			Type:             monitoring.EmitTypeError,
+			Data:             req,
+			Error:            err,
+		})
+		return types.UpsertResponse{}, err
+	}
+
+	m.monitoring.Emit(monitoring.EmitRequest{
+		ActionIdentifier: "upsert_{{.EntityIdentifier}}",
+		Message: "successfully handled Upsert{{.EntityName}} - no uuid",
+		EntityIdentifier: "{{.EntityIdentifier}}",
+		Layer: monitoring.ModuleServiceLayer,
+		Type: monitoring.EmitTypeSuccess,
+		Data: req,			
+	})		
+	return types.UpsertResponse{
+		{{.PrimaryKey.Name}}: uuid.FromStringOrNil(params.{{.PrimaryKey.Name}}),
+	}, nil
+}
+
+func mapUpsertRequestToInsertParams(req types.UpsertRequest) {{.ProjectName}}db.Insert{{.EntityName}}Params {	
+	return {{.ProjectName}}db.Insert{{.EntityName}}Params{ {{range $field := .Fields}}		
+		{{ if eq $field.Generated true}} 
+		{{$field.Name}}: {{$field.GeneratedFuncInsert}}{{$field.RepoToMapper}},
+		{{else}}
+		{{ if eq $field.JSONMany true}}
+			{{$field.Name}}: {{$field.RepoToMapper}}, 
+		{{ else }}
+        	{{$field.Name}}: req.{{$entityName}}.{{$field.Name}}{{$field.RepoToMapper}}, 
+		{{end}}
+		{{end}}	
+		{{end}}
+	}
+}
+
+{{if eq .ShouldPublishEvents true}}
+func (m *module) publishInsertEvent(ctx context.Context, 
+		req types.UpsertRequest, 
+		qtx *{{.ProjectName}}db.Queries,
+		id string) error {
+
+	fetched, err := qtx.Fetch{{.EntityName}}By{{.PrimaryKey.Name}}(ctx, id)
+	if err != nil {
+		m.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "upsert_{{.EntityIdentifier}}",
+			Message: "error fetching after Upsert{{.EntityName}} - no uuid",
+			EntityIdentifier: "{{.EntityIdentifier}}",
+			Layer: monitoring.RepositoryServiceLayer,
+			Type: monitoring.EmitTypeError,
+			Data: req,
+			Error: err,
+		})
+		return err
+	}
+	
+	fetchedEntities := mapModelsToEntities(fetched)
+	if len(fetchedEntities) != 1 {
+		return errors.New("error mapping to entity")
+	}		
+	err = m.events.ProduceEntityInserted(fetchedEntities[0])
+	if err != nil {
+		m.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "upsert_{{.EntityIdentifier}}",
+			Message: "error producing insert event for Upsert{{.EntityName}} - no uuid",
+			EntityIdentifier: "{{.EntityIdentifier}}",
+			Layer: monitoring.RepositoryServiceLayer,
+			Type: monitoring.EmitTypeError,
+			Data: req,
+			Error: err,
+		})
+		return err
+	}
+	return nil
+}
+{{end}}

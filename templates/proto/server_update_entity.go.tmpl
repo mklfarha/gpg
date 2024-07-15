@@ -7,12 +7,57 @@ import (
 	pb "{{.ProjectIdentifier}}/idl/gen"
 	pbmapper "{{.ProjectIdentifier}}/idl/mapper/{{.FinalIdentifier}}"
 	"{{.ProjectIdentifier}}/monitoring"
+	"go.einride.tech/aip/fieldmask"
+	"strings"	
 )
 
 func (s *server) Update{{.Name}}(ctx context.Context, req *pb.Update{{.Name}}Request) (*pb.{{.Name}}, error) {
-	res, err := s.core.{{.Name}}().Upsert(ctx, types.UpsertRequest{
+
+	if req.{{.Name}}.{{.PrimaryKey.ProtoGenName}} == "" {
+		return nil, errors.New("please provide a valid {{.PrimaryKey.Name}} to update")
+	}
+
+	{{if eq .HasVersionField true}}
+		if req.{{.Name}}.Version == 0 {
+			return nil, errors.New("please provide a valid version to update")
+		}
+	{{end}}
+
+	
+	err := fieldmask.Validate(req.UpdateMask, req)
+	if err != nil {
+		s.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "update_{{.FinalIdentifier}}",
+			Message: "error validating fieldmask in Update{{.Name}}",
+			EntityIdentifier: "{{.FinalIdentifier}}",
+			Layer: monitoring.ProtocolServiceLayer,
+			LayerSubtype: "protobuf",
+			Type: monitoring.EmitTypeError,
+			Data: req,			
+			Error: err,		
+		})
+		return nil, err
+	}
+
+	isFull := fieldmask.IsFullReplacement(req.UpdateMask)
+
+	if !isFull && req.UpdateMask != nil {
+		if !strings.Contains(req.UpdateMask.String(), "{{.FinalIdentifier}}.{{.PrimaryKey.Identifier}}") {
+			req.UpdateMask.Append(req, "{{.FinalIdentifier}}.{{.PrimaryKey.Identifier}}")
+		}
+		{{if eq .HasVersionField true}}
+		if !strings.Contains(req.UpdateMask.String(), "{{.FinalIdentifier}}.version") {
+			req.UpdateMask.Append(req, "{{.FinalIdentifier}}.version")
+		}
+		{{end}}
+		newReq := &pb.Update{{.Name}}Request{}
+		fieldmask.Update(req.UpdateMask, newReq, req)
+		req = newReq
+	}
+
+	res, err := s.core.{{.Name}}().Update(ctx, types.UpsertRequest{
 		{{.Name}}: pbmapper.{{.Name}}ProtoToEntity(req.Get{{.Name}}()),
-	}, false)
+	}, !isFull)
 	if err != nil {
 		s.monitoring.Emit(monitoring.EmitRequest{
 			ActionIdentifier: "update_{{.FinalIdentifier}}",
