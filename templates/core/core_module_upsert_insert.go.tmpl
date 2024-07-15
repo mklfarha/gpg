@@ -5,7 +5,9 @@ package {{.Package}}
 {{$entityIdenfier := .EntityIdentifier}}
 import (
 	"context"
+    {{if eq .ShouldPublishEvents true}}
     "errors"
+    {{end}}
 	
 	"github.com/gofrs/uuid"
 	"{{.ProjectName}}/monitoring"
@@ -15,7 +17,7 @@ import (
 	{{$firstJSONMany := true}}
 	{{range $field := .Fields}}	
 		{{if eq $firstGen true}}
-			{{ if eq $field.Generated true}}
+			{{ if eq $field.GeneratedInsertCustom true}}
 				"{{$projectName}}/custom"
 				{{$firstGen = false}}				
 			{{end}}			

@@ -14,7 +14,7 @@ import (
 	{{$firstJSONMany := true}}
 	{{range $field := .Fields}}	
 		{{if eq $firstGen true}}
-			{{ if eq $field.Generated true}}
+			{{ if eq $field.GeneratedUpdateCustom true}}
 				"{{$projectName}}/custom"
 				{{$firstGen = false}}				
 			{{end}}			

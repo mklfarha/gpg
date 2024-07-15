@@ -44,10 +44,12 @@ type Template struct {
 	JSONRaw  bool
 
 	// generated functions
-	Custom              bool
-	Generated           bool
-	GeneratedFuncInsert string
-	GeneratedFuncUpdate string
+	Custom                bool
+	Generated             bool
+	GeneratedInsertCustom bool
+	GeneratedUpdateCustom bool
+	GeneratedFuncInsert   string
+	GeneratedFuncUpdate   string
 
 	// enums
 	Enum     bool
