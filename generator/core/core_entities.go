@@ -78,7 +78,7 @@ func GenerateCoreEntities(ctx context.Context, rootPath string, project entity.P
 		TemplateName: path.Join("core", "entity_types"),
 	})
 
-	entityRandomValuesDir := path.Join(entitiesDir, "randomvalues")
+	entityRandomValuesDir := path.Join(projectDir, generator.CORE_DIR, "randomvalues")
 	generator.GenerateFile(ctx, generator.FileRequest{
 		OutputFile:   path.Join(entityRandomValuesDir, "randomvalues.go"),
 		TemplateName: path.Join("core", "random_values"),

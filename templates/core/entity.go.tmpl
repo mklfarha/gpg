@@ -11,7 +11,7 @@ import (
     {{end}}
     "{{.ProjectName}}/core/entity/types"
     {{ if ne (len .Fields) 0 }}
-    "{{.ProjectName}}/core/entity/randomvalues"
+    "{{.ProjectName}}/core/randomvalues"
     {{ end }}
     "math/rand"
     {{if eq $timeImport false}}
