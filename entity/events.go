@@ -3,9 +3,9 @@ package entity
 type Events struct {
 	Enabled           bool            `json:"enabled"`
 	Transport         EventTransport  `json:"transport"`
-	TransportConfig   TransportConfig `json:"transport-config"`
-	AllEntities       bool            `json:"all-entities"`
-	EntityIdentifiers []string        `json:"entity-identifiers"`
+	TransportConfig   TransportConfig `json:"transportconfig"`
+	AllEntities       bool            `json:"allentities"`
+	EntityIdentifiers []string        `json:"entityidentifiers"`
 }
 
 type EventTransport string

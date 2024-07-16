@@ -65,9 +65,17 @@ func GenerateGraph(ctx context.Context, rootPath string, project entity.Project)
 		return err
 	}
 
+	// install gqlgen
+	cmd := exec.Command("go", "install", "github.com/99designs/gqlgen")
+	cmd.Dir = graphDir
+	err = cmd.Run()
+	if err != nil {
+		fmt.Printf("error running go get gqlgen\n")
+	}
+
 	// generate code with gqlgen
 	fmt.Printf("----[GPG][GraphQL] GQLGEN generate\n")
-	cmd := exec.Command("go", "run", "github.com/99designs/gqlgen", "generate")
+	cmd = exec.Command("go", "run", "github.com/99designs/gqlgen", "generate")
 	cmd.Dir = graphDir
 	var out bytes.Buffer
 	var stderr bytes.Buffer

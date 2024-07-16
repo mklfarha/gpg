@@ -60,12 +60,16 @@ func GenerateProjectDirectories(ctx context.Context, rootPath string, project en
 func initModule(ctx context.Context, rootPath string, project entity.Project) {
 	fmt.Printf("--[GPG] Init go module \n")
 	projectDir := ProjectDir(ctx, rootPath, project)
+	var out bytes.Buffer
+	var stderr bytes.Buffer
 	if !fileExists(path.Join(projectDir, "go.mod")) {
 		cmd := exec.Command("go", "mod", "init", project.Identifier)
 		cmd.Dir = projectDir
+		cmd.Stdout = &out
+		cmd.Stderr = &stderr
 		err := cmd.Run()
 		if err != nil {
-			fmt.Printf("error running go mod init\n")
+			fmt.Printf("error running go mod init: %v | %v | %v\n", err, out.String(), stderr.String())
 		}
 	} else {
 		fmt.Printf("----[GPG] go.mod already exists\n")
@@ -77,40 +81,42 @@ func initModule(ctx context.Context, rootPath string, project entity.Project) {
 	})
 
 	// go version
-	var out bytes.Buffer
-	var stderr bytes.Buffer
+
 	cmd := exec.Command("go", "version")
 	cmd.Dir = projectDir
-	cmd.Run()
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
+	cmd.Run()
 	fmt.Printf("--[GPG] go version: %v\n", out.String())
 
 	// install sqlc
 	cmd = exec.Command("go", "get", "github.com/sqlc-dev/sqlc/cmd/sqlc")
 	cmd.Dir = projectDir
-	err := cmd.Run()
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
+	err := cmd.Run()
 	if err != nil {
-		fmt.Printf("error running go install sqlc -o: %v\n", out.String())
-		fmt.Printf("error running go install sqlc -err: %v\n", stderr.String())
+		fmt.Printf("error running go install sqlc: %v | %v | %v\n", err, out.String(), stderr.String())
 	}
 
 	// install sqlc
 	cmd = exec.Command("go", "install", "golang.org/x/sync/errgroup")
 	cmd.Dir = projectDir
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
-		fmt.Printf("error running go get errgroup\n")
+		fmt.Printf("error running go get errgroup: %v | %v | %v\n", err, out.String(), stderr.String())
 	}
 
 	// install gqlgen
 	cmd = exec.Command("go", "install", "github.com/99designs/gqlgen")
 	cmd.Dir = projectDir
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
-		fmt.Printf("error running go get gqlgen\n")
+		fmt.Printf("error running go get gqlgen:%v | %v | %v\n", err, out.String(), stderr.String())
 	}
 
 	// go mod tidy
@@ -121,11 +127,17 @@ func initModule(ctx context.Context, rootPath string, project entity.Project) {
 func GoModTidy(ctx context.Context, rootPath string, project entity.Project) error {
 	fmt.Printf("--[GPG] Go Mod Tidy \n")
 	projectDir := ProjectDir(ctx, rootPath, project)
+
+	var out bytes.Buffer
+	var stderr bytes.Buffer
 	// go mod tidy
 	cmd := exec.Command("go", "mod", "tidy")
 	cmd.Dir = projectDir
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if err != nil {
+		fmt.Printf("error running go mod tidy: %v | %v | %v\n", err, out.String(), stderr.String())
 		return err
 	}
 	return nil

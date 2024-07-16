@@ -170,14 +170,13 @@ func generateAPI(targetDir string, project entity.Project) {
 
 	project.DisableSelectCombinations = !enableSelectCombinations
 
+	err := generator.GenerateProjectDirectories(ctx, targetDir, project)
+	if err != nil {
+		fmt.Sprintf("errors generating directories: %v", err)
+		panic("error generating directories")
+	}
+
 	generators := []APIGenerator{
-		{
-			Name: "directories",
-			Func: func() error {
-				return generator.GenerateProjectDirectories(ctx, targetDir, project)
-			},
-			Blocking: true,
-		},
 		{
 			Name: "configuration",
 			Func: func() error {
@@ -273,7 +272,7 @@ func generateAPI(targetDir string, project entity.Project) {
 		log.Fatalf("error: %v", err)
 	}
 
-	err := generator.GoModTidy(ctx, targetDir, project)
+	err = generator.GoModTidy(ctx, targetDir, project)
 	if err != nil {
 		fmt.Printf("error running go mod tidy: %v", err)
 	}
