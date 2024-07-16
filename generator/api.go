@@ -40,5 +40,12 @@ func GenerateAPIModule(ctx context.Context, rootPath string, project entity.Proj
 		Data:         project,
 	})
 
+	GenerateFile(ctx, FileRequest{
+		OutputFile:      path.Join(projectDir, "readme.md"),
+		TemplateName:    "readme",
+		Data:            project,
+		DisableGoFormat: true,
+	})
+
 	return nil
 }

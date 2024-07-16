@@ -37,7 +37,6 @@ const (
 	FLAG_SKIP_SKEEMA         = "skip_skeema"
 )
 
-var protocol string
 var enableSelectCombinations bool
 var skipSkeema bool
 
@@ -46,12 +45,6 @@ func main() {
 	app.Name = "[GPG] Go Project Generator"
 
 	app.Flags = []cli.Flag{
-		&cli.StringFlag{
-			Name:        FLAG_PROTOCOL,
-			Value:       "all",
-			Usage:       "API protocol to generate",
-			Destination: &protocol,
-		},
 		&cli.BoolFlag{
 			Name:        FLAG_SELECT_COMBINATIONS,
 			Usage:       "Enable the generation of all select combination methods",
@@ -159,14 +152,6 @@ type APIGenerator struct {
 
 func generateAPI(targetDir string, project entity.Project) {
 	ctx := context.Background()
-	switch protocol {
-	case API_PROTOCOL_ALL:
-		project.API.Protocol = entity.APIProtocolAll
-	case API_PROTOCOL_GRAPHQL:
-		project.API.Protocol = entity.APIProtocolGraphQL
-	case API_PROTOCOL_PROTOBUF:
-		project.API.Protocol = entity.APIProtocolProtobuf
-	}
 
 	project.DisableSelectCombinations = !enableSelectCombinations
 
@@ -215,7 +200,11 @@ func generateAPI(targetDir string, project entity.Project) {
 		{
 			Name: "graphql",
 			Func: func() error {
-				return graph.GenerateGraph(ctx, targetDir, project)
+				fmt.Printf("protocoool: %v\n", project.API.Protocol)
+				if project.API.Protocol == API_PROTOCOL_GRAPHQL || project.API.Protocol == API_PROTOCOL_ALL {
+					return graph.GenerateGraph(ctx, targetDir, project)
+				}
+				return nil
 			},
 			Blocking: true,
 		},

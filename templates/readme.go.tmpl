@@ -1,0 +1,22 @@
+# {{.Identifier}} - {{.Render.Name}}
+
+{{.Render.Description}}
+
+## Getting Started
+
+### Prerequisites
+
+* Golang
+
+### Running
+
+```
+CONFIG=./config/base.yaml go run ./api
+```
+
+#### Running Details
+
+{{if or (eq .API.Protocol "protobuf") (eq .API.Protocol "all")}}* The service provides a GRPC API on port {{.API.GRPCPort}}{{end}}
+{{if or (eq .API.Protocol "graphql") (eq .API.Protocol "all")}}* The service provides a GraphQL API on port {{.API.HTTPPort}}{{end}}
+* The service provides an AWS S3 upload API on port {{.API.HTTPPort}}
+{{if eq .Events.Enabled true}}* The service publishes events via {{.Events.Transport}} - see the yaml file for the base configuration{{end}}

@@ -87,7 +87,7 @@ func (m *module) Update(
 		return types.UpsertResponse{}, err
 	}
 
-	req.Team.Version = time.Now().Unix()
+	req.{{.EntityName}}.Version = time.Now().Unix()
 	{{end}}
 
 

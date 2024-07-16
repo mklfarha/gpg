@@ -1,7 +1,7 @@
 
 ports:
-  http: 8085
-  grpc: 6005
+  http: {{.API.HTTPPort}}
+  grpc: {{.API.GRPCPort}}
 
 auth: {{if eq .HasBasicAuth true}} 
   basic:

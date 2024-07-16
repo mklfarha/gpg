@@ -130,7 +130,7 @@ func (r *queryResolver) List{{$entity.EntityType}}(
 		r.monitoring.Emit(monitoring.EmitRequest{
 			ActionIdentifier: "list_{{$entity.Identifier}}_request",
 			Message:          "error building List{{$entity.EntityTypePlural}} request",
-			EntityIdentifier: "team",
+			EntityIdentifier: "{{$entity.Identifier}}",
 			Layer:            monitoring.ProtocolServiceLayer,
 			LayerSubtype:     "graphql",
 			Type:             monitoring.EmitTypeError,
