@@ -7,6 +7,7 @@ type Field struct {
 	Type             FieldType     `json:"type"`
 	EntityRef        string        `json:"entity_ref"`
 	JSONConfig       JSONConfig    `json:"json_config,omitempty"`
+	ArrayConfig      ArrayConfig   `json:"array_config,omitempty"`
 	OptionValues     []OptionValue `json:"values,omitempty"`
 	Deprecated       bool          `json:"deprecated"`
 	Required         bool          `json:"required"`
@@ -39,4 +40,8 @@ type StorageConfig struct {
 	Index      bool `json:"index"`
 	Search     bool `json:"search"`
 	Unique     bool `json:"unique"`
+}
+
+type ArrayConfig struct {
+	Type FieldType `json:"type"`
 }

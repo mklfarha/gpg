@@ -12,6 +12,7 @@ const (
 	BooleanFieldType
 	StringFieldType
 	LargeStringFieldType
+	ArrayFieldType
 	JSONFieldType
 	OptionsSingleFieldType
 	OptionsManyFieldType

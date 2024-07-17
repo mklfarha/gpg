@@ -14,13 +14,14 @@ const (
 	BooleanFieldType               FieldType = "bool"
 	IntFieldType                   FieldType = "int"
 	FloatFieldType                 FieldType = "float"
+	ArrayFieldType                 FieldType = "array"
 )
 
 func FieldTypeToSQL(ft FieldType) string {
 	switch(ft) {
 		case StringFieldType, UUIDFieldType:
 			return "VARCHAR"
-		case SingleDependantEntityFieldType, MultiDependantEntityFieldType, RawJSONFieldType, MultiEnumFieldType:
+		case SingleDependantEntityFieldType, MultiDependantEntityFieldType, RawJSONFieldType, MultiEnumFieldType, ArrayFieldType:
 			return "JSON"
 		case SingleEnumFieldType, BooleanFieldType, IntFieldType:
 			return "INT"

@@ -18,6 +18,8 @@ func ResolveFieldType(f entity.Field, rootEntity entity.Entity, dependantEntity 
 		return StringFieldTemplate(f, rootEntity)
 	case entity.LargeStringFieldType:
 		return StringFieldTemplate(f, rootEntity)
+	case entity.ArrayFieldType:
+		return ArrayFieldTemplate(f, rootEntity)
 	case entity.JSONFieldType:
 		dependant := false
 		if dependantEntity != nil {

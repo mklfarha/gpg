@@ -60,6 +60,7 @@ type Template struct {
 	RepoFromMapper string
 
 	// graph mappers
+	GraphRequired              string
 	GraphName                  string
 	GraphModelName             string
 	GraphOutType               string
