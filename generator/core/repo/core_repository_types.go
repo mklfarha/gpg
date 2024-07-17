@@ -73,7 +73,7 @@ func resolveRepoFieldType(f entity.Field) string {
 		return "VARCHAR(255)"
 	case entity.LargeStringFieldType:
 		return "TEXT"
-	case entity.JSONFieldType:
+	case entity.JSONFieldType, entity.ArrayFieldType:
 		return "JSON"
 	case entity.OptionsSingleFieldType:
 		return "INT"

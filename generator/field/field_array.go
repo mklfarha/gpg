@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/maykel/gpg/entity"
+	"github.com/maykel/gpg/generator/helpers"
 )
 
 func ArrayFieldTemplate(f entity.Field, e entity.Entity) Template {
@@ -16,7 +17,11 @@ func ArrayFieldTemplate(f entity.Field, e entity.Entity) Template {
 	template.Type = fmt.Sprintf("[]%s", arrayTypeTemplate.Type)
 	template.InternalType = entity.ArrayFieldType
 	template.GenFieldType = "ArrayFieldType"
-	template.GenRandomValue = fmt.Sprintf("randomvalues.GetArrayValue(%s)", arrayTypeTemplate.GenFieldType)
+	template.GenRandomValue = fmt.Sprintf("[]%s{}", arrayTypeTemplate.Type)
+	template.RepoFromMapper = fmt.Sprintf("mapJSONTo%sSlice(%s)",
+		helpers.ToCamelCase(arrayTypeTemplate.InternalType.String()),
+		template.RepoFromMapper,
+	)
 
 	//graph
 	template.GraphInType = fmt.Sprintf("[%s!]%s", arrayTypeTemplate.GraphInType, template.GraphRequired)

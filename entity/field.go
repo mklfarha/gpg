@@ -43,5 +43,6 @@ type StorageConfig struct {
 }
 
 type ArrayConfig struct {
-	Type FieldType `json:"type"`
+	Type      FieldType `json:"type"`
+	EntityRef string    `json:"entity_ref"`
 }

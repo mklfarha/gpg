@@ -34,6 +34,8 @@ func FieldTypeFromString(in string) FieldType {
 		return StringFieldType
 	case "large_string":
 		return LargeStringFieldType
+	case "array":
+		return ArrayFieldType
 	case "json":
 		return JSONFieldType
 	case "options_single":
@@ -62,6 +64,8 @@ func (ft FieldType) String() string {
 		return "string"
 	case LargeStringFieldType:
 		return "large_string"
+	case ArrayFieldType:
+		return "array"
 	case JSONFieldType:
 		return "json"
 	case OptionsSingleFieldType:
