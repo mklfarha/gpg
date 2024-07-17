@@ -23,11 +23,18 @@ type upsertModuleTemplate struct {
 	HasVersionField     bool
 	VersionField        field.Template
 	ShouldPublishEvents bool
+	HasArrayField       bool
 }
 
 func generateUpsert(ctx context.Context, req coreSubModuleRequest) error {
 	fmt.Printf("--[GPG] Generating core module upsert: %s\n", req.Entity.Identifier)
 	primaryKey := field.ResolveFieldType(helpers.EntityPrimaryKey(req.Entity), req.Entity, nil)
+	hasArrayField := false
+	for _, f := range req.Fields {
+		if f.InternalType == entity.ArrayFieldType {
+			hasArrayField = true
+		}
+	}
 	upsertTemplate := upsertModuleTemplate{
 		Package:             req.Entity.Identifier,
 		ProjectName:         req.Project.Identifier,
@@ -37,6 +44,7 @@ func generateUpsert(ctx context.Context, req coreSubModuleRequest) error {
 		Fields:              req.Fields,
 		Imports:             helpers.MapKeys(req.Imports),
 		ShouldPublishEvents: events.ShouldPublishEvents(req.Project, req.Entity.Identifier),
+		HasArrayField:       hasArrayField,
 	}
 
 	versionField := VersionField(req.Fields)

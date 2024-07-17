@@ -15,10 +15,10 @@ func BaseFieldTemplate(f entity.Field, e entity.Entity) Template {
 	generatedFuncInsert, generatedFuncInsertCustom := resolveGeneratedFuncInsert(e, f)
 	generatedFuncUpdate, generatedFuncUpdateCustom := resolveGeneratedFuncUpdate(e, f)
 
-	graphModelName := strings.ReplaceAll(helpers.ToCamelCase(f.Identifier), "Url", "URL")
+	graphModelName := strings.ReplaceAll(strcase.ToCamel(f.Identifier), "Url", "URL")
 	graphGenFromMapper := fmt.Sprintf("i.%s", graphModelName)
 	graphGenToMapper := fmt.Sprintf("i.%s", helpers.ToCamelCase(f.Identifier))
-	if !f.Required {
+	if !f.Required && f.Type != entity.ArrayFieldType {
 		graphGenToMapper = fmt.Sprintf("&i.%s", helpers.ToCamelCase(f.Identifier))
 	}
 
@@ -45,12 +45,13 @@ func BaseFieldTemplate(f entity.Field, e entity.Entity) Template {
 		RepoToMapper:   "",
 		RepoFromMapper: fmt.Sprintf("model.%s", helpers.ToCamelCase(f.Identifier)),
 
-		GraphRequired:           graphRequired,
-		GraphName:               f.Identifier,
-		GraphModelName:          graphModelName,
-		GraphGenToMapper:        graphGenToMapper,
-		GraphGenFromMapper:      graphGenFromMapper,
-		GraphGenFromMapperParam: f.Identifier,
+		GraphRequired:              graphRequired,
+		GraphName:                  f.Identifier,
+		GraphModelName:             graphModelName,
+		GraphGenToMapper:           graphGenToMapper,
+		GraphGenFromMapper:         graphGenFromMapper,
+		GraphGenFromMapperOptional: graphGenFromMapper,
+		GraphGenFromMapperParam:    f.Identifier,
 
 		ProtoName:       helpers.ToSnakeCase(f.Identifier),
 		ProtoToMapper:   fmt.Sprintf("e.%s", helpers.ToCamelCase(f.Identifier)),

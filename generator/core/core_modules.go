@@ -92,6 +92,18 @@ func GenerateCoreModules(ctx context.Context, rootPath string, project entity.Pr
 		}
 	}
 
+	// generate randomvalues module
+	entityRandomValuesDir := path.Join(projectDir, generator.CORE_DIR, "randomvalues")
+	generator.GenerateFile(ctx, generator.FileRequest{
+		OutputFile:   path.Join(entityRandomValuesDir, "randomvalues.go"),
+		TemplateName: path.Join("core", "random_values"),
+		Data: struct {
+			ProjectName string
+		}{
+			ProjectName: project.Identifier,
+		},
+	})
+
 	// generate module types
 	err = generator.GenerateFile(ctx, generator.FileRequest{
 		OutputFile:   path.Join(projectDir, generator.CORE_DIR, "types", "types.go"),

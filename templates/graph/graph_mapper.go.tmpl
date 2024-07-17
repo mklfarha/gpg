@@ -239,3 +239,66 @@ func JsonRawFromString(in *string) json.RawMessage {
 	return res
 }
 
+func MapUUIDSlice(uuids []uuid.UUID) []string {
+	res := []string{}
+	for _, u := range uuids {
+		res = append(res, u.String())
+	}
+	return res
+}
+
+func MapIntSlice(is []int64) []int {
+	res := []int{}
+	for _, i := range is {
+		res = append(res, int(i))
+	}
+	return res
+}
+
+func MapDateSlice(ds []time.Time) []string {
+	res := []string{}
+	for _, d := range ds {
+		res = append(res, d.Format("2006-01-02"))
+	}
+	return res
+}
+
+func MapDatetimeSlice(ds []time.Time) []string {
+	res := []string{}
+	for _, d := range ds {
+		res = append(res, d.Format("2006-01-02 15:04:05"))
+	}
+	return res
+}
+
+func MapToUUIDSlice(ss []string) []uuid.UUID {
+	res := []uuid.UUID{}
+	for _, s := range ss {
+		res = append(res, UuidFromStringOrNil(s))
+	}
+	return res
+}
+
+func MapToIntSlice(is []int) []int64 {
+	res := []int64{}
+	for _, i := range is {
+		res = append(res, int64(i))
+	}
+	return res
+}
+
+func MapToDateSlice(ds []string) []time.Time {
+	res := []time.Time{}
+	for _, d := range ds {
+		res = append(res, ParseDate(d))
+	}
+	return res
+}
+
+func MapToDatetimeSlice(ds []string) []time.Time {
+	res := []time.Time{}
+	for _, d := range ds {
+		res = append(res, ParseTime(d))
+	}
+	return res
+}

@@ -4,6 +4,9 @@ import (
     "github.com/gofrs/uuid"
     entity "{{.ProjectName}}/core/entity/{{.Package}}"
     {{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"  
+	{{if eq .HasArrayField true}}
+		"{{.ProjectName}}/core/entity/mapper"
+	{{end}}
 )
 
 func mapModelsToEntities(models []{{.ProjectName}}db.{{.EntityName}}) []entity.{{.EntityName}} {

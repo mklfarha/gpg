@@ -42,6 +42,7 @@ type Template struct {
 	JSON     bool
 	JSONMany bool
 	JSONRaw  bool
+	Array    bool
 
 	// generated functions
 	Custom                bool

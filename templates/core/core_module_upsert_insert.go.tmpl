@@ -32,7 +32,11 @@ import (
 	{{if eq .HasVersionField true}}
 	"time"
 	{{end}}
+	{{if eq .HasArrayField true}}
+	"{{.ProjectName}}/core/entity/mapper"
+	{{end}}
 )
+
 
 func (m *module) Insert(
 	ctx context.Context, 
@@ -106,7 +110,7 @@ func mapUpsertRequestToInsertParams(req types.UpsertRequest) {{.ProjectName}}db.
 		{{ if eq $field.Generated true}} 
 		{{$field.Name}}: {{$field.GeneratedFuncInsert}}{{$field.RepoToMapper}},
 		{{else}}
-		{{ if eq $field.JSONMany true}}
+		{{ if or (eq $field.JSONMany true) (eq $field.Array true)}}
 			{{$field.Name}}: {{$field.RepoToMapper}}, 
 		{{ else }}
         	{{$field.Name}}: req.{{$entityName}}.{{$field.Name}}{{$field.RepoToMapper}}, 
