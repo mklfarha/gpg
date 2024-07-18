@@ -21,6 +21,7 @@ import (
 	"context"
 
 	"{{.Identifier}}/config"
+	"{{.Identifier}}/monitoring"
 	"{{.Identifier}}/core"
 	{{range $entity := .Entities}}
 	"{{$projectIdentifier}}/core/entity/{{$entity.Identifier}}"
@@ -30,6 +31,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/urfave/cli"
 	"github.com/gofrs/uuid"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -38,9 +40,20 @@ func main() {
 
 	app.Flags = []cli.Flag{}
 
-	config := config.NewWithPath("../config/base.yaml")
+	config, err := config.NewWithPathAndEnviorment("../config", "cli")
+	if err != nil {
+		panic("error creating config")
+	}
+	m, err := monitoring.New(monitoring.Params{
+		Logger:   zap.NewNop(),
+		Provider: config,
+	})
+	if err != nil {
+		panic("error creating monitoring")
+	}
 	c, err := core.New(core.Params{
-		Provider: config,		
+		Provider: config,	
+		Monitoring: m,	
 	})
 	if err != nil {
 		panic("error creating core")

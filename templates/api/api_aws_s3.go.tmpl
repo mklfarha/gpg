@@ -15,9 +15,13 @@ import (
 )
 
 func awsSession() (*session.Session, config.AWS) {
-    provider := config.New()
+    provider, err := config.New()
+    if err != nil {
+        fmt.Printf("error loading config\n")
+        return nil, config.AWS{}
+    }
     var awsConfigs []config.AWS
-    if err := provider.Get("aws").Populate(&awsConfigs); err != nil {
+    if err = provider.Get("aws").Populate(&awsConfigs); err != nil {
         fmt.Printf("error reading aws config: %v\n", err)
         return nil, config.AWS{}
     }

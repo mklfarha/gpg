@@ -19,14 +19,14 @@ func GenerateConfig(ctx context.Context, rootPath string, project entity.Project
 	})
 
 	GenerateFile(ctx, FileRequest{
-		OutputFile:   path.Join(configDir, "config_dev.go"),
-		TemplateName: path.Join("config", "config_dev"),
-		Data:         project,
-	})
-
-	GenerateFile(ctx, FileRequest{
 		OutputFile:      path.Join(configDir, "base.yaml"),
 		TemplateName:    path.Join("config", "config_base"),
+		Data:            project,
+		DisableGoFormat: true,
+	})
+	GenerateFile(ctx, FileRequest{
+		OutputFile:      path.Join(configDir, "cli.yaml"),
+		TemplateName:    path.Join("config", "config_cli"),
 		Data:            project,
 		DisableGoFormat: true,
 	})

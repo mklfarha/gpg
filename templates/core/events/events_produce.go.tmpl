@@ -11,6 +11,9 @@ import (
 )
 
 func (i *Implementation) Produce(message []byte, entityIdentifier string, action string) error {
+    if i.provider.Get("events.enabled").String() == "false" {
+        return nil
+    }
 	eg := errgroup.Group{}
     {{if eq .KafkaEnabled true}}
         {{range $t := .KafkaConfig.Topics}}  
@@ -27,6 +30,9 @@ func (i *Implementation) Produce(message []byte, entityIdentifier string, action
 
 {{if eq .KafkaEnabled true}}
 func (i *Implementation) produceToKafkaTopic(topic string, message []byte, entityIdentifier string, action string) error {
+    if i.client == nil {
+        return nil
+    }
     err := i.client.SendMessage(saramafx.SendMessageRequest{
 		Topic:   topic,
 		Message: message,

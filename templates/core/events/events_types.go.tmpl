@@ -9,6 +9,7 @@ import (
 
     "{{.Identifier}}/monitoring"
     "time"
+    "go.uber.org/config"
 )
 
 type Implementation struct {
@@ -16,6 +17,7 @@ type Implementation struct {
     client *saramafx.Client
     {{end}}
     monitoring *monitoring.Implementation
+    provider config.Provider
 }
 
 type Params struct {
@@ -25,6 +27,7 @@ type Params struct {
     Client *saramafx.Client
     {{end}}
     Monitoring *monitoring.Implementation
+    Provider config.Provider
 }
 
 type EventEntity interface {

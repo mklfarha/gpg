@@ -59,6 +59,14 @@ func (e {{.EntityName}}) DependantFieldIdentifierToTypeMap() map[string]map[stri
 }
 {{end}}
 
+func (e {{.EntityName}}) ArrayFieldIdentifierToType() map[string]types.FieldType {
+    res := make(map[string]types.FieldType)
+    {{range $field := .Fields}} {{if eq $field.Array true}}
+    res["{{$field.Identifier}}"] = types.{{$field.ArrayGenFieldType}}{{end}}{{end}}
+    return res 
+}
+
+
 func (e {{.EntityName}}) IsDependant() bool {
     return {{.JSON}}
 }

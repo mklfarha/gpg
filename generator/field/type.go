@@ -39,10 +39,12 @@ type Template struct {
 	Import *string
 
 	// json specific config
-	JSON     bool
-	JSONMany bool
-	JSONRaw  bool
-	Array    bool
+	JSON              bool
+	JSONMany          bool
+	JSONRaw           bool
+	Array             bool
+	ArrayInternalType entity.FieldType
+	ArrayGenFieldType string
 
 	// generated functions
 	Custom                bool

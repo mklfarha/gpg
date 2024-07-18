@@ -16,7 +16,9 @@ auth: {{if eq .HasBasicAuth true}}
     client_secret: {{ .KeycloakAuth.Config.Keycloak.ClientSecret }}{{end}}
 
 {{if eq .KafkaEnabled true}}
-kafka:
+events:
+  enabled: true
+kafka:  
   version: {{.KafkaConfig.Version}} 
   brokers: {{range $b := .KafkaConfig.Brokers}}  
     - {{$b}} {{end}}    

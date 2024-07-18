@@ -204,6 +204,10 @@ func (m *module) publishUpdateEvent(ctx context.Context,
 		qtx *{{.ProjectName}}db.Queries,
 		id string,
 		existing []{{.ProjectName}}db.{{.EntityName}}) error {
+
+	if m.events == nil {
+		return nil
+	}
 	fetched, err := qtx.Fetch{{.EntityName}}By{{.PrimaryKey.Name}}(ctx, id)
 	if err != nil {
 		m.monitoring.Emit(monitoring.EmitRequest{

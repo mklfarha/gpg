@@ -18,6 +18,8 @@ func ArrayFieldTemplate(f entity.Field, e entity.Entity) Template {
 	template.Type = fmt.Sprintf("[]%s", arrayTypeTemplate.Type)
 	template.InternalType = entity.ArrayFieldType
 	template.GenFieldType = "ArrayFieldType"
+	template.ArrayInternalType = arrayTypeTemplate.InternalType
+	template.ArrayGenFieldType = arrayTypeTemplate.GenFieldType
 	template.GenRandomValue = fmt.Sprintf("[]%s{}", arrayTypeTemplate.Type)
 	template.RepoFromMapper = fmt.Sprintf("mapper.JSONTo%sSlice(%s)",
 		helpers.ToCamelCase(arrayTypeTemplate.InternalType.String()),

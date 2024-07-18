@@ -127,6 +127,25 @@ func getEntityDeclarations(e ProtoEntityTemplate, dependantEntities map[string][
 				Filtering: "filtering.TypeString",
 				IsEnum:    false,
 			})
+		case entity.ArrayFieldType:
+			filtering := ""
+			switch f.ArrayInternalType {
+			case entity.UUIDFieldType, entity.StringFieldType:
+				filtering = "filtering.TypeString"
+			case entity.IntFieldType:
+				filtering = "filtering.TypeInt"
+			case entity.FloatFieldType:
+				filtering = "filtering.TypeFloat"
+			case entity.BooleanFieldType:
+				filtering = "filtering.TypeBool"
+			case entity.DateTimeFieldType, entity.DateFieldType:
+				filtering = "filtering.TypeTimestamp"
+			}
+			entityRes.Fields = append(entityRes.Fields, ProtoFieldDeclaration{
+				Name:      finalIdentifier,
+				Filtering: filtering,
+				IsEnum:    false,
+			})
 		case entity.OptionsSingleFieldType, entity.OptionsManyFieldType:
 			enumType := f.ProtoType
 			entityRes.Fields = append(entityRes.Fields, ProtoFieldDeclaration{

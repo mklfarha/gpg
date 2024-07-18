@@ -19,7 +19,7 @@ func (i *Implementation) emitMetric(req EmitRequest) error {
 }
 
 func initMetricsClient(params Params, config MonitoringConfig, imp *Implementation) error {
-	if config.MetricsEnabled {
+	if config.MetricsEnabled && params.Lifecycle != nil {
 		params.Lifecycle.Append(fx.Hook{
 			OnStart: func(ctx context.Context) error {
 				switch config.MetricsProvider {

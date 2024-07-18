@@ -18,6 +18,11 @@ func handleClauseByType(req SingleClauseRequest, entity ListEntity, fieldType en
 	case entitytypes.MultiEnumFieldType:
 		req.isDependantMulti = true
 		return buildEnumClause(req)
+	case entitytypes.ArrayFieldType:
+		req.isArray = true
+		arrayFieldTypes := entity.ArrayFieldIdentifierToType()
+		req.arrayType = arrayFieldTypes[req.fieldIdentifier]
+		return buildArrayClause(req)
 	case entitytypes.SingleDependantEntityFieldType:
 		typeMap := entity.DependantFieldIdentifierToTypeMap()
 		dependantTypeMap := typeMap[req.fieldIdentifier]
@@ -181,6 +186,37 @@ func buildTimestampClause(req SingleClauseRequest) (SingleClauseResponse, error)
 	return SingleClauseResponse{
 		ResolvedClause: fmt.Sprintf("%s %s '%s'", left, cex.Function, right),
 	}, nil
+}
+
+func buildArrayClause(req SingleClauseRequest) (SingleClauseResponse, error) {
+	cex := req.cex	
+	switch cex.Function {
+	case filtering.FunctionEquals, filtering.FunctionNotEquals:
+		switch (req.arrayType){
+		case entitytypes.StringFieldType, entitytypes.UUIDFieldType, entitytypes.RawJSONFieldType:
+			return SingleClauseResponse{
+				ResolvedClause: fmt.Sprintf("JSON_CONTAINS(%s,'\"%s\"','$')", req.fieldIdentifier, cex.Args[1].GetConstExpr().GetStringValue()),
+			}, nil
+		case entitytypes.IntFieldType:
+			return SingleClauseResponse{
+				ResolvedClause: fmt.Sprintf("JSON_CONTAINS(%s,'%d','$')", req.fieldIdentifier, cex.Args[1].GetConstExpr().GetInt64Value()),
+			}, nil
+		case entitytypes.FloatFieldType:
+			return SingleClauseResponse{
+				ResolvedClause: fmt.Sprintf("JSON_CONTAINS(%s,'%f','$')", req.fieldIdentifier, cex.Args[1].GetConstExpr().GetDoubleValue()),
+			}, nil
+		case entitytypes.BooleanFieldType:
+			return SingleClauseResponse{
+				ResolvedClause: fmt.Sprintf("JSON_CONTAINS(%s,'%s','$')", req.fieldIdentifier, cex.Args[1].GetConstExpr().GetStringValue()),
+			}, nil
+		case entitytypes.TimestampFieldType:
+			return SingleClauseResponse{
+				ResolvedClause: fmt.Sprintf("JSON_CONTAINS(%s,'\"%s\"','$')", req.fieldIdentifier, cex.Args[1].GetConstExpr().GetStringValue()),
+			}, nil	
+		}
+		
+	}
+	return SingleClauseResponse{}, errors.New("unsupported function for type array")
 }
 
 // utilities 

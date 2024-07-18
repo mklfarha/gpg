@@ -14,6 +14,7 @@ type ListEntity interface {
 	DependantFieldIdentifierToTypeMap() map[string]map[string]entitytypes.FieldType
 	EntityIdentifier() string
 	PrimaryKeyIdentifier() string
+	ArrayFieldIdentifierToType() map[string]entitytypes.FieldType
 }
 
 type ListRequest interface {
@@ -31,6 +32,8 @@ type SingleClauseRequest struct {
 	isDependant             bool
 	isDependantMulti        bool
 	dependantFieldIdentifer string
+	isArray 				bool
+	arrayType 				entitytypes.FieldType
 }
 
 type SingleClauseResponse struct {
