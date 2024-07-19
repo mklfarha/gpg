@@ -15,9 +15,6 @@ func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, dependantEntity
 	//base
 	pl := pluralize.NewClient()
 	name := f.Identifier
-	if dependantEntity != nil && dependantEntity.EntityIdentifier != "" {
-		name = fmt.Sprintf("%s_%s", pl.Singular(dependantEntity.Identifier), f.Identifier)
-	}
 	template.Type = pl.Singular(helpers.ToCamelCase(name))
 	template.InternalType = entity.OptionsSingleFieldType
 	template.GenFieldType = "SingleEnumFieldType"

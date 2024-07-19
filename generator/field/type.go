@@ -3,6 +3,8 @@ package field
 import "github.com/maykel/gpg/entity"
 
 type Template struct {
+	ProjectIdentifier string
+
 	// original identifier the one the user inputed
 	// this will be the column name
 	Identifier string
@@ -42,6 +44,7 @@ type Template struct {
 	JSON              bool
 	JSONMany          bool
 	JSONRaw           bool
+	JSONIdentifier    string
 	Array             bool
 	ArrayInternalType entity.FieldType
 	ArrayGenFieldType string

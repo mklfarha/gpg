@@ -24,12 +24,12 @@ func generateCustomQueries(ctx context.Context, req coreSubModuleRequest) error 
 		}
 
 		fetchTemplate := fetchModuleTemplate{
-			Package:          req.Entity.Identifier,
-			ProjectName:      req.Project.Identifier,
-			EntityIdentifier: req.Entity.Identifier,
-			EntityName:       helpers.ToCamelCase(req.Entity.Identifier),
-			CustomQuery:      cq,
-			Imports:          helpers.MapKeys(imports),
+			Package:           req.Entity.Identifier,
+			ProjectIdentifier: req.Project.Identifier,
+			EntityIdentifier:  req.Entity.Identifier,
+			EntityName:        helpers.ToCamelCase(req.Entity.Identifier),
+			CustomQuery:       cq,
+			Imports:           helpers.MapKeys(imports),
 		}
 
 		err := generator.GenerateFile(ctx, generator.FileRequest{

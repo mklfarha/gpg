@@ -62,7 +62,7 @@ func Generate(ctx context.Context, rootPath string, project entity.Project) erro
 
 	err := os.RemoveAll(protoDir)
 	if err != nil {
-		fmt.Printf("ERROR: Deleting module directory\n")
+		fmt.Printf("ERROR: Deleting proto directory\n")
 	}
 
 	fullDir := path.Join(protoDir, "gen")

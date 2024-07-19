@@ -10,6 +10,7 @@ import (
 	"path"
 	"sort"
 
+	"github.com/gertd/go-pluralize"
 	"github.com/iancoleman/strcase"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/files"
@@ -133,9 +134,15 @@ func loadProject(configPath string) (entity.Project, error) {
 	res, _ := json.Marshal(project)
 	fmt.Printf("%v \n", string(res))
 
+	pl := pluralize.NewClient()
 	for _, e := range project.Entities {
-		for _, f := range e.Fields {
+		for i, f := range e.Fields {
 			f.ParentIdentifier = e.Identifier
+			if f.Type == entity.JSONFieldType {
+				if f.JSONConfig.Identifier == "" {
+					e.Fields[i].JSONConfig.Identifier = pl.Singular(f.Identifier)
+				}
+			}
 		}
 	}
 

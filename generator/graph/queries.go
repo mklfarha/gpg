@@ -22,7 +22,8 @@ func generateQueries(ctx context.Context,
 		OutputFile:   path.Join(graphDir, "gqls", "queries.graphqls"),
 		TemplateName: path.Join("graph", "graph_queries"),
 		Data: GraphQueriesTemplate{
-			Entities: entityTemplates,
+			ProjectIdentifier: project.Identifier,
+			Entities:          entityTemplates,
 		},
 		Funcs: template.FuncMap{
 			"CustomQueryInputFields": func(cq entity.CustomQuery) map[string]field.Template {
@@ -42,7 +43,8 @@ func generateQueries(ctx context.Context,
 		OutputFile:   path.Join(graphDir, "gqls", "mutations.graphqls"),
 		TemplateName: path.Join("graph", "graph_mutations"),
 		Data: GraphQueriesTemplate{
-			Entities: entityTemplates,
+			ProjectIdentifier: project.Identifier,
+			Entities:          entityTemplates,
 		},
 		DisableGoFormat: true,
 	})

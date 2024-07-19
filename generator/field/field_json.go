@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gertd/go-pluralize"
 	"github.com/iancoleman/strcase"
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator/helpers"
 )
 
 func JSONFieldTemplate(f entity.Field, e entity.Entity, dependant bool) Template {
-	if len(f.JSONConfig.Fields) == 0 {
+	if len(f.JSONConfig.Fields) == 0 && !f.JSONConfig.Reuse {
 		stringTemplate := StringFieldTemplate(f, e)
 		stringTemplate.Type = "json.RawMessage"
 		stringTemplate.GenFieldType = "RawJSONFieldType"
@@ -30,9 +29,8 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, dependant bool) Template
 	template := BaseFieldTemplate(f, e)
 
 	fullName := template.SingularIdentifier
-	pl := pluralize.NewClient()
 	if dependant {
-		fullName = fmt.Sprintf("%s_%s", pl.Singular(e.Identifier), template.SingularIdentifier)
+		fullName = f.JSONConfig.Identifier
 	}
 
 	//base
@@ -40,21 +38,22 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, dependant bool) Template
 	template.InternalType = entity.JSONFieldType
 	template.JSON = true
 	template.JSONMany = jsonMany
+	template.JSONIdentifier = f.JSONConfig.Identifier
 	template.Custom = true
 	genFieldType := "SingleDependantEntityFieldType"
-	genRandomValue := fmt.Sprintf("New%sWithRandomValues()", template.Type)
+	genRandomValue := fmt.Sprintf("%s.New%sWithRandomValues()", f.JSONConfig.Identifier, template.Type)
 	if jsonMany {
 		genFieldType = "MultiDependantEntityFieldType"
-		genRandomValue = fmt.Sprintf("New%sSliceWithRandomValues(rand.Intn(10))", template.Type)
+		genRandomValue = fmt.Sprintf("%s.New%sSliceWithRandomValues(rand.Intn(10))", f.JSONConfig.Identifier, template.Type)
 	}
 	template.GenFieldType = genFieldType
 	template.GenRandomValue = genRandomValue
-	template.RepoToMapper = fmt.Sprintf("entity.%sSliceToJSON(req.%s.%s)", helpers.ToCamelCase(fullName), helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier))
-	template.RepoFromMapper = fmt.Sprintf("entity.%sFromJSON(model.%s)", helpers.ToCamelCase(template.SingularIdentifier), helpers.ToCamelCase(f.Identifier))
+	template.RepoToMapper = fmt.Sprintf("%s.%sSliceToJSON(req.%s.%s)", f.JSONConfig.Identifier, helpers.ToCamelCase(fullName), helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier))
+	template.RepoFromMapper = fmt.Sprintf("%s.%sFromJSON(model.%s)", f.JSONConfig.Identifier, helpers.ToCamelCase(template.SingularIdentifier), helpers.ToCamelCase(f.Identifier))
 
 	// graph
-	graphInTypeOptional := fmt.Sprintf("%s%sInput", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(template.SingularIdentifier))
-	graphOutType := fmt.Sprintf("%s%s", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(template.SingularIdentifier))
+	graphInTypeOptional := fmt.Sprintf("%sInput", helpers.ToCamelCase(fullName))
+	graphOutType := helpers.ToCamelCase(fullName)
 	if jsonMany {
 		graphInTypeOptional = fmt.Sprintf("[%s]", graphInTypeOptional)
 		graphOutType = fmt.Sprintf("[%s]", graphOutType)
@@ -64,10 +63,10 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, dependant bool) Template
 	template.GraphInTypeOptional = graphInTypeOptional
 	template.GraphOutType = fmt.Sprintf("%s%s", graphOutType, template.GraphRequired)
 	template.GraphGenType = helpers.ToCamelCase(fullName)
-	template.GraphGenToMapper = fmt.Sprintf("Map%s%s(i.%s)", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
+	template.GraphGenToMapper = fmt.Sprintf("Map%s(i.%s)", helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
 	template.GraphGenFromMapperParam = ""
-	template.GraphGenFromMapper = fmt.Sprintf("Map%s%sInput(i.%s)", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
-	template.GraphGenFromMapperOptional = fmt.Sprintf("Map%s%sInput(i.%s)", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
+	template.GraphGenFromMapper = fmt.Sprintf("Map%sInput(i.%s)", helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
+	template.GraphGenFromMapperOptional = fmt.Sprintf("Map%sInput(i.%s)", helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
 
 	// proto
 	template.ProtoType = helpers.ToCamelCase(fullName)

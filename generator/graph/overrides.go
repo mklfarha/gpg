@@ -32,9 +32,9 @@ func overrideGqlgenFiles(ctx context.Context,
 		OutputFile:   path.Join(graphDir, "queries.resolvers.go"),
 		TemplateName: path.Join("graph", "graph_queries_resolver"),
 		Data: GraphQueriesTemplate{
-			ProjectName: project.Identifier,
-			Project:     project,
-			Entities:    entityTemplates,
+			ProjectIdentifier: project.Identifier,
+			Project:           project,
+			Entities:          entityTemplates,
 		},
 		Funcs: template.FuncMap{
 			"CustomQueryInputFields": func(cq entity.CustomQuery) map[string]field.Template {
@@ -54,8 +54,8 @@ func overrideGqlgenFiles(ctx context.Context,
 		OutputFile:   path.Join(graphDir, "mutations.resolvers.go"),
 		TemplateName: path.Join("graph", "graph_mutations_resolver"),
 		Data: GraphQueriesTemplate{
-			ProjectName: project.Identifier,
-			Entities:    entityTemplates,
+			ProjectIdentifier: project.Identifier,
+			Entities:          entityTemplates,
 		},
 	})
 }

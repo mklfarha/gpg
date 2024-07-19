@@ -1,6 +1,6 @@
 {{$parentEntityName := .ParentEntityName}}
 
-type {{if eq .JSON true}}{{.ParentEntityName}}{{end}}{{.EntityType}} { {{range $field := .OutFields}}
+type {{.EntityType}} { {{range $field := .OutFields}}
     {{$field.GraphName}}: {{$field.GraphOutType}}{{end}}   
 }
 
@@ -11,11 +11,11 @@ type List{{.EntityType}} {
 }
 {{end}}
 
-input {{if eq .JSON true}}{{.ParentEntityName}}{{end}}{{.EntityType}}Input { {{range $field := .InFields}}
+input {{.EntityType}}Input { {{range $field := .InFields}}
     {{$field.GraphName}}: {{$field.GraphInType}}{{end}}
 }
 
-input {{if eq .JSON true}}{{.ParentEntityName}}{{end}}{{.EntityType}}PartialInput { {{range $field := .InFields}}
+input {{.EntityType}}PartialInput { {{range $field := .InFields}}
     {{ if eq $field.IsPrimary true}}
     {{$field.GraphName}}: {{$field.GraphInType}}
     {{else}}{{$field.GraphName}}: {{$field.GraphInTypeOptional}}{{end}}{{end}}

@@ -11,9 +11,9 @@ import (
 	"go.uber.org/fx"	
 	{{.Identifier}}config "{{.Identifier}}/config"
 	coretypes "{{.Identifier}}/core/types"
-    {{$projectName := .Identifier}}
+    {{$projectIdentifier := .Identifier}}
     {{range $entity := .Entities}}
-    "{{$projectName}}/core/module/{{$entity.Identifier}}"	
+    "{{$projectIdentifier}}/core/module/{{$entity.Identifier}}"	
     {{end}}	
 	"{{.Identifier}}/core/repository"
 	"{{.Identifier}}/monitoring"

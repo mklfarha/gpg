@@ -15,12 +15,12 @@ func generateSearch(ctx context.Context, req coreSubModuleRequest) error {
 	fmt.Printf("--[GPG] Generating core module search: %s\n", req.Entity.Identifier)
 	if len(req.SearchFields) > 0 {
 		searchTemplate := fetchModuleTemplate{
-			Package:          req.Entity.Identifier,
-			ProjectName:      req.Project.Identifier,
-			EntityIdentifier: req.Entity.Identifier,
-			EntityName:       helpers.ToCamelCase(req.Entity.Identifier),
-			Imports:          helpers.MapKeys(req.Imports),
-			SearchFields:     req.SearchFields,
+			Package:           req.Entity.Identifier,
+			ProjectIdentifier: req.Project.Identifier,
+			EntityIdentifier:  req.Entity.Identifier,
+			EntityName:        helpers.ToCamelCase(req.Entity.Identifier),
+			Imports:           helpers.MapKeys(req.Imports),
+			SearchFields:      req.SearchFields,
 		}
 
 		err := generator.GenerateFile(ctx, generator.FileRequest{

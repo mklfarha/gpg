@@ -50,9 +50,9 @@ func GenerateCoreRepository(ctx context.Context, rootPath string, project entity
 		OutputFile:   path.Join(repoDir, "repository.go"),
 		TemplateName: path.Join("core", "repo", "repository"),
 		Data: struct {
-			ProjectName string
+			ProjectIdentifier string
 		}{
-			ProjectName: project.Identifier,
+			ProjectIdentifier: project.Identifier,
 		},
 	})
 	if err != nil {

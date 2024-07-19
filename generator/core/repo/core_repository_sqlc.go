@@ -21,11 +21,11 @@ func generateRepositorySQLCode(ctx context.Context, repoDir string, project enti
 			OutputFile:   path.Join(repoDir, "sqlc.yaml"),
 			TemplateName: path.Join("core", "repo", "repo_yaml"),
 			Data: struct {
-				ProjectName string
-				Fields      map[string]string
+				ProjectIdentifier string
+				Fields            map[string]string
 			}{
-				ProjectName: project.Identifier,
-				Fields:      helpers.FieldsToCamelCase(project.Entities),
+				ProjectIdentifier: project.Identifier,
+				Fields:            helpers.FieldsToCamelCase(project.Entities),
 			},
 			DisableGoFormat: true,
 			Funcs: template.FuncMap{

@@ -1,30 +1,32 @@
 package {{.Package}}
 
 {{$entityName := .EntityName}}
-{{$projectName := .ProjectName}}
+{{$projectIdentifier := .ProjectIdentifier}}
 {{$entityIdenfier := .EntityIdentifier}}
+{{$imports := .Imports}}
 import (
 	"context"
     {{if eq .ShouldPublishEvents true}}
     "errors"
     {{end}}
-	
+		
 	"github.com/gofrs/uuid"
-	"{{.ProjectName}}/monitoring"
-	"{{.ProjectName}}/core/module/{{.EntityIdentifier}}/types"	
-	{{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"   
+	"{{.ProjectIdentifier}}/monitoring"
+	"{{.ProjectIdentifier}}/core/module/{{.EntityIdentifier}}/types"	
+	{{.ProjectIdentifier}}db "{{.ProjectIdentifier}}/core/repository/gen"   
 	{{$firstGen := true}}
 	{{$firstJSONMany := true}}
 	{{range $field := .Fields}}	
 		{{if eq $firstGen true}}
 			{{ if eq $field.GeneratedInsertCustom true}}
-				"{{$projectName}}/custom"
+				"{{$projectIdentifier}}/custom"
 				{{$firstGen = false}}				
 			{{end}}			
 		{{end}}		
 		{{if eq $firstJSONMany true}}
 			{{if eq $field.JSONMany true}}
-				entity "{{$projectName}}/core/entity/{{$entityIdenfier}}"	
+				{{range $import := $imports}} {{if and (ne $import "time") (ne $import "github.com/gofrs/uuid")}} 
+    			"{{$import}}" {{end}}{{end}}
 				{{$firstJSONMany = false}}
 			{{end}}
 		{{end}}
@@ -33,8 +35,8 @@ import (
 	"time"
 	{{end}}
 	{{if eq .HasArrayField true}}
-	"{{.ProjectName}}/core/entity/mapper"
-	{{end}}
+	"{{.ProjectIdentifier}}/core/entity/mapper"
+	{{end}}	
 )
 
 
@@ -105,8 +107,8 @@ func (m *module) Insert(
 	}, nil
 }
 
-func mapUpsertRequestToInsertParams(req types.UpsertRequest) {{.ProjectName}}db.Insert{{.EntityName}}Params {	
-	return {{.ProjectName}}db.Insert{{.EntityName}}Params{ {{range $field := .Fields}}		
+func mapUpsertRequestToInsertParams(req types.UpsertRequest) {{.ProjectIdentifier}}db.Insert{{.EntityName}}Params {	
+	return {{.ProjectIdentifier}}db.Insert{{.EntityName}}Params{ {{range $field := .Fields}}		
 		{{ if eq $field.Generated true}} 
 		{{$field.Name}}: {{$field.GeneratedFuncInsert}}{{$field.RepoToMapper}},
 		{{else}}
@@ -123,7 +125,7 @@ func mapUpsertRequestToInsertParams(req types.UpsertRequest) {{.ProjectName}}db.
 {{if eq .ShouldPublishEvents true}}
 func (m *module) publishInsertEvent(ctx context.Context, 
 		req types.UpsertRequest, 
-		qtx *{{.ProjectName}}db.Queries,
+		qtx *{{.ProjectIdentifier}}db.Queries,
 		id string) error {
 
 	if m.events == nil {

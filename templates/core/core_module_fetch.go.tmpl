@@ -3,11 +3,11 @@ package {{.Package}}
 import (
 	"context"    
     
-    "{{.ProjectName}}/core/module/{{.EntityIdentifier}}/types"
+    "{{.ProjectIdentifier}}/core/module/{{.EntityIdentifier}}/types"
     {{if ne .Select.IsPrimary true}}
     "errors"
-    {{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"{{end}}        
-    "{{.ProjectName}}/monitoring"    
+    {{.ProjectIdentifier}}db "{{.ProjectIdentifier}}/core/repository/gen"{{end}}        
+    "{{.ProjectIdentifier}}/monitoring"    
 )
 
 func (m *module) Fetch{{.Select.Name}}(
@@ -40,7 +40,7 @@ func (m *module) Fetch{{.Select.Name}}(
     if req.OrderBy == "" {
         models, err := m.repository.Queries.Fetch{{.Select.Name}}(
             ctx,
-            {{.ProjectName}}db.Fetch{{.Select.Name}}Params{ {{range $field := .Select.Fields}}
+            {{.ProjectIdentifier}}db.Fetch{{.Select.Name}}Params{ {{range $field := .Select.Fields}}
                 {{$field.Field.Name}}: req.{{$field.Field.Name}}{{$field.Field.RepoToMapper}},{{end}}
                 Offset: req.Offset,
                 Limit: req.Limit,            
@@ -112,14 +112,14 @@ func (m *module) Fetch{{.Select.Name}}(
     }
 
     {{$select := .Select}}
-    {{$projectName := .ProjectName}}
+    {{$projectIdentifier := .ProjectIdentifier}}
     switch req.OrderBy {
         {{range $timeField := .Select.TimeFields}}
         case "{{$timeField.Identifier}}":
             if sort == "ASC" {
                 models, err := m.repository.Queries.Fetch{{$select.Name}}OrderedBy{{$timeField.Name}}ASC(
                     ctx,
-                    {{$projectName}}db.Fetch{{$select.Name}}OrderedBy{{$timeField.Name}}ASCParams{ {{range $field := $select.Fields}}
+                    {{$projectIdentifier}}db.Fetch{{$select.Name}}OrderedBy{{$timeField.Name}}ASCParams{ {{range $field := $select.Fields}}
                         {{$field.Field.Name}}: req.{{$field.Field.Name}}{{$field.Field.RepoToMapper}},{{end}}
                         Offset: req.Offset,
                         Limit: req.Limit,            
@@ -143,7 +143,7 @@ func (m *module) Fetch{{.Select.Name}}(
             } else {
                 models, err := m.repository.Queries.Fetch{{$select.Name}}OrderedBy{{$timeField.Name}}DESC(
                     ctx,
-                    {{$projectName}}db.Fetch{{$select.Name}}OrderedBy{{$timeField.Name}}DESCParams{ {{range $field := $select.Fields}}
+                    {{$projectIdentifier}}db.Fetch{{$select.Name}}OrderedBy{{$timeField.Name}}DESCParams{ {{range $field := $select.Fields}}
                         {{$field.Field.Name}}: req.{{$field.Field.Name}}{{$field.Field.RepoToMapper}},{{end}}
                         Offset: req.Offset,
                         Limit: req.Limit,            

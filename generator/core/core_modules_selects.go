@@ -13,15 +13,15 @@ import (
 )
 
 type fetchModuleTemplate struct {
-	Package          string
-	EntityName       string
-	EntityIdentifier string
-	ProjectName      string
-	Select           repo.SchemaSelectStatement
-	CustomQuery      entity.CustomQuery
-	Fields           []field.Template
-	Imports          []string
-	SearchFields     []field.Template
+	Package           string
+	EntityName        string
+	EntityIdentifier  string
+	ProjectIdentifier string
+	Select            repo.SchemaSelectStatement
+	CustomQuery       entity.CustomQuery
+	Fields            []field.Template
+	Imports           []string
+	SearchFields      []field.Template
 }
 
 func generateSelects(ctx context.Context, req coreSubModuleRequest) error {
@@ -34,12 +34,12 @@ func generateSelects(ctx context.Context, req coreSubModuleRequest) error {
 			}
 		}
 		fetchTemplate := fetchModuleTemplate{
-			Package:          req.Entity.Identifier,
-			ProjectName:      req.Project.Identifier,
-			EntityIdentifier: req.Entity.Identifier,
-			EntityName:       helpers.ToCamelCase(req.Entity.Identifier),
-			Select:           sel,
-			Imports:          helpers.MapKeys(imports),
+			Package:           req.Entity.Identifier,
+			ProjectIdentifier: req.Project.Identifier,
+			EntityIdentifier:  req.Entity.Identifier,
+			EntityName:        helpers.ToCamelCase(req.Entity.Identifier),
+			Select:            sel,
+			Imports:           helpers.MapKeys(imports),
 		}
 		err := generator.GenerateFile(ctx, generator.FileRequest{
 			OutputFile:   path.Join(req.ModuleDir, req.Entity.Identifier, "types", fmt.Sprintf("fetch_%s.go", helpers.ToSnakeCase(sel.Name))),

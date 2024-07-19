@@ -3,10 +3,10 @@ package {{.Package}}
 import (
 	"context"    
     
-    "{{.ProjectName}}/monitoring"
-    "{{.ProjectName}}/core/module/{{.EntityIdentifier}}/types"
+    "{{.ProjectIdentifier}}/monitoring"
+    "{{.ProjectIdentifier}}/core/module/{{.EntityIdentifier}}/types"
     {{if ne .Select.IsPrimary true}}    
-    {{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"{{end}}    
+    {{.ProjectIdentifier}}db "{{.ProjectIdentifier}}/core/repository/gen"{{end}}    
 )
 
 func (m *module) {{.CustomQuery.Name}}(
@@ -17,7 +17,7 @@ func (m *module) {{.CustomQuery.Name}}(
     
     models, err := m.repository.Queries.{{.CustomQuery.Name}}(
         ctx,
-        {{.ProjectName}}db.{{.CustomQuery.Name}}Params{ {{range $field := (.CustomQuery | Fields )}}
+        {{.ProjectIdentifier}}db.{{.CustomQuery.Name}}Params{ {{range $field := (.CustomQuery | Fields )}}
             {{$inputField := ($field | MapToInput ) }}
             {{$field.Name}}: req.{{$inputField.Name}}{{$inputField.RepoToMapper}},{{end}}
             Offset: req.Offset,

@@ -2,18 +2,18 @@ package graph
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
-{{$projectName := .ProjectName}}
+{{$projectIdentifier := .ProjectIdentifier}}
 import (
 	"context"
     "errors"
 
-    "{{.ProjectName}}/graph/generated"
-	"{{.ProjectName}}/graph/model"
+    "{{.ProjectIdentifier}}/graph/generated"
+	"{{.ProjectIdentifier}}/graph/model"
     {{range $entity := .Entities}}
-    {{$entity.Identifier}} "{{$projectName}}/core/module/{{$entity.Identifier}}/types"    
+    {{$entity.Identifier}} "{{$projectIdentifier}}/core/module/{{$entity.Identifier}}/types"    
     {{end}}	     
-    "{{.ProjectName}}/graph/mapper"
-    "{{.ProjectName}}/monitoring" 	
+    "{{.ProjectIdentifier}}/graph/mapper"
+    "{{.ProjectIdentifier}}/monitoring" 	
 )
 {{range $entity := .Entities}}
 func (r *mutationResolver) Upsert{{$entity.EntityType}}(

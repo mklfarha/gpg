@@ -14,7 +14,7 @@ import (
 )
 
 type EntityTemplate struct {
-	ProjectName          string
+	ProjectIdentifier    string
 	Package              string
 	Imports              []string
 	EntityName           string
@@ -27,12 +27,12 @@ type EntityTemplate struct {
 }
 
 type EnumTemplate struct {
-	ProjectName   string
-	Package       string
-	EnumName      string
-	EnumNameUpper string
-	Values        []string
-	Options       []entity.OptionValue
+	ProjectIdentifier string
+	Package           string
+	EnumName          string
+	EnumNameUpper     string
+	Values            []string
+	Options           []entity.OptionValue
 }
 
 func GenerateCoreEntities(ctx context.Context, rootPath string, project entity.Project) error {
@@ -48,6 +48,9 @@ func GenerateCoreEntities(ctx context.Context, rootPath string, project entity.P
 
 	allimports := map[string]any{}
 	for _, e := range project.Entities {
+		generateEnums(ctx, project, entitiesDir, e)
+		generateJSONEntities(ctx, entitiesDir, e, project)
+
 		fmt.Printf("----[GPG] Generating entity: %s\n", e.Identifier)
 		entityDir := path.Join(entitiesDir, e.Identifier)
 		entityTemplate, entityImports := resolveEntityTemplate(e, project)
@@ -59,8 +62,7 @@ func GenerateCoreEntities(ctx context.Context, rootPath string, project entity.P
 			TemplateName: path.Join("core", "entity"),
 			Data:         entityTemplate,
 		})
-		generateEnums(ctx, project, entityDir, e)
-		generateJSONEntities(ctx, entityDir, e, project)
+
 	}
 
 	for imp, _ := range allimports {
@@ -89,11 +91,11 @@ func GenerateCoreEntities(ctx context.Context, rootPath string, project entity.P
 }
 
 func resolveEntityTemplate(e entity.Entity, project entity.Project) (EntityTemplate, map[string]any) {
-	fields, imports := field.ResolveFieldsAndImports(e.Fields, e, nil)
+	fields, imports := field.ResolveFieldsAndImports(project, e.Fields, e, nil)
 	primaryKey := helpers.EntityPrimaryKey(e)
 
 	tpl := EntityTemplate{
-		ProjectName:          project.Identifier,
+		ProjectIdentifier:    project.Identifier,
 		Package:              e.Identifier,
 		EntityName:           helpers.ToCamelCase(e.Identifier),
 		Identifier:           e.Identifier,
@@ -106,22 +108,26 @@ func resolveEntityTemplate(e entity.Entity, project entity.Project) (EntityTempl
 	return tpl, imports
 }
 
-func generateJSONEntities(ctx context.Context, entityDir string, e entity.Entity, project entity.Project) {
+func generateJSONEntities(ctx context.Context, entitiesDir string, e entity.Entity, project entity.Project) {
 	for _, f := range e.Fields {
-		if f.Type == entity.JSONFieldType {
+		if f.Type == entity.JSONFieldType && !f.JSONConfig.Reuse {
+
 			ft := field.ResolveFieldType(f, e, &field.Template{
 				Identifier: f.Identifier,
 			})
-			fmt.Printf("----[GPG] Generating json entity: %s\n", ft.SingularIdentifier)
-			fields, imports := field.ResolveFieldsAndImports(f.JSONConfig.Fields, e, &ft)
+
+			fmt.Printf("----[GPG] Generating json entity: %s\n", f.JSONConfig.Identifier)
+			entityDir := path.Join(entitiesDir, f.JSONConfig.Identifier)
+
+			fields, imports := field.ResolveFieldsAndImports(project, f.JSONConfig.Fields, e, &ft)
 			entityTemplate := EntityTemplate{
-				ProjectName: project.Identifier,
-				Package:     e.Identifier,
-				EntityName:  helpers.ToCamelCase(ft.SingularIdentifier),
-				Fields:      fields,
-				Imports:     helpers.MapKeys(imports),
-				JSON:        true,
-				JSONField:   ft,
+				ProjectIdentifier: project.Identifier,
+				Package:           f.JSONConfig.Identifier,
+				EntityName:        helpers.ToCamelCase(ft.SingularIdentifier),
+				Fields:            fields,
+				Imports:           helpers.MapKeys(imports),
+				JSON:              true,
+				JSONField:         ft,
 			}
 
 			generator.GenerateFile(ctx, generator.FileRequest{

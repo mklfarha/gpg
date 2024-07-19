@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"path"
 
@@ -14,35 +15,41 @@ import (
 )
 
 type GraphEntityTemplate struct {
-	Identifier       string
-	EntityType       string
-	EntityTypePlural string
-	JSON             bool
-	JSONMany         bool
-	Required         bool
-	ParentIdentifier string
-	ParentEntityName string
-	GraphGenType     string
-	PrimaryKey       field.Template
-	InFields         []field.Template
-	OutFields        []field.Template
-	Selects          []repo.SchemaSelectStatement
-	CustomQueries    []entity.CustomQuery
-	Search           bool
+	ProjectIdentifier string
+	Identifier        string
+	EntityType        string
+	EntityTypePlural  string
+	JSON              bool
+	JSONMany          bool
+	Required          bool
+	ParentIdentifier  string
+	ParentEntityName  string
+	GraphGenType      string
+	PrimaryKey        field.Template
+	InFields          []field.Template
+	OutFields         []field.Template
+	Selects           []repo.SchemaSelectStatement
+	CustomQueries     []entity.CustomQuery
+	Search            bool
 }
 
 type GraphQueriesTemplate struct {
-	ProjectName  string
-	Project      entity.Project
-	Entities     []GraphEntityTemplate
-	JSONEntities []GraphEntityTemplate
-	Enums        []field.Template
+	ProjectIdentifier string
+	Project           entity.Project
+	Entities          []GraphEntityTemplate
+	JSONEntities      []GraphEntityTemplate
+	Enums             []field.Template
 }
 
 func GenerateGraph(ctx context.Context, rootPath string, project entity.Project) error {
 	fmt.Printf("--[GPG][GraphQL] Generating GraphQL\n")
 	projectDir := generator.ProjectDir(ctx, rootPath, project)
 	graphDir := path.Join(projectDir, generator.GRAPH_DIR)
+
+	err := os.RemoveAll(graphDir)
+	if err != nil {
+		fmt.Printf("ERROR: Deleting graph directory\n")
+	}
 
 	// config file
 	generator.GenerateFile(ctx, generator.FileRequest{

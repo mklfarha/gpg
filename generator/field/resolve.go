@@ -1,6 +1,8 @@
 package field
 
 import (
+	"fmt"
+
 	"github.com/maykel/gpg/entity"
 )
 
@@ -38,7 +40,7 @@ func ResolveFieldType(f entity.Field, rootEntity entity.Entity, dependantEntity 
 	return Template{}
 }
 
-func ResolveFieldsAndImports(fields []entity.Field, e entity.Entity, dependantEntity *Template) ([]Template, map[string]any) {
+func ResolveFieldsAndImports(project entity.Project, fields []entity.Field, e entity.Entity, dependantEntity *Template) ([]Template, map[string]any) {
 	fieldTemplates := make([]Template, len(fields))
 	imports := map[string]any{}
 	for i, f := range fields {
@@ -46,7 +48,13 @@ func ResolveFieldsAndImports(fields []entity.Field, e entity.Entity, dependantEn
 		if fieldTemplate.Import != nil {
 			imports[*fieldTemplate.Import] = struct{}{}
 		}
+		fieldTemplate.ProjectIdentifier = project.Identifier
 		fieldTemplates[i] = fieldTemplate
+
+		if dependantEntity == nil && f.Type == entity.JSONFieldType && (f.JSONConfig.Reuse || len(f.JSONConfig.Fields) > 0) {
+			nestedEntityImport := fmt.Sprintf("%s/core/entity/%s", project.Identifier, f.JSONConfig.Identifier)
+			imports[nestedEntityImport] = struct{}{}
+		}
 	}
 	return fieldTemplates, imports
 }

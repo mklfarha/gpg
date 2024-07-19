@@ -2,20 +2,20 @@ package graph
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
-{{$projectName := .ProjectName}}
+{{$projectIdentifier := .ProjectIdentifier}}
 {{$disableSelectCombinations := .Project.DisableSelectCombinations}}
 import (
 	"context"
-	"{{.ProjectName}}/graph/generated"
-	"{{.ProjectName}}/graph/model"
-    proto "{{.ProjectName}}/idl/server"
-    protogen "{{.ProjectName}}/idl/gen"
+	"{{.ProjectIdentifier}}/graph/generated"
+	"{{.ProjectIdentifier}}/graph/model"
+    proto "{{.ProjectIdentifier}}/idl/server"
+    protogen "{{.ProjectIdentifier}}/idl/gen"
     {{range $entity := .Entities}}
-    {{$entity.Identifier}} "{{$projectName}}/core/module/{{$entity.Identifier}}/types"    
-    {{$entity.Identifier}}entity "{{$projectName}}/core/entity/{{$entity.Identifier}}"    
+    {{$entity.Identifier}} "{{$projectIdentifier}}/core/module/{{$entity.Identifier}}/types"    
+    {{$entity.Identifier}}entity "{{$projectIdentifier}}/core/entity/{{$entity.Identifier}}"    
     {{end}}	     
-    "{{.ProjectName}}/graph/mapper"
-    "{{.ProjectName}}/monitoring" 	
+    "{{.ProjectIdentifier}}/graph/mapper"
+    "{{.ProjectIdentifier}}/monitoring" 	
 )
 {{range $entity := .Entities}}
 {{range $select := $entity.Selects}}

@@ -1,9 +1,9 @@
 package types
 
-{{$projectName := .ProjectName}}
+{{$projectIdentifier := .ProjectIdentifier}}
 {{$package := .Package}}
 import (
-    entity "{{$projectName}}/core/entity/{{.EntityIdentifier}}"	    
+    entity "{{$projectIdentifier}}/core/entity/{{.EntityIdentifier}}"	    
     "github.com/gofrs/uuid"
 )
 

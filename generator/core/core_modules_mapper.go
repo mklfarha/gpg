@@ -12,12 +12,12 @@ import (
 )
 
 type mapperModuleTemplate struct {
-	Package       string
-	EntityName    string
-	ProjectName   string
-	Fields        []field.Template
-	Imports       []string
-	HasArrayField bool
+	Package           string
+	EntityName        string
+	ProjectIdentifier string
+	Fields            []field.Template
+	Imports           []string
+	HasArrayField     bool
 }
 
 func generateMapper(ctx context.Context, req coreSubModuleRequest) error {
@@ -29,12 +29,12 @@ func generateMapper(ctx context.Context, req coreSubModuleRequest) error {
 		}
 	}
 	mapperTemplate := mapperModuleTemplate{
-		Package:       req.Entity.Identifier,
-		ProjectName:   req.Project.Identifier,
-		EntityName:    helpers.ToCamelCase(req.Entity.Identifier),
-		Fields:        req.Fields,
-		Imports:       helpers.MapKeys(req.Imports),
-		HasArrayField: hasArrayField,
+		Package:           req.Entity.Identifier,
+		ProjectIdentifier: req.Project.Identifier,
+		EntityName:        helpers.ToCamelCase(req.Entity.Identifier),
+		Fields:            req.Fields,
+		Imports:           helpers.MapKeys(req.Imports),
+		HasArrayField:     hasArrayField,
 	}
 
 	return generator.GenerateFile(ctx, generator.FileRequest{

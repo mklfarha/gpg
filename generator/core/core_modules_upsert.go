@@ -16,7 +16,7 @@ type upsertModuleTemplate struct {
 	Package             string
 	EntityName          string
 	EntityIdentifier    string
-	ProjectName         string
+	ProjectIdentifier   string
 	PrimaryKey          field.Template
 	Fields              []field.Template
 	Imports             []string
@@ -37,7 +37,7 @@ func generateUpsert(ctx context.Context, req coreSubModuleRequest) error {
 	}
 	upsertTemplate := upsertModuleTemplate{
 		Package:             req.Entity.Identifier,
-		ProjectName:         req.Project.Identifier,
+		ProjectIdentifier:   req.Project.Identifier,
 		EntityIdentifier:    req.Entity.Identifier,
 		EntityName:          helpers.ToCamelCase(req.Entity.Identifier),
 		PrimaryKey:          primaryKey,

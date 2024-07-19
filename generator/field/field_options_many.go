@@ -16,9 +16,6 @@ func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, dependantEntity *
 	//base
 	pl := pluralize.NewClient()
 	name := f.Identifier
-	if dependantEntity != nil && dependantEntity.EntityIdentifier != "" {
-		name = fmt.Sprintf("%s_%s", pl.Singular(dependantEntity.Identifier), f.Identifier)
-	}
 	template.Type = pl.Singular(helpers.ToCamelCase(name))
 	template.InternalType = entity.OptionsManyFieldType
 	template.GenFieldType = "MultiEnumFieldType"
@@ -34,6 +31,10 @@ func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, dependantEntity *
 	template.GraphGenType = "[]string"
 	template.GraphGenToMapper = fmt.Sprintf("Map%sToModel(i.%s)", pl.Singular(helpers.ToCamelCase(name)), helpers.ToCamelCase(f.Identifier))
 	template.GraphGenFromMapper = fmt.Sprintf("Map%sFromModel(i.%s)", pl.Singular(helpers.ToCamelCase(name)), helpers.ToCamelCase(f.Identifier))
+	if dependantEntity != nil {
+		template.GraphGenToMapper = fmt.Sprintf("Map%s%sToModel(i.%s)", pl.Singular(helpers.ToCamelCase(dependantEntity.Identifier)), pl.Singular(helpers.ToCamelCase(name)), helpers.ToCamelCase(f.Identifier))
+		template.GraphGenFromMapper = fmt.Sprintf("Map%s%sFromModel(i.%s)", pl.Singular(helpers.ToCamelCase(dependantEntity.Identifier)), pl.Singular(helpers.ToCamelCase(name)), helpers.ToCamelCase(f.Identifier))
+	}
 
 	// proto
 	protoType := helpers.ToCamelCase(fmt.Sprintf("%s_%s", pl.Singular(e.Identifier), pl.Singular(f.Identifier)))

@@ -1,8 +1,8 @@
 package custom 
 
 import (    
-    "{{.ProjectName}}/core/module/{{.EntityIdentifier}}/types"
-    {{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"
+    "{{.ProjectIdentifier}}/core/module/{{.EntityIdentifier}}/types"
+    {{.ProjectIdentifier}}db "{{.ProjectIdentifier}}/core/repository/gen"
 )
 
 func {{.EntityName}}{{.Field.Name}}{{.FuncName}}Insert(req types.UpsertRequest) {{.Field.Type}} {
@@ -10,7 +10,7 @@ func {{.EntityName}}{{.Field.Name}}{{.FuncName}}Insert(req types.UpsertRequest) 
     return req.{{.Field.Name}}{{.Field.RepoToMapper}}
 }
 
-func {{.EntityName}}{{.Field.Name}}{{.FuncName}}Update(req types.UpsertRequest, existing {{.ProjectName}}db.{{.EntityName}}) {{.Field.Type}} {
+func {{.EntityName}}{{.Field.Name}}{{.FuncName}}Update(req types.UpsertRequest, existing {{.ProjectIdentifier}}db.{{.EntityName}}) {{.Field.Type}} {
     // add your custom code here
     return req.{{.Field.Name}}{{.Field.RepoToMapper}}
 }

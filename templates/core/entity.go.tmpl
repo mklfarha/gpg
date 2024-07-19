@@ -3,25 +3,23 @@ package {{.Package}}
 import (
     {{$timeImport := false}}
     "encoding/json"
-    {{range $import := .Imports}}
-    {{if eq $import "time"}} {{$timeImport = true}} {{end}}
+    {{range $import := .Imports}} {{if eq $import "time"}} {{$timeImport = true}} {{end}}
     "{{$import}}" {{end}}
     {{if eq .JSON true}}
     "fmt"
     {{end}}
-    "{{.ProjectName}}/core/entity/types"
+    "{{.ProjectIdentifier}}/core/entity/types"
     {{ if ne (len .Fields) 0 }}
-    "{{.ProjectName}}/core/randomvalues"
+    "{{.ProjectIdentifier}}/core/randomvalues"
     {{ end }}
     "math/rand"
     {{if eq $timeImport false}}
     "time"
-    {{end}}
-    
+    {{end}}        
 )
 
 type {{.EntityName}} struct { {{range $field := .Fields}}
-    {{$field.Name}} {{if eq $field.EnumMany true}}[]{{end}}{{if eq $field.JSONMany true}}[]{{end}}{{$field.Type}} {{$field.Tags}}{{end}}
+    {{$field.Name}} {{if eq $field.EnumMany true}}[]{{end}}{{if eq $field.JSONMany true}}[]{{end}}{{if eq $field.JSON true}}{{$field.JSONIdentifier}}.{{end}}{{$field.Type}} {{$field.Tags}}{{end}}
 }
 
 func (e {{.EntityName}}) String() string {
@@ -54,7 +52,7 @@ func (e {{.EntityName}}) FieldIdentfierToTypeMap() map[string]types.FieldType {
 func (e {{.EntityName}}) DependantFieldIdentifierToTypeMap() map[string]map[string]types.FieldType {
     res := make(map[string]map[string]types.FieldType)
     {{range $field := .Fields}} {{if eq $field.JSON true}}
-    res["{{$field.Identifier}}"] = {{$field.Type}}{}.FieldIdentfierToTypeMap(){{end}}{{end}}
+    res["{{$field.Identifier}}"] = {{$field.JSONIdentifier}}.{{$field.Type}}{}.FieldIdentfierToTypeMap(){{end}}{{end}}
     return res 
 }
 {{end}}

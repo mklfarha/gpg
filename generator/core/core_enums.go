@@ -12,16 +12,18 @@ import (
 	"github.com/maykel/gpg/generator/helpers"
 )
 
-func generateEnums(ctx context.Context, project entity.Project, entityDir string, e entity.Entity) {
+func generateEnums(ctx context.Context, project entity.Project, entitiesDir string, e entity.Entity) {
 	for _, f := range e.Fields {
 		if f.Type == entity.OptionsSingleFieldType || f.Type == entity.OptionsManyFieldType {
-			generateEnum(ctx, project, entityDir, e, f, nil)
+			entityDir := path.Join(entitiesDir, e.Identifier)
+			generateEnum(ctx, project, entityDir, e, f, nil, e.Identifier)
 		}
 		if f.Type == entity.JSONFieldType {
 			for _, jf := range f.JSONConfig.Fields {
 				if jf.Type == entity.OptionsSingleFieldType || jf.Type == entity.OptionsManyFieldType {
 					ft := field.ResolveFieldType(f, e, nil)
-					generateEnum(ctx, project, entityDir, e, jf, &ft)
+					entityDir := path.Join(entitiesDir, f.JSONConfig.Identifier)
+					generateEnum(ctx, project, entityDir, e, jf, &ft, f.JSONConfig.Identifier)
 				}
 			}
 		}
@@ -33,14 +35,13 @@ func generateEnum(ctx context.Context,
 	entityDir string,
 	e entity.Entity,
 	f entity.Field,
-	nestedEntity *field.Template) {
+	nestedEntity *field.Template,
+	pkg string) {
 
 	ft := field.ResolveFieldType(f, e, nestedEntity)
 
 	name := ft.SingularIdentifier
-	if nestedEntity != nil {
-		name = fmt.Sprintf("%s_%s", nestedEntity.SingularIdentifier, name)
-	}
+
 	fmt.Printf("----[GPG] Generating enum: %s\n", name)
 
 	values := make([]string, len(f.OptionValues))
@@ -49,12 +50,12 @@ func generateEnum(ctx context.Context,
 	}
 
 	enumTemplate := EnumTemplate{
-		ProjectName:   project.Identifier,
-		Package:       e.Identifier,
-		EnumName:      helpers.ToCamelCase(name),
-		EnumNameUpper: strings.ToUpper(name),
-		Values:        values,
-		Options:       f.OptionValues,
+		ProjectIdentifier: project.Identifier,
+		Package:           pkg,
+		EnumName:          helpers.ToCamelCase(name),
+		EnumNameUpper:     strings.ToUpper(name),
+		Values:            values,
+		Options:           f.OptionValues,
 	}
 
 	generator.GenerateFile(

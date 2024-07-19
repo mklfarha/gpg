@@ -37,7 +37,7 @@ func GenerateCoreModules(ctx context.Context, rootPath string, project entity.Pr
 	for _, e := range project.Entities {
 		selects := repo.ResolveSelectStatements(project, e)
 		searchFields := GetSearchFields(e)
-		fields, imports := field.ResolveFieldsAndImports(e.Fields, e, nil)
+		fields, imports := field.ResolveFieldsAndImports(project, e.Fields, e, nil)
 
 		req := coreSubModuleRequest{
 			Project:      project,
@@ -98,9 +98,9 @@ func GenerateCoreModules(ctx context.Context, rootPath string, project entity.Pr
 		OutputFile:   path.Join(entityRandomValuesDir, "randomvalues.go"),
 		TemplateName: path.Join("core", "random_values"),
 		Data: struct {
-			ProjectName string
+			ProjectIdentifier string
 		}{
-			ProjectName: project.Identifier,
+			ProjectIdentifier: project.Identifier,
 		},
 	})
 

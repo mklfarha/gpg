@@ -4,9 +4,9 @@ import (
     "context"
     "fmt"
 
-    "{{.ProjectName}}/core/module/{{.EntityIdentifier}}/types"
-    {{.ProjectName}}db "{{.ProjectName}}/core/repository/gen"
-    "{{.ProjectName}}/monitoring"
+    "{{.ProjectIdentifier}}/core/module/{{.EntityIdentifier}}/types"
+    {{.ProjectIdentifier}}db "{{.ProjectIdentifier}}/core/repository/gen"
+    "{{.ProjectIdentifier}}/monitoring"
 )
 
 func (m *module) Search(
@@ -15,7 +15,7 @@ func (m *module) Search(
     limit int32, 
     offset int32,
 ) (types.Search{{.EntityName}}Response, error) {
-    request := {{.ProjectName}}db.Search{{.EntityName}}Params{ {{range $field := .SearchFields}}
+    request := {{.ProjectIdentifier}}db.Search{{.EntityName}}Params{ {{range $field := .SearchFields}}
             {{$field.Name}}: fmt.Sprintf("%%%s%%", query),{{end}}
             Offset: offset,
             Limit: limit,            

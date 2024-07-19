@@ -11,14 +11,35 @@ import (
 
 func generateMapper(ctx context.Context, graphDir string, project entity.Project, res graphGenEntitiesResponse) error {
 	fmt.Printf("----[GPG][GraphQL] Mapper\n")
-	return generator.GenerateFile(ctx, generator.FileRequest{
+	err := generator.GenerateFile(ctx, generator.FileRequest{
 		OutputFile:   path.Join(graphDir, "mapper", "mapper.go"),
 		TemplateName: path.Join("graph", "graph_mapper"),
-		Data: GraphQueriesTemplate{
-			ProjectName:  project.Identifier,
-			Entities:     res.EntityTemplates,
-			JSONEntities: res.JsonEntityTemplates,
-			Enums:        res.EnumTemplates,
-		},
 	})
+	if err != nil {
+		return err
+	}
+
+	for _, e := range res.EntityTemplates {
+		err = generator.GenerateFile(ctx, generator.FileRequest{
+			OutputFile:   path.Join(graphDir, "mapper", fmt.Sprintf("mapper_%s.go", e.Identifier)),
+			TemplateName: path.Join("graph", "graph_mapper_entity"),
+			Data:         e,
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, e := range res.JsonEntityTemplates {
+		err = generator.GenerateFile(ctx, generator.FileRequest{
+			OutputFile:   path.Join(graphDir, "mapper", fmt.Sprintf("mapper_%s.go", e.Identifier)),
+			TemplateName: path.Join("graph", "graph_mapper_entity"),
+			Data:         e,
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
