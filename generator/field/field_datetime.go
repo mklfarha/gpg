@@ -29,7 +29,7 @@ func DatetimeFieldTemplate(f entity.Field, e entity.Entity) Template {
 	template.GraphGenFromMapper = fmt.Sprintf("ParseTime(i.%s)", helpers.ToCamelCase(f.Identifier))
 	template.GraphGenFromMapperOptional = fmt.Sprintf("ParseTimeFromPointer(i.%s)", helpers.ToCamelCase(f.Identifier))
 	if !f.Required {
-		//template.GraphGenToMapper = fmt.Sprintf("FormatTimeToPointer(i.%s)", helpers.ToCamelCase(f.Identifier))
+		template.GraphGenToMapper = fmt.Sprintf("FormatTimeToPointer(i.%s)", helpers.ToCamelCase(f.Identifier))
 		template.GraphGenFromMapper = template.GraphGenFromMapperOptional
 	}
 

@@ -28,7 +28,7 @@ func executeSkeema(ctx context.Context, project entity.Project, sqlDir string) e
 	var stderr bytes.Buffer
 
 	fmt.Printf("----[GPG][Skeema] Sync DB - Diff \n")
-	cmd := exec.Command("go", "run", "github.com/skeema/skeema", "diff")
+	cmd := exec.Command("go", "run", "github.com/skeema/skeema", "diff", "--allow-unsafe")
 	cmd.Dir = path.Join(sqlDir, "schemas")
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr

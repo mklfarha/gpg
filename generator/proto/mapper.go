@@ -15,7 +15,7 @@ import (
 func generateEntityMapper(ctx context.Context, dir string, et ProtoEntityTemplate) error {
 	err := generator.GenerateFile(ctx, generator.FileRequest{
 		OutputFile:      path.Join(dir, fmt.Sprintf("%s.go", strcase.ToSnake(et.FinalIdentifier))),
-		TemplateName:    path.Join("proto", "model_mapper"),
+		TemplateName:    path.Join("proto", "mapper_entity"),
 		Data:            et,
 		DisableGoFormat: false,
 		Funcs: template.FuncMap{
@@ -32,8 +32,8 @@ func generateEntityMapper(ctx context.Context, dir string, et ProtoEntityTemplat
 func generateMappers(ctx context.Context, protoDir string, _ entity.Project, standaloneEntities []ProtoEntityTemplate, dependantEntities map[string][]ProtoEntityTemplate) error {
 	fmt.Printf("--[GPG][Proto] Generating mappers\n")
 	err := generator.GenerateFile(ctx, generator.FileRequest{
-		OutputFile:      path.Join(protoDir, "mapper", "json.go"),
-		TemplateName:    path.Join("proto", "mapper_json"),
+		OutputFile:      path.Join(protoDir, "mapper", "mapper.go"),
+		TemplateName:    path.Join("proto", "mapper_base"),
 		DisableGoFormat: false,
 	})
 	if err != nil {
@@ -41,7 +41,7 @@ func generateMappers(ctx context.Context, protoDir string, _ entity.Project, sta
 	}
 
 	for _, et := range standaloneEntities {
-		dir := path.Join(protoDir, "mapper", et.FinalIdentifier)
+		dir := path.Join(protoDir, "mapper")
 		err := generateEntityMapper(ctx, dir, et)
 		if err != nil {
 			return err

@@ -46,9 +46,11 @@ func generateEntityProtoFile(
 					}
 				}
 				if f.Type == entity.JSONFieldType {
-					if len(f.JSONConfig.Fields) > 0 {
-						nested = append(nested, f)
+					if len(f.JSONConfig.Fields) > 0 || f.JSONConfig.Reuse {
 						imports[fmt.Sprintf("%s.proto", strcase.ToSnake(fieldTemplate.ProtoType))] = nil
+					}
+					if len(f.JSONConfig.Fields) > 0 && !f.JSONConfig.Reuse {
+						nested = append(nested, f)
 					}
 				}
 				if f.Type == entity.DateFieldType || f.Type == entity.DateTimeFieldType {
@@ -63,9 +65,7 @@ func generateEntityProtoFile(
 		primaryKey := field.ResolveFieldType(helpers.EntityPrimaryKey(e), e, nil)
 
 		finalIdentifier := strcase.ToSnake(e.Identifier)
-		if dependantEntity != nil && dependantEntity.EntityIdentifier != "" {
-			finalIdentifier = fmt.Sprintf("%s_%s", dependantEntity.EntityIdentifier, dependantEntity.SingularIdentifier)
-		}
+
 		versionField := core.VersionField(fields)
 		hasVersionField := false
 		if versionField != nil {
@@ -90,7 +90,7 @@ func generateEntityProtoFile(
 
 		err = generator.GenerateFile(ctx, generator.FileRequest{
 			OutputFile:      path.Join(protoDir, "proto", fmt.Sprintf("%s.proto", finalIdentifier)),
-			TemplateName:    path.Join("proto", "proto_model"),
+			TemplateName:    path.Join("proto", "proto_entity"),
 			Data:            entityTemplate,
 			DisableGoFormat: true,
 			Funcs: template.FuncMap{
@@ -102,7 +102,6 @@ func generateEntityProtoFile(
 }
 
 func generateProtoFiles(ctx context.Context, protoDir string, project entity.Project) (standaloneEntityTemplates []ProtoEntityTemplate, dependantEntityTemplates map[string][]ProtoEntityTemplate, returnErr error) {
-
 	standaloneEntityTemplates = []ProtoEntityTemplate{}
 	dependantEntityTemplates = map[string][]ProtoEntityTemplate{}
 	//generate entities/models
@@ -122,8 +121,9 @@ func generateProtoFiles(ctx context.Context, protoDir string, project entity.Pro
 			ft := field.ResolveFieldType(n, e, &field.Template{
 				Identifier: n.Identifier,
 			})
+			entityIdentifier := n.JSONConfig.Identifier
 			nestedTemplate, _, err := generateEntityProtoFile(ctx, protoDir, project, entity.Entity{
-				Identifier: ft.Identifier,
+				Identifier: entityIdentifier,
 				Fields:     n.JSONConfig.Fields,
 			}, e.Identifier, &ft)
 			if err != nil {

@@ -36,12 +36,13 @@ func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, dependantEntity
 	template.GraphGenFromMapperParam = fmt.Sprintf("%sentity.%sFromString(%s)", e.Identifier, helpers.ToCamelCase(f.Identifier), f.Identifier)
 	template.GraphGenFromMapper = fmt.Sprintf("%s.%sFromString(i.%s)", e.Identifier, pl.Singular(helpers.ToCamelCase(name)), helpers.ToCamelCase(f.Identifier))
 	template.GraphGenFromMapperOptional = fmt.Sprintf("%s.%sFromPointerString(i.%s)", e.Identifier, pl.Singular(helpers.ToCamelCase(name)), helpers.ToCamelCase(f.Identifier))
+	if dependantEntity != nil {
+		template.GraphGenFromMapper = fmt.Sprintf("%s.%sFromString(i.%s)", pl.Singular(dependantEntity.Identifier), pl.Singular(helpers.ToCamelCase(name)), helpers.ToCamelCase(f.Identifier))
+		template.GraphGenFromMapperOptional = fmt.Sprintf("%s.%sFromPointerString(i.%s)", pl.Singular(dependantEntity.Identifier), pl.Singular(helpers.ToCamelCase(name)), helpers.ToCamelCase(f.Identifier))
+	}
 
 	//proto
 	protoType := helpers.ToCamelCase(fmt.Sprintf("%s_%s", pl.Singular(e.Identifier), pl.Singular(f.Identifier)))
-	if dependantEntity != nil && dependantEntity.EntityIdentifier != "" {
-		protoType = helpers.ToCamelCase(fmt.Sprintf("%s_%s", dependantEntity.EntityIdentifier, protoType))
-	}
 	template.ProtoType = protoType
 	template.ProtoEnumOptions = helpers.ProtoEnumOptions(protoType, f.OptionValues)
 	template.ProtoToMapper = fmt.Sprintf("pb.%s(e.%s)", protoType, pl.Singular(helpers.ToCamelCase(f.Identifier)))

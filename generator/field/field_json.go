@@ -19,8 +19,8 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, dependant bool) Template
 		stringTemplate.GraphGenToMapper = fmt.Sprintf("StringFromJsonRaw(%s)", stringTemplate.GraphGenToMapper)
 		stringTemplate.GraphGenFromMapper = strings.ReplaceAll(stringTemplate.GraphGenFromMapper, "StringFromPointer", "JsonRawFromString")
 		stringTemplate.GraphGenFromMapperOptional = strings.ReplaceAll(stringTemplate.GraphGenFromMapperOptional, "StringFromPointer", "JsonRawFromString")
-		stringTemplate.ProtoToMapper = fmt.Sprintf("mapper.JSONRawToString(%s)", stringTemplate.ProtoToMapper)
-		stringTemplate.ProtoFromMapper = fmt.Sprintf("mapper.StringToJSONRaw(%s)", stringTemplate.ProtoFromMapper)
+		stringTemplate.ProtoToMapper = fmt.Sprintf("JSONRawToString(%s)", stringTemplate.ProtoToMapper)
+		stringTemplate.ProtoFromMapper = fmt.Sprintf("StringToJSONRaw(%s)", stringTemplate.ProtoFromMapper)
 		return stringTemplate
 	}
 
@@ -64,14 +64,17 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, dependant bool) Template
 	template.GraphOutType = fmt.Sprintf("%s%s", graphOutType, template.GraphRequired)
 	template.GraphGenType = helpers.ToCamelCase(fullName)
 	template.GraphGenToMapper = fmt.Sprintf("Map%s(i.%s)", helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
+	if jsonMany {
+		template.GraphGenToMapper = fmt.Sprintf("Map%sSlice(i.%s)", helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
+	}
 	template.GraphGenFromMapperParam = ""
 	template.GraphGenFromMapper = fmt.Sprintf("Map%sInput(i.%s)", helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
 	template.GraphGenFromMapperOptional = fmt.Sprintf("Map%sInput(i.%s)", helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
 
 	// proto
 	template.ProtoType = helpers.ToCamelCase(fullName)
-	template.ProtoToMapper = fmt.Sprintf("%sSliceToProto(e.%s)", helpers.ToCamelCase(f.Identifier), helpers.ToCamelCase(f.Identifier))
-	template.ProtoFromMapper = fmt.Sprintf("%sSliceFromProto(m.Get%s())", helpers.ToCamelCase(f.Identifier), strcase.ToCamel(f.Identifier))
+	template.ProtoToMapper = fmt.Sprintf("%sSliceToProto(e.%s)", helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
+	template.ProtoFromMapper = fmt.Sprintf("%sSliceFromProto(m.Get%s())", helpers.ToCamelCase(fullName), strcase.ToCamel(f.Identifier))
 
 	return template
 }

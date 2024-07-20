@@ -52,12 +52,12 @@ func ArrayFieldTemplate(f entity.Field, e entity.Entity) Template {
 	//proto
 	template.ProtoType = fmt.Sprintf("repeated %s", arrayTypeTemplate.ProtoType)
 	if arrayTypeTemplate.InternalType == entity.UUIDFieldType {
-		template.ProtoToMapper = fmt.Sprintf("mapper.UUIDSliceToStringSlice(e.%s)", helpers.ToCamelCase(f.Identifier))
-		template.ProtoFromMapper = fmt.Sprintf("mapper.StringSliceToUUIDSlice(m.Get%s())", strcase.ToCamel(f.Identifier))
+		template.ProtoToMapper = fmt.Sprintf("UUIDSliceToStringSlice(e.%s)", helpers.ToCamelCase(f.Identifier))
+		template.ProtoFromMapper = fmt.Sprintf("StringSliceToUUIDSlice(m.Get%s())", strcase.ToCamel(f.Identifier))
 	}
 	if arrayTypeTemplate.InternalType == entity.DateFieldType || arrayTypeTemplate.InternalType == entity.DateTimeFieldType {
-		template.ProtoToMapper = fmt.Sprintf("mapper.TimeSliceToProtoTimeSlice(e.%s)", helpers.ToCamelCase(f.Identifier))
-		template.ProtoFromMapper = fmt.Sprintf("mapper.ProtoTimeSliceToTimeSlice(m.Get%s())", strcase.ToCamel(f.Identifier))
+		template.ProtoToMapper = fmt.Sprintf("TimeSliceToProtoTimeSlice(e.%s)", helpers.ToCamelCase(f.Identifier))
+		template.ProtoFromMapper = fmt.Sprintf("ProtoTimeSliceToTimeSlice(m.Get%s())", strcase.ToCamel(f.Identifier))
 	}
 
 	return template

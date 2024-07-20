@@ -5,7 +5,7 @@ import (
 	"errors"
 	"{{.ProjectIdentifier}}/core/module/{{.FinalIdentifier}}/types"
 	pb "{{.ProjectIdentifier}}/idl/gen"
-	pbmapper "{{.ProjectIdentifier}}/idl/mapper/{{.FinalIdentifier}}"
+	pbmapper "{{.ProjectIdentifier}}/idl/mapper"
 	"{{.ProjectIdentifier}}/monitoring"
 	"go.einride.tech/aip/fieldmask"
 	"strings"	
@@ -56,7 +56,7 @@ func (s *server) Update{{.Name}}(ctx context.Context, req *pb.Update{{.Name}}Req
 	}
 
 	res, err := s.core.{{.Name}}().Update(ctx, types.UpsertRequest{
-		{{.Name}}: pbmapper.{{.Name}}ProtoToEntity(req.Get{{.Name}}()),
+		{{.Name}}: pbmapper.{{.Name}}FromProto(req.Get{{.Name}}()),
 	}, !isFull)
 	if err != nil {
 		s.monitoring.Emit(monitoring.EmitRequest{
@@ -111,5 +111,5 @@ func (s *server) Update{{.Name}}(ctx context.Context, req *pb.Update{{.Name}}Req
 		Type: monitoring.EmitTypeSuccess,
 		Data: req,				
 	})
-	return pbmapper.{{.Name}}EntityToProto(fetchRes.Results[0]), nil
+	return pbmapper.{{.Name}}ToProto(fetchRes.Results[0]), nil
 }

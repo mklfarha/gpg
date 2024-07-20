@@ -1,0 +1,88 @@
+package mapper 
+
+{{$mainEntityIdentifier := .Identifier}}
+{{$mainEntityType := .EntityType}}
+import (    
+    "{{.ProjectIdentifier}}/graph/model"    
+    "{{.ProjectIdentifier}}/core/entity/{{.Identifier}}"
+    {{if ne .JSON true}}
+    "{{.ProjectIdentifier}}/core/module/{{.Identifier}}/types"    
+    {{end}}
+)
+
+func Map{{.GraphGenType}}(i {{.Identifier}}.{{.EntityType}}) *model.{{.GraphGenType}} {
+    return &model.{{.GraphGenType}}{ {{range $field := .OutFields}}
+        {{$field.GraphModelName}}: {{$field.GraphGenToMapper}},{{end}}           
+    }
+}
+
+func Map{{.GraphGenType}}Slice(in []{{.Identifier}}.{{.EntityType}}) []*model.{{.EntityType}} {
+    res := []*model.{{.EntityType}}{}
+    for _, item := range in {
+        i := item
+        res = append(res,Map{{.GraphGenType}}(i))
+    }
+    return res
+}
+
+{{if eq .JSONMany true}}
+func Map{{.GraphGenType}}Input(items []{{if ne .Required true}}*{{end}}model.{{.GraphGenType}}Input) []{{.Identifier}}.{{.EntityType}} {
+    {{if ne .Required true}}
+    if items == nil {
+        return []{{.Identifier}}.{{.EntityType}}{}
+    }
+    {{end}}
+    res := []{{.Identifier}}.{{.EntityType}}{}
+    for _, item := range items {
+        i := item
+        res = append(res, {{.Identifier}}.{{.EntityType}}{ {{range $field := .OutFields}}
+       {{if eq $field.Required true}}
+        {{$field.Name}}: {{$field.GraphGenFromMapper}},{{else}}
+        {{$field.Name}}: {{$field.GraphGenFromMapperOptional}},{{end}}
+        {{end}}
+        })
+    }
+    return res     
+}
+{{end}}
+
+{{if eq .JSONMany false}}
+func Map{{.GraphGenType}}Input(i {{if ne .Required true}}*{{end}}model.{{.GraphGenType}}Input) {{.ParentIdentifier}}.{{.EntityType}} {
+    {{if ne .Required true}}
+    if i == nil {
+        return {{.Identifier}}.{{.EentityType}}{}
+    }
+    {{end}}
+    return {{.Identifier}}.{{.EntityType}}{ {{range $field := .InFields}}
+        {{if eq $field.Required true}}
+        {{$field.Name}}: {{$field.GraphGenFromMapper}},{{else}}
+        {{$field.Name}}: {{$field.GraphGenFromMapperOptional}},{{end}}
+        {{end}}
+    }
+}
+{{end}}
+
+
+{{range $field := .OutFields}}
+{{if and (eq $field.Enum true) (eq $field.EnumMany true)}}
+// enums many 
+func Map{{$mainEntityType}}{{$field.Type}}ToModel(in []{{$mainEntityIdentifier}}.{{.Type}}) []{{if eq .Required false}}*{{end}}string {
+    res := []{{if eq .Required false}}*{{end}}string{}
+    for _, i := range in {
+        {{if eq .Required true}}
+        res = append(res, i.String()){{else}}
+        res = append(res, i.StringPtr()){{end}}
+    }
+    return res
+}
+func Map{{$mainEntityType}}{{.Type}}FromModel(in []{{if eq .Required false}}*{{end}}string) []{{$mainEntityIdentifier}}.{{.Type}}{
+    res := []{{$mainEntityIdentifier}}.{{.Type}}{}
+    for _, i := range in {
+        {{if eq .Required true}}
+        res = append(res, {{$mainEntityIdentifier}}.{{.Type}}FromString(i)){{else}}
+        res = append(res, {{$mainEntityIdentifier}}.{{.Type}}FromPointerString(i)){{end}}
+    }
+    return res
+}
+{{end}}
+{{end}}

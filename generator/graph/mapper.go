@@ -33,7 +33,7 @@ func generateMapper(ctx context.Context, graphDir string, project entity.Project
 	for _, e := range res.JsonEntityTemplates {
 		err = generator.GenerateFile(ctx, generator.FileRequest{
 			OutputFile:   path.Join(graphDir, "mapper", fmt.Sprintf("mapper_%s.go", e.Identifier)),
-			TemplateName: path.Join("graph", "graph_mapper_entity"),
+			TemplateName: path.Join("graph", "graph_mapper_entity_json"),
 			Data:         e,
 		})
 		if err != nil {

@@ -1,40 +1,47 @@
-package {{.ParentIdentifier}} 
+package mapper
 
-{{$pi := .ProjectIdentifier}}
 {{$timestampImport := false}}
 {{$uuidImport := false}}
 
 import (
-    entity "{{.ProjectIdentifier}}/core/entity/{{.ParentIdentifier}}"
+    entity "{{.ProjectIdentifier}}/core/entity/{{.OrignalIdentifier}}"
     pb "{{.ProjectIdentifier}}/idl/gen"
     {{range $field := .Fields}}{{if and (eq $field.Type "time.Time") (eq $timestampImport false)}}
-    "google.golang.org/protobuf/types/known/timestamppb" {{$timestampImport = true}} {{end}}
-    {{if eq $field.JSONRaw true}}
-    "{{$pi}}/idl/mapper"{{end}}
+    "google.golang.org/protobuf/types/known/timestamppb" {{$timestampImport = true}} {{end}}    
     {{if and (eq $field.Type "uuid.UUID") (eq $uuidImport false)}}
     "github.com/gofrs/uuid" {{$uuidImport = true}}{{end}}
     {{end}}
 )
 
-func {{.Name}}EntityToProto(e entity.{{.Type}}) *pb.{{.Name}} {
+func {{.Name}}ToProto(e entity.{{.Type}}) *pb.{{.Name}} {
     return &pb.{{.Name}}{ {{range $field := .Fields}}
         {{$field.ProtoGenName}}: {{$field.ProtoToMapper}},{{end}}
     }
 }
 
-func {{.Name}}EntitiesToProto(es []entity.{{.Type}}) []*pb.{{.Name}} {
+func {{.Name}}SliceToProto(es []entity.{{.Type}}) []*pb.{{.Name}} {
     res := []*pb.{{.Name}}{}
     for _, e := range es {
-        res = append(res, {{.Name}}EntityToProto(e))
+        res = append(res, {{.Name}}ToProto(e))
     }
     return res
 }
 
-func {{.Name}}ProtoToEntity(m *pb.{{.Name}}) entity.{{.Type}} {
+func {{.Name}}FromProto(m *pb.{{.Name}}) entity.{{.Type}} {
     return entity.{{.Type}}{ {{range $field := .Fields}}
         {{$field.Name}}: {{$field.ProtoFromMapper}},{{end}}
     }
 }
+
+func {{.Name}}SliceFromProto(es []*pb.{{.Name}}) []entity.{{.Type}} {
+    res := []entity.{{.Type}}{}
+    for _, e := range es {
+        res = append(res, {{.Name}}FromProto(e))
+    }
+    return res
+}
+
+
 {{range $enum := .Enums}}{{if eq $enum.Many true}}
 func {{$enum.Field.ProtoType}}SliceToProto(s []entity.{{$enum.Field.Type}}) []pb.{{$enum.Field.ProtoType}}{
     res := []pb.{{$enum.Field.ProtoType}}{}
@@ -47,23 +54,6 @@ func {{$enum.Field.ProtoType}}SliceFromProto(s []pb.{{$enum.Field.ProtoType}}) [
     res := []entity.{{$enum.Field.Type}}{}
     for _, e := range s {
         res = append(res, entity.{{$enum.Field.Type}}(e))
-    }
-    return res
-}{{end}}
-{{end}}
-
-{{range $field := .Fields}}{{if and (eq $field.JSON true) (eq $field.JSONMany true)}}
-func {{$field.Name}}SliceToProto(s []entity.{{$field.Type}}) []*pb.{{$field.ProtoType}} {
-    res := []*pb.{{$field.ProtoType}}{}
-    for _, e := range s {
-        res = append(res, {{$field.ProtoType}}EntityToProto(e))
-    }
-    return res
-}
-func {{$field.Name}}SliceFromProto(s []*pb.{{$field.ProtoType}}) []entity.{{$field.Type}} {
-    res := []entity.{{$field.Type}}{}
-    for _, e := range s {
-        res = append(res, {{$field.ProtoType}}ProtoToEntity(e))
     }
     return res
 }{{end}}

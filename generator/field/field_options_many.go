@@ -38,9 +38,6 @@ func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, dependantEntity *
 
 	// proto
 	protoType := helpers.ToCamelCase(fmt.Sprintf("%s_%s", pl.Singular(e.Identifier), pl.Singular(f.Identifier)))
-	if dependantEntity != nil && dependantEntity.EntityIdentifier != "" {
-		protoType = helpers.ToCamelCase(fmt.Sprintf("%s_%s", dependantEntity.EntityIdentifier, protoType))
-	}
 	template.ProtoType = protoType
 	template.ProtoEnumOptions = helpers.ProtoEnumOptions(protoType, f.OptionValues)
 	template.ProtoToMapper = fmt.Sprintf("%sSliceToProto(e.%s)", protoType, helpers.ToCamelCase(f.Identifier))

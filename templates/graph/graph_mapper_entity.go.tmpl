@@ -21,7 +21,6 @@ func Map{{.EntityType}}(in []{{.Identifier}}.{{.EntityType}}) []*model.{{.Entity
     return res
 }
 
-{{if ne .JSON true}}
 func Map{{.EntityType}}Upsert(i model.{{.EntityType}}Input) types.UpsertRequest {
     return types.UpsertRequest{ 
         {{.EntityType}}:{{.Identifier}}.{{.EntityType}}{
@@ -45,7 +44,6 @@ func Map{{.EntityType}}UpsertPartial(i model.{{.EntityType}}PartialInput) types.
         },
     }
 }
-{{end}}
 
 {{range $field := .OutFields}}
 {{if and (eq $field.Enum true) (eq $field.EnumMany true)}}
