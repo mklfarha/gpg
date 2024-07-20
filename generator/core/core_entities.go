@@ -43,7 +43,7 @@ func GenerateCoreEntities(ctx context.Context, rootPath string, project entity.P
 
 	err := os.RemoveAll(entitiesDir)
 	if err != nil {
-		fmt.Printf("ERROR: Deleting module directory\n")
+		fmt.Printf("ERROR: Deleting entity directory\n")
 	}
 
 	allimports := map[string]any{}
@@ -54,7 +54,7 @@ func GenerateCoreEntities(ctx context.Context, rootPath string, project entity.P
 		fmt.Printf("----[GPG] Generating entity: %s\n", e.Identifier)
 		entityDir := path.Join(entitiesDir, e.Identifier)
 		entityTemplate, entityImports := resolveEntityTemplate(e, project)
-		for imp, _ := range entityImports {
+		for imp := range entityImports {
 			allimports[imp] = struct{}{}
 		}
 		generator.GenerateFile(ctx, generator.FileRequest{
@@ -123,7 +123,7 @@ func generateJSONEntities(ctx context.Context, entitiesDir string, e entity.Enti
 			entityTemplate := EntityTemplate{
 				ProjectIdentifier: project.Identifier,
 				Package:           f.JSONConfig.Identifier,
-				EntityName:        helpers.ToCamelCase(ft.SingularIdentifier),
+				EntityName:        helpers.ToCamelCase(ft.Type),
 				Fields:            fields,
 				Imports:           helpers.MapKeys(imports),
 				JSON:              true,
@@ -131,10 +131,17 @@ func generateJSONEntities(ctx context.Context, entitiesDir string, e entity.Enti
 			}
 
 			generator.GenerateFile(ctx, generator.FileRequest{
-				OutputFile:   path.Join(entityDir, fmt.Sprintf("%s.go", ft.SingularIdentifier)),
+				OutputFile:   path.Join(entityDir, fmt.Sprintf("%s.go", f.JSONConfig.Identifier)),
 				TemplateName: path.Join("core", "entity"),
 				Data:         entityTemplate,
 			})
+
+			if f.HasNestedJsonFields() {
+				generateJSONEntities(ctx, entitiesDir, entity.Entity{
+					Identifier: f.JSONConfig.Identifier,
+					Fields:     f.JSONConfig.Fields,
+				}, project)
+			}
 		}
 	}
 }

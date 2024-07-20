@@ -37,8 +37,8 @@ func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, dependantEntity
 	template.GraphGenFromMapper = fmt.Sprintf("%s.%sFromString(i.%s)", e.Identifier, pl.Singular(helpers.ToCamelCase(name)), helpers.ToCamelCase(f.Identifier))
 	template.GraphGenFromMapperOptional = fmt.Sprintf("%s.%sFromPointerString(i.%s)", e.Identifier, pl.Singular(helpers.ToCamelCase(name)), helpers.ToCamelCase(f.Identifier))
 	if dependantEntity != nil {
-		template.GraphGenFromMapper = fmt.Sprintf("%s.%sFromString(i.%s)", pl.Singular(dependantEntity.Identifier), pl.Singular(helpers.ToCamelCase(name)), helpers.ToCamelCase(f.Identifier))
-		template.GraphGenFromMapperOptional = fmt.Sprintf("%s.%sFromPointerString(i.%s)", pl.Singular(dependantEntity.Identifier), pl.Singular(helpers.ToCamelCase(name)), helpers.ToCamelCase(f.Identifier))
+		template.GraphGenFromMapper = fmt.Sprintf("%s.%sFromString(i.%s)", pl.Singular(dependantEntity.JSONIdentifier), pl.Singular(helpers.ToCamelCase(name)), helpers.ToCamelCase(f.Identifier))
+		template.GraphGenFromMapperOptional = fmt.Sprintf("%s.%sFromPointerString(i.%s)", pl.Singular(dependantEntity.JSONIdentifier), pl.Singular(helpers.ToCamelCase(name)), helpers.ToCamelCase(f.Identifier))
 	}
 
 	//proto

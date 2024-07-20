@@ -34,7 +34,7 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, dependant bool) Template
 	}
 
 	//base
-	template.Type = helpers.ToCamelCase(template.SingularIdentifier)
+	template.Type = helpers.ToCamelCase(fullName)
 	template.InternalType = entity.JSONFieldType
 	template.JSON = true
 	template.JSONMany = jsonMany

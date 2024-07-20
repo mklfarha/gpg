@@ -35,32 +35,35 @@ func generateEntityProtoFile(
 		for _, f := range e.Fields {
 			fieldTemplate := field.ResolveFieldType(f, e, dependantEntity)
 			fields = append(fields, fieldTemplate)
-			for _, field := range fields {
-				if field.Enum {
-					if _, found := enums[field.ProtoType]; !found {
-						enums[field.ProtoType] = ProtoEnumTemplate{
-							Field:   field,
-							Many:    field.EnumMany,
-							Options: field.ProtoEnumOptions,
-						}
-					}
+
+			if f.Type == entity.JSONFieldType {
+				if len(f.JSONConfig.Fields) > 0 || f.JSONConfig.Reuse {
+					imports[fmt.Sprintf("%s.proto", strcase.ToSnake(fieldTemplate.ProtoType))] = nil
 				}
-				if f.Type == entity.JSONFieldType {
-					if len(f.JSONConfig.Fields) > 0 || f.JSONConfig.Reuse {
-						imports[fmt.Sprintf("%s.proto", strcase.ToSnake(fieldTemplate.ProtoType))] = nil
-					}
-					if len(f.JSONConfig.Fields) > 0 && !f.JSONConfig.Reuse {
-						nested = append(nested, f)
-					}
+				if len(f.JSONConfig.Fields) > 0 && !f.JSONConfig.Reuse {
+					nested = append(nested, f)
 				}
-				if f.Type == entity.DateFieldType || f.Type == entity.DateTimeFieldType {
-					imports["google/protobuf/timestamp.proto"] = nil
-				}
+			}
+			if f.Type == entity.DateFieldType || f.Type == entity.DateTimeFieldType {
+				imports["google/protobuf/timestamp.proto"] = nil
 			}
 
 			if f.StorageConfig.Search {
 				searchable = true
 			}
+		}
+
+		for _, field := range fields {
+			if field.Enum {
+				if _, found := enums[field.ProtoType]; !found {
+					enums[field.ProtoType] = ProtoEnumTemplate{
+						Field:   field,
+						Many:    field.EnumMany,
+						Options: field.ProtoEnumOptions,
+					}
+				}
+			}
+
 		}
 		primaryKey := field.ResolveFieldType(helpers.EntityPrimaryKey(e), e, nil)
 
@@ -116,21 +119,11 @@ func generateProtoFiles(ctx context.Context, protoDir string, project entity.Pro
 			return
 		}
 		standaloneEntityTemplates = append(standaloneEntityTemplates, template)
-		nestedTemplates := []ProtoEntityTemplate{}
-		for _, n := range nested {
-			ft := field.ResolveFieldType(n, e, &field.Template{
-				Identifier: n.Identifier,
-			})
-			entityIdentifier := n.JSONConfig.Identifier
-			nestedTemplate, _, err := generateEntityProtoFile(ctx, protoDir, project, entity.Entity{
-				Identifier: entityIdentifier,
-				Fields:     n.JSONConfig.Fields,
-			}, e.Identifier, &ft)
-			if err != nil {
-				returnErr = err
-				return
-			}
-			nestedTemplates = append(nestedTemplates, nestedTemplate)
+
+		nestedTemplates, err := handleNestedEntities(ctx, protoDir, project, e, nested)
+		if err != nil {
+			returnErr = err
+			return
 		}
 		dependantEntityTemplates[template.OrignalIdentifier] = nestedTemplates
 	}
@@ -157,4 +150,34 @@ func generateProtoFiles(ctx context.Context, protoDir string, project entity.Pro
 	}
 
 	return
+}
+
+func handleNestedEntities(ctx context.Context, protoDir string, project entity.Project, e entity.Entity, jsonFields []entity.Field) ([]ProtoEntityTemplate, error) {
+	nestedTemplates := []ProtoEntityTemplate{}
+	for _, f := range jsonFields {
+		ft := field.ResolveFieldType(f, e, &field.Template{
+			Identifier: f.Identifier,
+		})
+		entityIdentifier := f.JSONConfig.Identifier
+		nestedTemplate, _, err := generateEntityProtoFile(ctx, protoDir, project, entity.Entity{
+			Identifier: entityIdentifier,
+			Fields:     f.JSONConfig.Fields,
+		}, e.Identifier, &ft)
+		if err != nil {
+			return nil, err
+		}
+		nestedTemplates = append(nestedTemplates, nestedTemplate)
+
+		if f.HasNestedJsonFields() {
+			res, err := handleNestedEntities(ctx, protoDir, project, entity.Entity{
+				Identifier: f.JSONConfig.Identifier,
+				Fields:     f.JSONConfig.Fields,
+			}, f.NestedJsonFields())
+			if err != nil {
+				return nestedTemplates, err
+			}
+			nestedTemplates = append(nestedTemplates, res...)
+		}
+	}
+	return nestedTemplates, nil
 }

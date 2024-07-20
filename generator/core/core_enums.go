@@ -26,8 +26,16 @@ func generateEnums(ctx context.Context, project entity.Project, entitiesDir stri
 					generateEnum(ctx, project, entityDir, e, jf, &ft, f.JSONConfig.Identifier)
 				}
 			}
+
+			if f.HasNestedJsonFields() {
+				generateEnums(ctx, project, entitiesDir, entity.Entity{
+					Identifier: f.JSONConfig.Identifier,
+					Fields:     f.JSONConfig.Fields,
+				})
+			}
 		}
 	}
+
 }
 
 func generateEnum(ctx context.Context,

@@ -46,3 +46,29 @@ type ArrayConfig struct {
 	Type      FieldType `json:"type"`
 	EntityRef string    `json:"entity_ref"`
 }
+
+func (f Field) HasNestedJsonFields() bool {
+	if f.Type != JSONFieldType || f.JSONConfig.Reuse {
+		return false
+	}
+	hasNestedJSONField := false
+	for _, jf := range f.JSONConfig.Fields {
+		if jf.Type == JSONFieldType && !jf.JSONConfig.Reuse && len(jf.JSONConfig.Fields) > 0 {
+			hasNestedJSONField = true
+		}
+	}
+	return hasNestedJSONField
+}
+
+func (f Field) NestedJsonFields() []Field {
+	if f.Type != JSONFieldType || f.JSONConfig.Reuse {
+		return []Field{}
+	}
+	nestedJSONField := []Field{}
+	for _, jf := range f.JSONConfig.Fields {
+		if jf.Type == JSONFieldType && !jf.JSONConfig.Reuse && len(jf.JSONConfig.Fields) > 0 {
+			nestedJSONField = append(nestedJSONField, jf)
+		}
+	}
+	return nestedJSONField
+}

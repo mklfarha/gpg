@@ -29,6 +29,7 @@ func generateEntities(ctx context.Context, graphDir string, project entity.Proje
 		inFields := []field.Template{}
 		outFields := []field.Template{}
 		searchable := false
+
 		for _, f := range e.Fields {
 			fieldTemplate := field.ResolveFieldType(f, e, nil)
 			if !helpers.EntityContainsOperation(f.Hidden.API, entity.SelectOperation) {
@@ -36,42 +37,6 @@ func generateEntities(ctx context.Context, graphDir string, project entity.Proje
 			}
 			if !helpers.EntityContainsOperation(f.Hidden.API, entity.UpsertOperation) {
 				inFields = append(inFields, fieldTemplate)
-			}
-
-			if f.Type == entity.JSONFieldType {
-				ft := field.ResolveFieldType(f, e, &field.Template{
-					Identifier: f.Identifier,
-				})
-				if !f.JSONConfig.Reuse && len(f.JSONConfig.Fields) > 0 {
-					fields, _ := field.ResolveFieldsAndImports(project, f.JSONConfig.Fields, e, &ft)
-					jsonEntityTemplate := GraphEntityTemplate{
-						ProjectIdentifier: project.Identifier,
-						Identifier:        f.JSONConfig.Identifier,
-						EntityType:        ft.Type,
-						EntityTypePlural:  pl.Plural(ft.Type),
-						JSON:              true,
-						JSONMany:          f.JSONConfig.Type == entity.ManyJSONConfigType,
-						Required:          f.Required,
-						GraphGenType:      ft.GraphGenType,
-						ParentIdentifier:  e.Identifier,
-						ParentEntityName:  helpers.ToCamelCase(e.Identifier),
-						InFields:          fields,
-						OutFields:         fields,
-					}
-					generator.GenerateFile(ctx, generator.FileRequest{
-						OutputFile:      path.Join(graphDir, "gqls", fmt.Sprintf("model_%s.graphqls", f.JSONConfig.Identifier)),
-						TemplateName:    path.Join("graph", "graph_entity"),
-						Data:            jsonEntityTemplate,
-						DisableGoFormat: true,
-					})
-					jsonEntityTemplates = append(jsonEntityTemplates, jsonEntityTemplate)
-					for _, fn := range fields {
-						if fn.InternalType == entity.OptionsSingleFieldType || fn.InternalType == entity.OptionsManyFieldType {
-							enumTemplates = append(enumTemplates, fn)
-						}
-
-					}
-				}
 			}
 
 			if f.Type == entity.OptionsSingleFieldType || f.Type == entity.OptionsManyFieldType {
@@ -82,6 +47,7 @@ func generateEntities(ctx context.Context, graphDir string, project entity.Proje
 				searchable = true
 			}
 		}
+
 		entityTemplate := GraphEntityTemplate{
 			ProjectIdentifier: project.Identifier,
 			Identifier:        e.Identifier,
@@ -106,10 +72,78 @@ func generateEntities(ctx context.Context, graphDir string, project entity.Proje
 		selects := repo.ResolveSelectStatements(project, e)
 		entityTemplate.Selects = selects
 		entityTemplates = append(entityTemplates, entityTemplate)
+
+		res, err := generateJSONEntities(ctx, graphDir, project, e)
+		if err != nil {
+			return graphGenEntitiesResponse{}, err
+		}
+		jsonEntityTemplates = append(jsonEntityTemplates, res.JsonEntityTemplates...)
+		enumTemplates = append(enumTemplates, res.EnumTemplates...)
 	}
 
 	return graphGenEntitiesResponse{
 		EntityTemplates:     entityTemplates,
+		JsonEntityTemplates: jsonEntityTemplates,
+		EnumTemplates:       enumTemplates,
+	}, nil
+}
+
+func generateJSONEntities(ctx context.Context, graphDir string, project entity.Project, e entity.Entity) (graphGenEntitiesResponse, error) {
+	pl := pluralize.NewClient()
+	jsonEntityTemplates := []GraphEntityTemplate{}
+	enumTemplates := []field.Template{}
+	for _, f := range e.Fields {
+		if f.Type == entity.JSONFieldType {
+			ft := field.ResolveFieldType(f, e, &field.Template{
+				Identifier: f.Identifier,
+			})
+			if !f.JSONConfig.Reuse && len(f.JSONConfig.Fields) > 0 {
+				fields, _ := field.ResolveFieldsAndImports(project, f.JSONConfig.Fields, e, &ft)
+				jsonEntityTemplate := GraphEntityTemplate{
+					ProjectIdentifier: project.Identifier,
+					Identifier:        f.JSONConfig.Identifier,
+					EntityType:        ft.Type,
+					EntityTypePlural:  pl.Plural(ft.Type),
+					JSON:              true,
+					JSONMany:          f.JSONConfig.Type == entity.ManyJSONConfigType,
+					Required:          f.Required,
+					GraphGenType:      ft.GraphGenType,
+					ParentIdentifier:  e.Identifier,
+					ParentEntityName:  helpers.ToCamelCase(e.Identifier),
+					InFields:          fields,
+					OutFields:         fields,
+				}
+				generator.GenerateFile(ctx, generator.FileRequest{
+					OutputFile:      path.Join(graphDir, "gqls", fmt.Sprintf("model_%s.graphqls", f.JSONConfig.Identifier)),
+					TemplateName:    path.Join("graph", "graph_entity"),
+					Data:            jsonEntityTemplate,
+					DisableGoFormat: true,
+				})
+				jsonEntityTemplates = append(jsonEntityTemplates, jsonEntityTemplate)
+				for _, fn := range fields {
+					if fn.InternalType == entity.OptionsSingleFieldType || fn.InternalType == entity.OptionsManyFieldType {
+						enumTemplates = append(enumTemplates, fn)
+					}
+
+				}
+			}
+
+			if f.HasNestedJsonFields() {
+				res, err := generateJSONEntities(ctx, graphDir, project, entity.Entity{
+					Identifier: f.JSONConfig.Identifier,
+					Fields:     f.JSONConfig.Fields,
+				})
+				if err != nil {
+					return graphGenEntitiesResponse{}, err
+				}
+				jsonEntityTemplates = append(jsonEntityTemplates, res.JsonEntityTemplates...)
+				enumTemplates = append(enumTemplates, res.EnumTemplates...)
+			}
+		}
+	}
+
+	return graphGenEntitiesResponse{
+		EntityTemplates:     []GraphEntityTemplate{},
 		JsonEntityTemplates: jsonEntityTemplates,
 		EnumTemplates:       enumTemplates,
 	}, nil
