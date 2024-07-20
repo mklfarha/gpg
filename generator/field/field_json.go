@@ -68,13 +68,29 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, dependant bool) Template
 		template.GraphGenToMapper = fmt.Sprintf("Map%sSlice(i.%s)", helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
 	}
 	template.GraphGenFromMapperParam = ""
-	template.GraphGenFromMapper = fmt.Sprintf("Map%sInput(i.%s)", helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
-	template.GraphGenFromMapperOptional = fmt.Sprintf("Map%sInput(i.%s)", helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
+	slice := ""
+	if jsonMany {
+		slice = "Slice"
+	}
+	template.GraphGenFromMapper = fmt.Sprintf("Map%s%sInput(i.%s)",
+		helpers.ToCamelCase(fullName),
+		slice,
+		helpers.ToCamelCase(f.Identifier))
+	template.GraphGenFromMapperOptional = fmt.Sprintf("Map%s%sInputOptional(i.%s)",
+		helpers.ToCamelCase(fullName),
+		slice,
+		helpers.ToCamelCase(f.Identifier))
 
 	// proto
 	template.ProtoType = helpers.ToCamelCase(fullName)
-	template.ProtoToMapper = fmt.Sprintf("%sSliceToProto(e.%s)", helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
-	template.ProtoFromMapper = fmt.Sprintf("%sSliceFromProto(m.Get%s())", helpers.ToCamelCase(fullName), strcase.ToCamel(f.Identifier))
+	template.ProtoToMapper = fmt.Sprintf("%s%sToProto(e.%s)",
+		helpers.ToCamelCase(fullName),
+		slice,
+		helpers.ToCamelCase(f.Identifier))
+	template.ProtoFromMapper = fmt.Sprintf("%s%sFromProto(m.Get%s())",
+		helpers.ToCamelCase(fullName),
+		slice,
+		strcase.ToCamel(f.Identifier))
 
 	return template
 }

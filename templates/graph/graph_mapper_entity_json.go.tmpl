@@ -25,13 +25,29 @@ func Map{{.GraphGenType}}Slice(in []{{.Identifier}}.{{.EntityType}}) []*model.{{
     return res
 }
 
-{{if eq .JSONMany true}}
-func Map{{.GraphGenType}}Input(items []{{if ne .Required true}}*{{end}}model.{{.GraphGenType}}Input) []{{.Identifier}}.{{.EntityType}} {
-    {{if ne .Required true}}
-    if items == nil {
-        return []{{.Identifier}}.{{.EntityType}}{}
+
+func Map{{.GraphGenType}}Input(i model.{{.GraphGenType}}Input) {{.Identifier}}.{{.EntityType}} {   
+    return {{.Identifier}}.{{.EntityType}}{ {{range $field := .InFields}}
+        {{if eq $field.Required true}}
+        {{$field.Name}}: {{$field.GraphGenFromMapper}},{{else}}
+        {{$field.Name}}: {{$field.GraphGenFromMapperOptional}},{{end}}
+        {{end}}
     }
-    {{end}}
+}
+
+func Map{{.GraphGenType}}InputOptional(i *model.{{.GraphGenType}}Input) {{.Identifier}}.{{.EntityType}} {    
+    if i == nil {
+        return {{.Identifier}}.{{.EntityType}}{}
+    }    
+    return {{.Identifier}}.{{.EntityType}}{ {{range $field := .InFields}}
+        {{if eq $field.Required true}}
+        {{$field.Name}}: {{$field.GraphGenFromMapper}},{{else}}
+        {{$field.Name}}: {{$field.GraphGenFromMapperOptional}},{{end}}
+        {{end}}
+    }
+}
+
+func Map{{.GraphGenType}}SliceInput(items []model.{{.GraphGenType}}Input) []{{.Identifier}}.{{.EntityType}} {    
     res := []{{.Identifier}}.{{.EntityType}}{}
     for _, item := range items {
         i := item
@@ -44,24 +60,23 @@ func Map{{.GraphGenType}}Input(items []{{if ne .Required true}}*{{end}}model.{{.
     }
     return res     
 }
-{{end}}
 
-{{if eq .JSONMany false}}
-func Map{{.GraphGenType}}Input(i {{if ne .Required true}}*{{end}}model.{{.GraphGenType}}Input) {{.ParentIdentifier}}.{{.EntityType}} {
-    {{if ne .Required true}}
-    if i == nil {
-        return {{.Identifier}}.{{.EentityType}}{}
-    }
-    {{end}}
-    return {{.Identifier}}.{{.EntityType}}{ {{range $field := .InFields}}
-        {{if eq $field.Required true}}
+func Map{{.GraphGenType}}SliceInputOptional(items []*model.{{.GraphGenType}}Input) []{{.Identifier}}.{{.EntityType}} {   
+    if items == nil {
+        return []{{.Identifier}}.{{.EntityType}}{}
+    }    
+    res := []{{.Identifier}}.{{.EntityType}}{}
+    for _, item := range items {
+        i := item
+        res = append(res, {{.Identifier}}.{{.EntityType}}{ {{range $field := .OutFields}}
+       {{if eq $field.Required true}}
         {{$field.Name}}: {{$field.GraphGenFromMapper}},{{else}}
         {{$field.Name}}: {{$field.GraphGenFromMapperOptional}},{{end}}
         {{end}}
+        })
     }
+    return res     
 }
-{{end}}
-
 
 {{range $field := .OutFields}}
 {{if and (eq $field.Enum true) (eq $field.EnumMany true)}}
