@@ -3,12 +3,12 @@ package types
 {{$projectIdentifier := .ProjectIdentifier}}
 {{$package := .Package}}
 import (
-    entity "{{$projectIdentifier}}/core/entity/{{.EntityIdentifier}}"	    
+    main_entity "{{$projectIdentifier}}/core/entity/{{.EntityIdentifier}}"	    
     "github.com/gofrs/uuid"
 )
 
 type UpsertRequest struct {
-    {{.EntityName}} entity.{{.EntityName}}
+    {{.EntityName}} main_entity.{{.EntityName}}
 }
 
 type UpsertResponse struct {

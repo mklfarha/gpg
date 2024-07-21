@@ -3,7 +3,7 @@ package {{.EntityIdentifier}}
 import (
 	"context"
 	//"fmt"
-	entity "{{.ProjectIdentifier}}/core/entity/{{.EntityIdentifier}}"
+	main_entity "{{.ProjectIdentifier}}/core/entity/{{.EntityIdentifier}}"
 	"{{.ProjectIdentifier}}/core/module/{{.EntityIdentifier}}/types"
 	repogen "{{.ProjectIdentifier}}/core/repository/gen"
 	"{{.ProjectIdentifier}}/monitoring" 
@@ -12,7 +12,7 @@ import (
 func (m *module) List(ctx context.Context,
 	request types.ListRequest,
 	opts ...Option) (types.ListResponse, error) {
-	query, err := m.repository.BuildListEntityQuery(ctx, request, entity.{{.EntityName}}{}, false)
+	query, err := m.repository.BuildListEntityQuery(ctx, request, main_entity.{{.EntityName}}{}, false)
 	if err != nil {
 		m.monitoring.Emit(monitoring.EmitRequest{
 			ActionIdentifier: "list_{{.EntityIdentifier}}_query",
@@ -124,7 +124,7 @@ func (m *module) List(ctx context.Context,
 func (m *module) ListCount(ctx context.Context,
 	request types.ListRequest,
 	opts ...Option) (int64, error) {
-	query, err := m.repository.BuildListEntityQuery(ctx, request, entity.{{.EntityName}}{}, true)
+	query, err := m.repository.BuildListEntityQuery(ctx, request, main_entity.{{.EntityName}}{}, true)
 	if err != nil {
 		return -1, err
 	}

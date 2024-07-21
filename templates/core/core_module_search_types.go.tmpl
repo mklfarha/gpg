@@ -1,9 +1,9 @@
 package types
 
 import (
-    entity "{{.ProjectIdentifier}}/core/entity/{{.Package}}"
+    main_entity "{{.ProjectIdentifier}}/core/entity/{{.Package}}"
 )
 
 type Search{{.EntityName}}Response struct {
-    Results []entity.{{.EntityName}}
+    Results []main_entity.{{.EntityName}}
 }

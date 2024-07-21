@@ -1,7 +1,7 @@
 package {{.Package}}
 
 import (    
-    entity "{{.ProjectIdentifier}}/core/entity/{{.Package}}"
+    main_entity "{{.ProjectIdentifier}}/core/entity/{{.Package}}"
     {{.ProjectIdentifier}}db "{{.ProjectIdentifier}}/core/repository/gen"  
 	{{if eq .HasArrayField true}}
 		"{{.ProjectIdentifier}}/core/entity/mapper"
@@ -10,16 +10,16 @@ import (
     "{{$import}}" {{end}}{{end}}
 )
 
-func mapModelsToEntities(models []{{.ProjectIdentifier}}db.{{.EntityName}}) []entity.{{.EntityName}} {
-	result := []entity.{{.EntityName}}{}
+func mapModelsToEntities(models []{{.ProjectIdentifier}}db.{{.EntityName}}) []main_entity.{{.EntityName}} {
+	result := []main_entity.{{.EntityName}}{}
 	for _, p := range models {
 		result = append(result, mapModelToEntity(p))
 	}
 	return result
 }
 
-func mapModelToEntity(model {{.ProjectIdentifier}}db.{{.EntityName}}) entity.{{.EntityName}} {	
-	return entity.{{.EntityName}}{ {{range $field := .Fields}}
+func mapModelToEntity(model {{.ProjectIdentifier}}db.{{.EntityName}}) main_entity.{{.EntityName}} {	
+	return main_entity.{{.EntityName}}{ {{range $field := .Fields}}
         {{$field.Name}}: {{$field.RepoFromMapper}},{{end}}	
 	}
 }

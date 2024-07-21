@@ -22,7 +22,7 @@ func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, dependantEntity
 	template.Custom = true
 	template.Enum = true
 	template.RepoToMapper = ".ToInt64()"
-	template.RepoFromMapper = fmt.Sprintf("entity.%s(model.%s)", helpers.ToCamelCase(f.Identifier), helpers.ToCamelCase(f.Identifier))
+	template.RepoFromMapper = fmt.Sprintf("main_entity.%s(model.%s)", helpers.ToCamelCase(f.Identifier), helpers.ToCamelCase(f.Identifier))
 
 	//graph
 	template.GraphInType = fmt.Sprintf("String%s", template.GraphRequired)
@@ -46,7 +46,7 @@ func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, dependantEntity
 	template.ProtoType = protoType
 	template.ProtoEnumOptions = helpers.ProtoEnumOptions(protoType, f.OptionValues)
 	template.ProtoToMapper = fmt.Sprintf("pb.%s(e.%s)", protoType, pl.Singular(helpers.ToCamelCase(f.Identifier)))
-	template.ProtoFromMapper = fmt.Sprintf("entity.%s(m.Get%s())", pl.Singular(helpers.ToCamelCase(name)), strcase.ToCamel(f.Identifier))
+	template.ProtoFromMapper = fmt.Sprintf("main_entity.%s(m.Get%s())", pl.Singular(helpers.ToCamelCase(name)), strcase.ToCamel(f.Identifier))
 
 	return template
 }

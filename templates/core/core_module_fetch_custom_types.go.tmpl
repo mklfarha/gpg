@@ -1,7 +1,7 @@
 package types
 
 import (
-    entity "{{.ProjectIdentifier}}/core/entity/{{.Package}}"
+    main_entity "{{.ProjectIdentifier}}/core/entity/{{.Package}}"
 	{{range $import := .Imports}}
     "{{$import}}" {{end}}	
 )
@@ -13,5 +13,5 @@ type {{.CustomQuery.Name}}Request struct { {{range $field := (.CustomQuery | Uni
 }
 
 type {{.CustomQuery.Name}}Response struct {
-	Results []entity.{{.EntityName}}
+	Results []main_entity.{{.EntityName}}
 }

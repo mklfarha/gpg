@@ -2,7 +2,7 @@ package types
 
 import (
 	"encoding/json"
-	entity "{{.ProjectIdentifier}}/core/entity/{{.EntityIdentifier}}"
+	main_entity "{{.ProjectIdentifier}}/core/entity/{{.EntityIdentifier}}"
 
 	"go.einride.tech/aip/filtering"
 	"go.einride.tech/aip/ordering"
@@ -54,6 +54,6 @@ func (r ListRequest) GetOrderBy() ordering.OrderBy {
 }
 
 type ListResponse struct {
-	{{.EntityNamePlural}} []entity.{{.EntityName}}
+	{{.EntityNamePlural}} []main_entity.{{.EntityName}}
 	HasNextPage bool
 }

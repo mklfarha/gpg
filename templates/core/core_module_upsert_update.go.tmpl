@@ -30,7 +30,7 @@ import (
 		{{end}}
 		{{if eq $firstEnumMany true}}
 			{{if eq $field.EnumMany true}}
-				entity "{{$projectIdentifier}}/core/entity/{{$entityIdenfier}}"
+				main_entity "{{$projectIdentifier}}/core/entity/{{$entityIdenfier}}"
 				{{$firstEnumMany = false}}
 			{{end}}
 		{{end}}

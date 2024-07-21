@@ -1,14 +1,14 @@
 package types
 
 import (
-    entity "{{.ProjectIdentifier}}/core/entity/{{.Package}}"
+    main_entity "{{.ProjectIdentifier}}/core/entity/{{.Package}}"
 	{{range $import := .Imports}}
     "{{$import}}" {{end}}	
     "go.uber.org/zap/zapcore"
 )
 
 type Fetch{{.Select.Name}}Request struct { {{range $field := .Select.Fields}} 
-    {{$field.Field.Name}} {{if eq $field.Field.Custom true}}entity.{{end}}{{$field.Field.Type}}{{end}}    
+    {{$field.Field.Name}} {{if eq $field.Field.Custom true}}main_entity.{{end}}{{$field.Field.Type}}{{end}}    
     {{if ne .Select.IsPrimary true}}
     Offset int32
     Limit int32
@@ -27,5 +27,5 @@ func (r Fetch{{.Select.Name}}Request) MarshalLogObject(e zapcore.ObjectEncoder) 
 }
 
 type Fetch{{.Select.Name}}Response struct {
-	Results []entity.{{.EntityName}}
+	Results []main_entity.{{.EntityName}}
 }

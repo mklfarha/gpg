@@ -23,8 +23,8 @@ func OptionsManyFieldTemplate(f entity.Field, e entity.Entity, dependantEntity *
 	template.Custom = true
 	template.Enum = true
 	template.EnumMany = true
-	template.RepoToMapper = fmt.Sprintf("entity.%sSliceToJSON(req.%s.%s)", template.Type, helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier))
-	template.RepoFromMapper = fmt.Sprintf("entity.JSONTo%sSlice(model.%s)",
+	template.RepoToMapper = fmt.Sprintf("main_entity.%sSliceToJSON(req.%s.%s)", template.Type, helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier))
+	template.RepoFromMapper = fmt.Sprintf("main_entity.JSONTo%sSlice(model.%s)",
 		template.Type,
 		template.Type,
 	)
