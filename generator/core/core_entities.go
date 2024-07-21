@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 
 	"github.com/maykel/gpg/entity"
 	"github.com/maykel/gpg/generator"
@@ -65,12 +66,14 @@ func GenerateCoreEntities(ctx context.Context, rootPath string, project entity.P
 
 	}
 
-	for imp, _ := range allimports {
-		cmd := exec.Command("go", "get", imp)
-		cmd.Dir = projectDir
-		err := cmd.Run()
-		if err != nil {
-			fmt.Printf("error running go get %s\n", imp)
+	for imp := range allimports {
+		if !strings.Contains(imp, fmt.Sprintf("%s/", project.Identifier)) {
+			cmd := exec.Command("go", "get", imp)
+			cmd.Dir = projectDir
+			err := cmd.Run()
+			if err != nil {
+				fmt.Printf("error running go get %s\n", imp)
+			}
 		}
 	}
 

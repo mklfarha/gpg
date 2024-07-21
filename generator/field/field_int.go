@@ -23,7 +23,7 @@ func IntFieldTemplate(f entity.Field, e entity.Entity) Template {
 	template.GraphInTypeOptional = "Int"
 	template.GraphOutType = fmt.Sprintf("Int%s", template.GraphRequired)
 	template.GraphGenType = "int64"
-	template.GraphGenToMapper = fmt.Sprintf("int(i.%s)", helpers.ToCamelCase(f.Identifier))
+	template.GraphGenToMapper = fmt.Sprintf("i.%s", helpers.ToCamelCase(f.Identifier))
 	template.GraphGenFromMapper = fmt.Sprintf("int64(i.%s)", helpers.ToCamelCase(f.Identifier))
 	template.GraphGenFromMapperOptional = fmt.Sprintf("IntFromPointer(i.%s)", helpers.ToCamelCase(f.Identifier))
 	if !f.Required {

@@ -37,7 +37,7 @@ func Map{{.EntityType}}UpsertPartial(i model.{{.EntityType}}PartialInput) types.
     return types.UpsertRequest{ 
         {{.EntityType}}:{{.Identifier}}.{{.EntityType}}{
         {{range $field := .OutFields}}
-            {{if eq $field.IsPrimary true}}
+            {{if or (eq $field.IsPrimary true)}}
             {{$field.Name}}: {{$field.GraphGenFromMapper}},{{else}}
             {{$field.Name}}: {{$field.GraphGenFromMapperOptional}},{{end}}
             {{end}}
@@ -57,12 +57,17 @@ func Map{{$mainEntityType}}{{$field.Type}}ToModel(in []{{$mainEntityIdentifier}}
     }
     return res
 }
-func Map{{$mainEntityType}}{{.Type}}FromModel(in []{{if eq .Required false}}*{{end}}string) []{{$mainEntityIdentifier}}.{{.Type}}{
-    res := []{{$mainEntityIdentifier}}.{{.Type}}{}
-    for _, i := range in {
-        {{if eq .Required true}}
-        res = append(res, {{$mainEntityIdentifier}}.{{.Type}}FromString(i)){{else}}
-        res = append(res, {{$mainEntityIdentifier}}.{{.Type}}FromPointerString(i)){{end}}
+func Map{{$mainEntityType}}{{$field.Type}}FromModel(in []string) []{{$mainEntityIdentifier}}.{{.Type}}{
+    res := []{{$mainEntityIdentifier}}.{{$field.Type}}{}
+    for _, i := range in {       
+        res = append(res, {{$mainEntityIdentifier}}.{{.Type}}FromString(i))
+    }
+    return res
+}
+func Map{{$mainEntityType}}{{$field.Type}}FromModelOptional(in []*string) []{{$mainEntityIdentifier}}.{{.Type}}{
+    res := []{{$mainEntityIdentifier}}.{{$field.Type}}{}
+    for _, i := range in {        
+        res = append(res, {{$mainEntityIdentifier}}.{{.Type}}FromPointerString(i))
     }
     return res
 }

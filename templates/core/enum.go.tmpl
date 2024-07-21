@@ -1,5 +1,10 @@
 package {{.Package}}
 
+import (
+	"fmt"
+	"encoding/json"
+)
+
 
 //go:generate go run github.com/dmarkham/enumer -type={{.EnumName}} -json
 type {{.EnumName}} int64
@@ -42,4 +47,34 @@ func (e {{.EnumName}}) String() string {
 func (e {{.EnumName}}) StringPtr() *string {
 	val := e.String()
 	return &val
+}
+
+func {{.EnumName}}SliceToJSON(in []{{.EnumName}}) json.RawMessage {
+	res := make([]int64, len(in))
+	for i, e := range in {
+		res[i] = int64(e)
+	}
+	jr, err := json.Marshal(res)
+	if err != nil {
+		fmt.Printf("error marshalling {{.EnumName}} slice to json: %v", err)
+		return json.RawMessage{}
+	}
+	return jr 
+}
+
+func JSONTo{{.EnumName}}Slice(in json.RawMessage) []{{.EnumName}} {
+	res := []int64{}
+	err := json.Unmarshal(in, &res)
+	if err != nil {
+		fmt.Printf("error unmarshing {{.EnumName}} slice to int slice: %v", err)
+		return nil
+	}
+	if len(res) == 0 {
+		return nil
+	}
+	finalRes := []{{.EnumName}}{}
+	for _, r := range res {
+		finalRes = append(finalRes, {{.EnumName}}(r))
+	}
+	return finalRes
 }

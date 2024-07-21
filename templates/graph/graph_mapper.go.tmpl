@@ -62,15 +62,15 @@ func StringFromPointer(in *string) string {
     return *in
 }
 
-func IntFromPointer(in *int) int64 {
+func IntFromPointer(in *int64) int64 {
     if in == nil {
         return int64(0)
     }
     return int64(*in)
 }
 
-func IntPointer(in int64) *int {    
-    res := int(in)    
+func IntPointer(in int64) *int64 {    
+    res := in
     return &res
 }
 
