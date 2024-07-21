@@ -70,14 +70,15 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, dependant bool) Template
 	graphInType := fmt.Sprintf("%sInput%s", helpers.ToCamelCase(fullName), template.GraphRequired)
 	graphInTypeOptional := fmt.Sprintf("%sInput", helpers.ToCamelCase(fullName))
 	if jsonMany {
-		graphInType = fmt.Sprintf("[%s]", graphInType)
+		graphInType = fmt.Sprintf("[%s]%s", graphInType, template.GraphRequired)
 		graphInTypeOptional = fmt.Sprintf("[%s]", graphInTypeOptional)
-		graphOutType = fmt.Sprintf("[%s]", graphOutType)
+		graphOutType = fmt.Sprintf("[%s]%s", graphOutType, template.GraphRequired)
 	}
 
-	template.GraphInType = fmt.Sprintf("%s%s", graphInType, template.GraphRequired)
+	template.GraphOutType = graphOutType
+	template.GraphInType = graphInType
 	template.GraphInTypeOptional = graphInTypeOptional
-	template.GraphOutType = fmt.Sprintf("%s%s", graphOutType, template.GraphRequired)
+
 	template.GraphGenType = helpers.ToCamelCase(fullName)
 	template.GraphGenToMapper = fmt.Sprintf("Map%s%s%s(i.%s)",
 		helpers.ToCamelCase(fullName),

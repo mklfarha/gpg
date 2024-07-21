@@ -16,6 +16,7 @@ func ArrayFieldTemplate(f entity.Field, e entity.Entity) Template {
 
 	//base
 	template.Type = fmt.Sprintf("[]%s", arrayTypeTemplate.Type)
+	template.Import = arrayTypeTemplate.Import
 	template.InternalType = entity.ArrayFieldType
 	template.GenFieldType = "ArrayFieldType"
 	template.ArrayInternalType = arrayTypeTemplate.InternalType

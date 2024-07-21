@@ -1,15 +1,15 @@
 package {{.Package}}
 
 import (
-    {{$timeImport := false}}
     "encoding/json"
+    {{$timeImport := false}}    
     {{range $import := .Imports}} {{if eq $import "time"}} {{$timeImport = true}} {{end}}
     "{{$import}}" {{end}}
     {{if eq .JSON true}}
     "fmt"
     {{end}}
     "{{.ProjectIdentifier}}/core/entity/types"
-    {{ if ne (len .Fields) 0 }}
+    {{ if and (ne (len .Fields) 0) (eq .UsesRandomValues true) }}
     "{{.ProjectIdentifier}}/core/randomvalues"
     {{ end }}
     "math/rand"

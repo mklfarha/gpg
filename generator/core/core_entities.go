@@ -25,6 +25,7 @@ type EntityTemplate struct {
 	JSONField            field.Template
 	PrimaryKeyIdentifier string
 	PrimaryKeyName       string
+	UsesRandomValues     bool
 }
 
 type EnumTemplate struct {
@@ -106,6 +107,7 @@ func resolveEntityTemplate(e entity.Entity, project entity.Project) (EntityTempl
 		Imports:              helpers.MapKeys(imports),
 		PrimaryKeyIdentifier: primaryKey.Identifier,
 		PrimaryKeyName:       helpers.ToCamelCase(primaryKey.Identifier),
+		UsesRandomValues:     e.UsesRandomValues(),
 	}
 
 	return tpl, imports
@@ -122,15 +124,22 @@ func generateJSONEntities(ctx context.Context, entitiesDir string, e entity.Enti
 			fmt.Printf("----[GPG] Generating json entity: %s\n", f.JSONConfig.Identifier)
 			entityDir := path.Join(entitiesDir, f.JSONConfig.Identifier)
 
+			jsonEntity := entity.Entity{
+				Identifier: f.JSONConfig.Identifier,
+				Fields:     f.JSONConfig.Fields,
+			}
+
 			fields, imports := field.ResolveFieldsAndImports(project, f.JSONConfig.Fields, e, &ft)
 			entityTemplate := EntityTemplate{
 				ProjectIdentifier: project.Identifier,
 				Package:           f.JSONConfig.Identifier,
+				Identifier:        f.JSONConfig.Identifier,
 				EntityName:        helpers.ToCamelCase(ft.Type),
 				Fields:            fields,
 				Imports:           helpers.MapKeys(imports),
 				JSON:              true,
 				JSONField:         ft,
+				UsesRandomValues:  jsonEntity.UsesRandomValues(),
 			}
 
 			generator.GenerateFile(ctx, generator.FileRequest{

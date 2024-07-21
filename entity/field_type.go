@@ -20,6 +20,19 @@ const (
 	DateTimeFieldType
 )
 
+var UsesRandomValues = []FieldType{
+	UUIDFieldType,
+	IntFieldType,
+	FloatFieldType,
+	BooleanFieldType,
+	StringFieldType,
+	LargeStringFieldType,
+	OptionsSingleFieldType,
+	OptionsManyFieldType,
+	DateFieldType,
+	DateTimeFieldType,
+}
+
 func FieldTypeFromString(in string) FieldType {
 	switch in {
 	case "uuid":
