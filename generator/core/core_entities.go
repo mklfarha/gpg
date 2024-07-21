@@ -113,7 +113,7 @@ func resolveEntityTemplate(e entity.Entity, project entity.Project) (EntityTempl
 
 func generateJSONEntities(ctx context.Context, entitiesDir string, e entity.Entity, project entity.Project) {
 	for _, f := range e.Fields {
-		if f.Type == entity.JSONFieldType && !f.JSONConfig.Reuse {
+		if f.Type == entity.JSONFieldType && !f.JSONConfig.Reuse && len(f.JSONConfig.Fields) > 0 {
 
 			ft := field.ResolveFieldType(f, e, &field.Template{
 				Identifier: f.Identifier,

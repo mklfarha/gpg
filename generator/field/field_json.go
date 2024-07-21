@@ -28,10 +28,7 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, dependant bool) Template
 
 	template := BaseFieldTemplate(f, e)
 
-	fullName := template.SingularIdentifier
-	if dependant {
-		fullName = f.JSONConfig.Identifier
-	}
+	fullName := f.JSONConfig.Identifier
 
 	//base
 	template.Type = helpers.ToCamelCase(fullName)
@@ -49,7 +46,7 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, dependant bool) Template
 	template.GenFieldType = genFieldType
 	template.GenRandomValue = genRandomValue
 	template.RepoToMapper = fmt.Sprintf("%s.%sSliceToJSON(req.%s.%s)", f.JSONConfig.Identifier, helpers.ToCamelCase(fullName), helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier))
-	template.RepoFromMapper = fmt.Sprintf("%s.%sFromJSON(model.%s)", f.JSONConfig.Identifier, helpers.ToCamelCase(template.SingularIdentifier), helpers.ToCamelCase(f.Identifier))
+	template.RepoFromMapper = fmt.Sprintf("%s.%sFromJSON(model.%s)", f.JSONConfig.Identifier, helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
 
 	// graph
 	graphInTypeOptional := fmt.Sprintf("%sInput", helpers.ToCamelCase(fullName))
