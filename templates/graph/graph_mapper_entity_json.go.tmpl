@@ -10,17 +10,32 @@ import (
     {{end}}
 )
 
-func Map{{.GraphGenType}}(i {{.Identifier}}.{{.EntityType}}) *model.{{.GraphGenType}} {
+func Map{{.GraphGenType}}(i {{.Identifier}}.{{.EntityType}}) model.{{.GraphGenType}} {
+    return model.{{.GraphGenType}}{ {{range $field := .OutFields}}
+        {{$field.GraphModelName}}: {{$field.GraphGenToMapper}},{{end}}           
+    }
+}
+
+func Map{{.GraphGenType}}Optional(i {{.Identifier}}.{{.EntityType}}) *model.{{.GraphGenType}} {
     return &model.{{.GraphGenType}}{ {{range $field := .OutFields}}
         {{$field.GraphModelName}}: {{$field.GraphGenToMapper}},{{end}}           
     }
 }
 
-func Map{{.GraphGenType}}Slice(in []{{.Identifier}}.{{.EntityType}}) []*model.{{.EntityType}} {
-    res := []*model.{{.EntityType}}{}
+func Map{{.GraphGenType}}Slice(in []{{.Identifier}}.{{.EntityType}}) []model.{{.EntityType}} {
+    res := []model.{{.EntityType}}{}
     for _, item := range in {
         i := item
         res = append(res,Map{{.GraphGenType}}(i))
+    }
+    return res
+}
+
+func Map{{.GraphGenType}}SliceOptional(in []{{.Identifier}}.{{.EntityType}}) []*model.{{.EntityType}} {
+    res := []*model.{{.EntityType}}{}
+    for _, item := range in {
+        i := item
+        res = append(res,Map{{.GraphGenType}}Optional(i))
     }
     return res
 }

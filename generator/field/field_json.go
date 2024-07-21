@@ -10,21 +10,38 @@ import (
 )
 
 func JSONFieldTemplate(f entity.Field, e entity.Entity, dependant bool) Template {
+	optional := ""
+	if !f.Required {
+		optional = "Optional"
+	}
+
+	jsonMany := f.JSONConfig.Type == entity.ManyJSONConfigType
+	slice := ""
+	if jsonMany {
+		slice = "Slice"
+	}
+
 	if len(f.JSONConfig.Fields) == 0 && !f.JSONConfig.Reuse {
 		stringTemplate := StringFieldTemplate(f, e)
 		stringTemplate.Type = "json.RawMessage"
 		stringTemplate.GenFieldType = "RawJSONFieldType"
 		stringTemplate.GenRandomValue = "randomvalues.GetRandomRawJSONValue()"
 		stringTemplate.JSONRaw = true
-		stringTemplate.GraphGenToMapper = fmt.Sprintf("StringFromJsonRaw(%s)", stringTemplate.GraphGenToMapper)
-		stringTemplate.GraphGenFromMapper = strings.ReplaceAll(stringTemplate.GraphGenFromMapper, "StringFromPointer", "JsonRawFromString")
-		stringTemplate.GraphGenFromMapperOptional = strings.ReplaceAll(stringTemplate.GraphGenFromMapperOptional, "StringFromPointer", "JsonRawFromString")
+		stringTemplate.GraphGenToMapper = fmt.Sprintf("StringFromJsonRaw%s(%s)",
+			optional,
+			stringTemplate.GraphGenToMapper)
+
+		if !f.Required {
+			stringTemplate.GraphGenFromMapper = strings.ReplaceAll(stringTemplate.GraphGenFromMapper, "StringFromPointer", "JsonRawFromStringOptional")
+			stringTemplate.GraphGenFromMapperOptional = strings.ReplaceAll(stringTemplate.GraphGenFromMapperOptional, "StringFromPointer", "JsonRawFromStringOptional")
+		} else {
+			stringTemplate.GraphGenFromMapper = fmt.Sprintf("JsonRawFromString(i.%s)", stringTemplate.Name)
+			stringTemplate.GraphGenFromMapperOptional = fmt.Sprintf("JsonRawFromStringOptional(i.%s)", stringTemplate.Name)
+		}
 		stringTemplate.ProtoToMapper = fmt.Sprintf("JSONRawToString(%s)", stringTemplate.ProtoToMapper)
 		stringTemplate.ProtoFromMapper = fmt.Sprintf("StringToJSONRaw(%s)", stringTemplate.ProtoFromMapper)
 		return stringTemplate
 	}
-
-	jsonMany := f.JSONConfig.Type == entity.ManyJSONConfigType
 
 	template := BaseFieldTemplate(f, e)
 
@@ -49,26 +66,26 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, dependant bool) Template
 	template.RepoFromMapper = fmt.Sprintf("%s.%sFromJSON(model.%s)", f.JSONConfig.Identifier, helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
 
 	// graph
+	graphOutType := fmt.Sprintf("%s%s", helpers.ToCamelCase(fullName), template.GraphRequired)
+	graphInType := fmt.Sprintf("%sInput%s", helpers.ToCamelCase(fullName), template.GraphRequired)
 	graphInTypeOptional := fmt.Sprintf("%sInput", helpers.ToCamelCase(fullName))
-	graphOutType := helpers.ToCamelCase(fullName)
 	if jsonMany {
+		graphInType = fmt.Sprintf("[%s]", graphInType)
 		graphInTypeOptional = fmt.Sprintf("[%s]", graphInTypeOptional)
 		graphOutType = fmt.Sprintf("[%s]", graphOutType)
 	}
 
-	template.GraphInType = fmt.Sprintf("%s%s", graphInTypeOptional, template.GraphRequired)
+	template.GraphInType = fmt.Sprintf("%s%s", graphInType, template.GraphRequired)
 	template.GraphInTypeOptional = graphInTypeOptional
 	template.GraphOutType = fmt.Sprintf("%s%s", graphOutType, template.GraphRequired)
 	template.GraphGenType = helpers.ToCamelCase(fullName)
-	template.GraphGenToMapper = fmt.Sprintf("Map%s(i.%s)", helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
-	if jsonMany {
-		template.GraphGenToMapper = fmt.Sprintf("Map%sSlice(i.%s)", helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
-	}
+	template.GraphGenToMapper = fmt.Sprintf("Map%s%s%s(i.%s)",
+		helpers.ToCamelCase(fullName),
+		slice,
+		optional,
+		helpers.ToCamelCase(f.Identifier),
+	)
 	template.GraphGenFromMapperParam = ""
-	slice := ""
-	if jsonMany {
-		slice = "Slice"
-	}
 	template.GraphGenFromMapper = fmt.Sprintf("Map%s%sInput(i.%s)",
 		helpers.ToCamelCase(fullName),
 		slice,
