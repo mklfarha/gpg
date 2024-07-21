@@ -134,7 +134,7 @@ func generateJSONEntities(ctx context.Context, entitiesDir string, e entity.Enti
 				ProjectIdentifier: project.Identifier,
 				Package:           f.JSONConfig.Identifier,
 				Identifier:        f.JSONConfig.Identifier,
-				EntityName:        helpers.ToCamelCase(ft.Type),
+				EntityName:        ft.Type,
 				Fields:            fields,
 				Imports:           helpers.MapKeys(imports),
 				JSON:              true,

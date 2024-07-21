@@ -90,11 +90,11 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, dependant bool) Template
 	template.GraphGenFromMapper = fmt.Sprintf("Map%s%sInput(i.%s)",
 		helpers.ToCamelCase(fullName),
 		slice,
-		helpers.ToCamelCase(f.Identifier))
+		template.GraphModelName)
 	template.GraphGenFromMapperOptional = fmt.Sprintf("Map%s%sInputOptional(i.%s)",
 		helpers.ToCamelCase(fullName),
 		slice,
-		helpers.ToCamelCase(f.Identifier))
+		template.GraphModelName)
 
 	// proto
 	template.ProtoType = helpers.ToCamelCase(fullName)

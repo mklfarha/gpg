@@ -25,6 +25,11 @@ func ToCamelCase(str string) string {
 
 	key = strings.ReplaceAll(key, "uuid", "UUID")
 	key = strings.ReplaceAll(key, "Uuid", "UUID")
+	key = strings.ReplaceAll(key, "Json", "JSON")
+	key = strings.ReplaceAll(key, "Url", "URL")
+	key = strings.ReplaceAll(key, "Https", "HTTPS")
+	key = strings.ReplaceAll(key, "Http", "HTTP")
+
 	return key
 
 	/*words := strings.Split(str, "_")

@@ -18,6 +18,9 @@ func (e Entity) UsesRandomValues() bool {
 		if slices.Contains(UsesRandomValues, f.Type) {
 			return true
 		}
+		if f.Type == JSONFieldType && len(f.JSONConfig.Fields) == 0 && !f.JSONConfig.Reuse {
+			return true
+		}
 	}
 	return false
 }
