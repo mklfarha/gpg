@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"go.uber.org/config"
 	"path"
@@ -44,33 +45,35 @@ func New() (config.Provider, error) {
 }
 
 func NewWithPathAndEnviorment(p string, env string) (config.Provider, error) {
-	fi, err := os.Stat(p)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	switch mode := fi.Mode(); {
-	case mode.IsDir():
-		if env == "" {
-			env = "base"
-		}
-		yaml, err := config.NewYAML(
-			config.File(path.Join(p, "base.yaml")),
-			config.File(path.Join(p, fmt.Sprintf("%s.yaml", env))),
-		)
+	paths := strings.Split(p, ",")
+	configFiles := []config.YAMLOption{}
+	for _, pt := range paths {
+		fi, err := os.Stat(pt)
 		if err != nil {
-			fmt.Printf("error loading config: %v", err)
+			fmt.Println(err)
 			return nil, err
 		}
-		return yaml, nil
-	case mode.IsRegular():
-		yaml, err := config.NewYAML(config.File(p))
-		if err != nil {
-			fmt.Printf("error loading config: %v", err)
-			return nil, err
+		switch mode := fi.Mode(); {
+		case mode.IsDir():
+			if env == "" {
+				env = "base"
+			}
+			configFiles = append(configFiles, config.File(path.Join(pt, "base.yaml")))
+			configFiles = append(configFiles, config.File(path.Join(pt, fmt.Sprintf("%s.yaml", env))))
+
+		case mode.IsRegular():
+			configFiles = append(configFiles, config.File(pt))
 		}
-		return yaml, nil
 	}
 
-	return nil, nil
+	yaml, err := config.NewYAML(
+		configFiles...,
+	)
+
+	if err != nil {
+		fmt.Printf("error loading config: %v", err)
+		return nil, err
+	}
+
+	return yaml, nil
 }
