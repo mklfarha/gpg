@@ -106,7 +106,7 @@ func generateEntityProtoFile(
 
 func generateProtoFiles(ctx context.Context, protoDir string, project entity.Project) (standaloneEntityTemplates []ProtoEntityTemplate, dependantEntityTemplates map[string][]ProtoEntityTemplate, returnErr error) {
 	standaloneEntityTemplates = []ProtoEntityTemplate{}
-	dependantEntityTemplates = map[string][]ProtoEntityTemplate{}
+	dependantEntityTemplates = make(map[string][]ProtoEntityTemplate)
 	//generate entities/models
 	fmt.Printf("--[GPG][Proto] Generating Entities\n")
 	for _, e := range project.Entities {

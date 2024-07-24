@@ -154,11 +154,11 @@ func getEntityDeclarations(e ProtoEntityTemplate, dependantEntities map[string][
 				IsEnum:    true,
 			})
 		case entity.JSONFieldType:
-			nestedEntities, found := dependantEntities[e.FinalIdentifier]
+			nestedEntities, found := dependantEntities[e.OrignalIdentifier]
 			if found {
 				var nestedEntity ProtoEntityTemplate
 				for _, ne := range nestedEntities {
-					if ne.OrignalIdentifier == f.Identifier {
+					if ne.OrignalIdentifier == f.SingularIdentifier {
 						nestedEntity = ne
 					}
 				}
