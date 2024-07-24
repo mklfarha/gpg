@@ -39,6 +39,13 @@ type Params struct {
 	{{ end }}
 }
 
+func NewServer(params Params) pb.{{.Name}}Server {
+	return &server{
+		core: params.Core,
+		monitoring: params.Monitoring,
+	}
+}
+
 func New(params Params) *grpc.Server {	
 	log := params.Logger
 	s := grpc.NewServer(
@@ -60,10 +67,7 @@ func New(params Params) *grpc.Server {
 						
 			// register grpc servers
 			grpc_health_v1.RegisterHealthServer(s, health.NewServer())
-			pb.Register{{.Name}}Server(s, &server{
-				core: params.Core,
-				monitoring: params.Monitoring,
-			})
+			pb.Register{{.Name}}Server(s, NewServer(params))
 			reflection.Register(s)
 
 			log.Info("GRPC Server listening at %v", zap.Any("addr", lis.Addr()))
