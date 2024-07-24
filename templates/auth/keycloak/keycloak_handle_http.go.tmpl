@@ -2,8 +2,7 @@ package keycloak
 
 import (
     "context"
-    "net/http"
-    "fmt"
+    "net/http"    
     "errors"
     "strings"
 )
@@ -18,8 +17,7 @@ func (i *Implementation) HandleToken(ctx context.Context, token string) error {
         return errors.New("inactive token")
     }
 
-    permissions := rptResult.Permissions
-    fmt.Printf("permissions: %v", permissions)
+    //permissions := rptResult.Permissions    
     return nil
 }
 
