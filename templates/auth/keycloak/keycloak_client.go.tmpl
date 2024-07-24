@@ -1,8 +1,10 @@
 package keycloak
 
 import (
+	"context"
     base "{{.Identifier}}/auth"	
     "github.com/Nerzal/gocloak/v13"
+	"github.com/gofrs/uuid"
 )
 
 func New(params Params) (base.Interface, error) {
@@ -19,5 +21,15 @@ func New(params Params) (base.Interface, error) {
 	return &i, nil
 }
 
+func (i *Implementation) GetUserID(ctx context.Context, token string) (uuid.UUID, error) {
+	userInfo, err := i.client.GetUserInfo(ctx, token, i.config.Realm)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	if userInfo.Sub != nil {
+		return uuid.FromStringOrNil(*userInfo.Sub), nil
+	}
+	return uuid.Nil, err
+}
 
 

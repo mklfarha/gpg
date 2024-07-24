@@ -6,4 +6,4 @@ export PATH="$PATH:$(go env GOPATH)/bin"
 
 find ./../gen -name "*.go" -type f -delete
 
-protoc --go_out=./.. --go-grpc_out=./.. ./*.proto
+protoc --go_out=./../../../ --go-grpc_out=./../../../ ./*.proto

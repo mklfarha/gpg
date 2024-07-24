@@ -9,6 +9,7 @@ import (
 	"strings"
 	"errors"
 	"{{.Identifier}}/core/module/user/types"
+	"github.com/gofrs/uuid"
 )
 
 func (i *Implementation) Validate(w http.ResponseWriter, r *http.Request) {
@@ -71,6 +72,10 @@ func (i *Implementation) HandleToken(ctx context.Context, token string) error {
 	}
 
 	return nil
+}
+
+func (i *Implementation) GetUserID(ctx context.Context, token string) (uuid.UUID, error) {
+	return uuid.Nil, nil
 }
 
 func (i *Implementation) ClaimsFromHeader(w http.ResponseWriter, r *http.Request) (*Claims, error) {
