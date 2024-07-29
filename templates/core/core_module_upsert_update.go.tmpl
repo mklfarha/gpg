@@ -50,13 +50,20 @@ func (m *module) Update(
 	partial bool, 
 	opts ...Option,
 ) (types.UpsertResponse, error) {
-	tx, err := m.repository.DB.Begin()
-	if err != nil {
-		return types.UpsertResponse{}, err
-	}
-	defer tx.Rollback()
-	qtx := m.repository.Queries.WithTx(tx)
+	optConfig := applyAllOptions(opts)
 
+	tx := optConfig.SQLTx
+	createdTx := false
+	if tx == nil {
+		tx, err := m.repository.DB.Begin()
+		if err != nil {
+			return types.UpsertResponse{}, err
+		}
+		defer tx.Rollback()
+		createdTx = true
+	}
+
+	qtx := m.repository.Queries.WithTx(tx)
 	existing, err := qtx.Fetch{{.EntityName}}By{{.PrimaryKey.Name}}ForUpdate(ctx, req.{{.EntityName}}.{{.PrimaryKey.Name}}.String())
 	if err != nil {
 		m.monitoring.Emit(monitoring.EmitRequest{
@@ -129,18 +136,20 @@ func (m *module) Update(
 	}
 	{{end}}
 
-	err = tx.Commit()
-	if err != nil {
-		m.monitoring.Emit(monitoring.EmitRequest{
-			ActionIdentifier: "upsert_{{.EntityIdentifier}}",
-			Message:          "error commiting for Upsert{{.EntityName}}",
-			EntityIdentifier: "{{.EntityIdentifier}}",
-			Layer:            monitoring.RepositoryServiceLayer,
-			Type:             monitoring.EmitTypeError,
-			Data:             req,
-			Error:            err,
-		})
-		return types.UpsertResponse{}, err
+	if createdTx {
+		err := tx.Commit()
+		if err != nil {
+			m.monitoring.Emit(monitoring.EmitRequest{
+				ActionIdentifier: "upsert_{{.EntityIdentifier}}",
+				Message:          "error commiting for Upsert{{.EntityName}}",
+				EntityIdentifier: "{{.EntityIdentifier}}",
+				Layer:            monitoring.RepositoryServiceLayer,
+				Type:             monitoring.EmitTypeError,
+				Data:             req,
+				Error:            err,
+			})
+			return types.UpsertResponse{}, err
+		}
 	}
 	
 	m.monitoring.Emit(monitoring.EmitRequest{

@@ -85,8 +85,13 @@ func New(params Params) (*Implementation, error) {
 	}, nil
 }
 
+
 func (i *Implementation) Destroy() {
 	i.db.Close()
+}
+
+func (i *Implementation) DB() *sql.DB{
+	return i.db
 }
 
 {{$events := .Events}}
