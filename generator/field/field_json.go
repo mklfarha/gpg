@@ -2,7 +2,6 @@ package field
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/iancoleman/strcase"
 	"github.com/maykel/gpg/entity"
@@ -23,23 +22,12 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, dependant bool) Template
 
 	if len(f.JSONConfig.Fields) == 0 && !f.JSONConfig.Reuse {
 		stringTemplate := StringFieldTemplate(f, e)
-		stringTemplate.Type = "json.RawMessage"
+		stringTemplate.Type = "string"
 		stringTemplate.GenFieldType = "RawJSONFieldType"
 		stringTemplate.GenRandomValue = "randomvalues.GetRandomRawJSONValue()"
 		stringTemplate.JSONRaw = true
-		stringTemplate.GraphGenToMapper = fmt.Sprintf("StringFromJsonRaw%s(%s)",
-			optional,
-			stringTemplate.GraphGenToMapper)
-
-		if !f.Required {
-			stringTemplate.GraphGenFromMapper = strings.ReplaceAll(stringTemplate.GraphGenFromMapper, "StringFromPointer", "JsonRawFromStringOptional")
-			stringTemplate.GraphGenFromMapperOptional = strings.ReplaceAll(stringTemplate.GraphGenFromMapperOptional, "StringFromPointer", "JsonRawFromStringOptional")
-		} else {
-			stringTemplate.GraphGenFromMapper = fmt.Sprintf("JsonRawFromString(i.%s)", stringTemplate.Name)
-			stringTemplate.GraphGenFromMapperOptional = fmt.Sprintf("JsonRawFromStringOptional(i.%s)", stringTemplate.Name)
-		}
-		stringTemplate.ProtoToMapper = fmt.Sprintf("JSONRawToString(%s)", stringTemplate.ProtoToMapper)
-		stringTemplate.ProtoFromMapper = fmt.Sprintf("StringToJSONRaw(%s)", stringTemplate.ProtoFromMapper)
+		stringTemplate.RepoToMapper = fmt.Sprintf("[]byte(req.%s.%s)", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier))
+		stringTemplate.RepoFromMapper = fmt.Sprintf("string(model.%s)", helpers.ToCamelCase(f.Identifier))
 		return stringTemplate
 	}
 

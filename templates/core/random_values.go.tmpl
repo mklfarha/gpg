@@ -4,8 +4,7 @@ import (
     "time"
     "github.com/gofrs/uuid"
     "math/rand"
-    "golang.org/x/exp/slices"
-    "encoding/json"    
+    "golang.org/x/exp/slices"    
 )
 
 func GetRandomBoolValue() bool {    
@@ -58,7 +57,7 @@ func GetRandomUUIDValue() uuid.UUID {
     return uuid.Must(uuid.NewV4())
 }
 
-func GetRandomRawJSONValue() json.RawMessage {
-    return json.RawMessage("{}")
+func GetRandomRawJSONValue() string {
+    return "{}"
 }
 

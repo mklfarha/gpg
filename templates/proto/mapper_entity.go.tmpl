@@ -28,12 +28,18 @@ func {{.Name}}SliceToProto(es []main_entity.{{.Type}}) []*pb.{{.Name}} {
 }
 
 func {{.Name}}FromProto(m *pb.{{.Name}}) main_entity.{{.Type}} {
+    if m == nil {
+        return main_entity.{{.Type}}{}
+    }
     return main_entity.{{.Type}}{ {{range $field := .Fields}}
         {{$field.Name}}: {{$field.ProtoFromMapper}},{{end}}
     }
 }
 
 func {{.Name}}SliceFromProto(es []*pb.{{.Name}}) []main_entity.{{.Type}} {
+    if es == nil {
+        return []main_entity.{{.Type}}{}
+    }
     res := []main_entity.{{.Type}}{}
     for _, e := range es {
         res = append(res, {{.Name}}FromProto(e))

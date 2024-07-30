@@ -81,16 +81,19 @@ func {{.EntityName}}FromJSON(data json.RawMessage) {{if eq .JSONField.JSONMany t
 func (e {{.EntityName}}) {{.EntityName}}ToJSON() json.RawMessage {
     res, err := json.Marshal(e)
     if err != nil {
-        fmt.Println("marshal error", err)
+        fmt.Println("marshal error {{.EntityName}}ToJSON", err)
     }
     return res
 }
 
 {{if eq .JSONField.JSONMany true}}
 func {{.EntityName}}SliceToJSON(e []{{.EntityName}}) json.RawMessage {
+    if e == nil {
+        return json.RawMessage{}
+    }
     res, err := json.Marshal(e)
     if err != nil {
-        fmt.Println("marshal error", err)
+        fmt.Println("marshal error {{.EntityName}}SliceToJSON", err)
     }
     return res
 }
