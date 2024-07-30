@@ -58,10 +58,11 @@ func (m *module) Insert(
 	tx := optConfig.SQLTx
 	createdTx := false
 	if tx == nil {
-		tx, err := m.repository.DB.Begin()
+		ntx, err := m.repository.DB.Begin()
 		if err != nil {
 			return types.UpsertResponse{}, err
 		}
+		tx = ntx
 		defer tx.Rollback()
 		createdTx = true
 	}
