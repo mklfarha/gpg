@@ -7,6 +7,7 @@ import (
 
 	"go.uber.org/config"
 	"path"
+	"errors"
 )
 
 type DBs []DB
@@ -59,7 +60,11 @@ func NewWithPathAndEnviorment(p string, env string) (config.Provider, error) {
 				env = "base"
 			}
 			configFiles = append(configFiles, config.File(path.Join(pt, "base.yaml")))
-			configFiles = append(configFiles, config.File(path.Join(pt, fmt.Sprintf("%s.yaml", env))))
+			envPath := path.Join(pt, fmt.Sprintf("%s.yaml", env))
+			if _, err := os.Stat(envPath); err == nil || !errors.Is(err, os.ErrNotExist) {
+				configFiles = append(configFiles, config.File(envPath))
+			}
+			
 
 		case mode.IsRegular():
 			configFiles = append(configFiles, config.File(pt))
