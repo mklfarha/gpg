@@ -103,6 +103,21 @@ func main() {
 				return nil
 			},
 		},
+		{
+			Name:  "sync-schema", // Generates API/Auth
+			Usage: "Syncs schema with DB",
+			Action: func(c *cli.Context) error {
+				configPath := c.Args().Get(0)
+				targetDir := c.Args().Get(1)
+				project, err := loadProject(configPath)
+				if err != nil {
+					panic(err)
+				}
+				ctx := context.Background()
+				repo.SyncSchema(ctx, targetDir, project)
+				return nil
+			},
+		},
 	}
 
 	sort.Sort(cli.FlagsByName(app.Flags))
@@ -164,7 +179,7 @@ func generateAPI(targetDir string, project entity.Project) {
 
 	err := generator.GenerateProjectDirectories(ctx, targetDir, project)
 	if err != nil {
-		fmt.Sprintf("errors generating directories: %v", err)
+		fmt.Printf("errors generating directories: %v", err)
 		panic("error generating directories")
 	}
 

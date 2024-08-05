@@ -62,7 +62,7 @@ func initModule(ctx context.Context, rootPath string, project entity.Project) {
 	projectDir := ProjectDir(ctx, rootPath, project)
 	var out bytes.Buffer
 	var stderr bytes.Buffer
-	if !fileExists(path.Join(projectDir, "go.mod")) {
+	if !FileExists(path.Join(projectDir, "go.mod")) {
 		cmd := exec.Command("go", "mod", "init", project.Identifier)
 		cmd.Dir = projectDir
 		cmd.Stdout = &out
@@ -154,7 +154,7 @@ func CreateDir(fullDir string) {
 	}
 }
 
-func fileExists(path string) bool {
+func FileExists(path string) bool {
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
 		return false
 	}
