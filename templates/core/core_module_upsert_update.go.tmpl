@@ -172,7 +172,7 @@ func mapUpsertRequestToUpdateParams(req types.UpsertRequest, existing {{.Project
 			{{ if eq $field.Generated true}} 
 			{{$field.Name}}: {{$field.GeneratedFuncUpdate}}{{$field.RepoToMapper}},
 			{{else}}
-			{{ if or (eq $field.JSONMany true) (eq $field.Array true) (eq $field.EnumMany true) (eq $field.GenFieldType "RawJSONFieldType")}}
+			{{ if or (eq $field.JSON true) (eq $field.Array true) (eq $field.EnumMany true) (eq $field.GenFieldType "RawJSONFieldType")}}
 				{{$field.Name}}: {{$field.RepoToMapper}}, 
 			{{ else }}
 				{{$field.Name}}: req.{{$entityName}}.{{$field.Name}}{{$field.RepoToMapper}}, 
@@ -190,6 +190,8 @@ func mapUpsertRequestToUpdateParams(req types.UpsertRequest, existing {{.Project
 		{{if eq $field.JSONMany true}}
 			// json array
 			if len(req.{{$entityName}}.{{$field.Name}}) == 0 {
+		{{else if and (eq $field.JSON true) (ne $field.GenFieldType "RawJSONFieldType")  }}
+			if req.{{$entityName}}.{{$field.Name}}.ToJSON() == nil {
 		{{else}}		    
 			{{if and (ne $field.GenFieldType "ArrayFieldType") (ne $field.GenFieldType "MultiEnumFieldType") }}
 				// regular field
@@ -204,7 +206,7 @@ func mapUpsertRequestToUpdateParams(req types.UpsertRequest, existing {{.Project
 			{{ if eq $field.Generated true}} 
 			res.{{$field.Name}} = {{$field.GeneratedFuncUpdate}}{{$field.RepoToMapper}}
 			{{else}}
-			{{ if or (eq $field.JSONMany true) (eq $field.Array true) (eq $field.EnumMany true) (eq $field.GenFieldType "RawJSONFieldType")}}
+			{{ if or (eq $field.JSON true) (eq $field.Array true) (eq $field.EnumMany true) (eq $field.GenFieldType "RawJSONFieldType")}}
 			res.{{$field.Name}} = {{$field.RepoToMapper}}
 			{{ else }}
 			res.{{$field.Name}} = req.{{$entityName}}.{{$field.Name}}{{$field.RepoToMapper}} 

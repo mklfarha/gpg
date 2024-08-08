@@ -50,8 +50,17 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, dependant bool) Template
 	}
 	template.GenFieldType = genFieldType
 	template.GenRandomValue = genRandomValue
-	template.RepoToMapper = fmt.Sprintf("%s.%sSliceToJSON(req.%s.%s)", f.JSONConfig.Identifier, helpers.ToCamelCase(fullName), helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier))
-	template.RepoFromMapper = fmt.Sprintf("%s.%sFromJSON(model.%s)", f.JSONConfig.Identifier, helpers.ToCamelCase(fullName), helpers.ToCamelCase(f.Identifier))
+	template.RepoToMapper = fmt.Sprintf("%s.%s%sToJSON(req.%s.%s)",
+		f.JSONConfig.Identifier,
+		helpers.ToCamelCase(fullName),
+		slice,
+		helpers.ToCamelCase(e.Identifier),
+		helpers.ToCamelCase(f.Identifier))
+	template.RepoFromMapper = fmt.Sprintf("%s.%s%sFromJSON(model.%s)",
+		f.JSONConfig.Identifier,
+		helpers.ToCamelCase(fullName),
+		slice,
+		helpers.ToCamelCase(f.Identifier))
 
 	// graph
 	graphOutType := fmt.Sprintf("%s%s", helpers.ToCamelCase(fullName), template.GraphRequired)

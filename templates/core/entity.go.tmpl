@@ -5,9 +5,9 @@ import (
     {{$timeImport := false}}    
     {{range $import := .Imports}} {{if eq $import "time"}} {{$timeImport = true}} {{end}}
     "{{$import}}" {{end}}
-    {{if eq .JSON true}}
+    
     "fmt"
-    {{end}}
+    
     "{{.ProjectIdentifier}}/core/entity/types"
     {{ if and (ne (len .Fields) 0) (eq .UsesRandomValues true) }}
     "{{.ProjectIdentifier}}/core/randomvalues"
@@ -69,16 +69,24 @@ func (e {{.EntityName}}) IsDependant() bool {
     return {{.JSON}}
 }
  
-{{if eq .JSON true}}
-func {{.EntityName}}FromJSON(data json.RawMessage) {{if eq .JSONField.JSONMany true}}[]{{end}}{{.EntityName}} {
-    entity := {{if eq .JSONField.JSONMany true}}[]{{end}}{{.EntityName}}{}
+
+func {{.EntityName}}FromJSON(data json.RawMessage) {{.EntityName}} {
+    entity := {{.EntityName}}{}
     if err := json.Unmarshal(data, &entity); err != nil {
         fmt.Println("unmarshal error", err)
     }
     return entity
 }
 
-func (e {{.EntityName}}) {{.EntityName}}ToJSON() json.RawMessage {
+func {{.EntityName}}SliceFromJSON(data json.RawMessage)[]{{.EntityName}} {
+    entity := []{{.EntityName}}{}
+    if err := json.Unmarshal(data, &entity); err != nil {
+        fmt.Println("unmarshal error", err)
+    }
+    return entity
+}
+
+func (e {{.EntityName}}) ToJSON() json.RawMessage {
     res, err := json.Marshal(e)
     if err != nil {
         fmt.Println("marshal error {{.EntityName}}ToJSON", err)
@@ -86,7 +94,15 @@ func (e {{.EntityName}}) {{.EntityName}}ToJSON() json.RawMessage {
     return res
 }
 
-{{if eq .JSONField.JSONMany true}}
+func {{.EntityName}}ToJSON(e {{.EntityName}}) json.RawMessage {
+    res, err := json.Marshal(e)
+    if err != nil {
+        fmt.Println("marshal error {{.EntityName}}ToJSON", err)
+    }
+    return res
+}
+
+
 func {{.EntityName}}SliceToJSON(e []{{.EntityName}}) json.RawMessage {
     if e == nil {
         return json.RawMessage{}
@@ -97,9 +113,6 @@ func {{.EntityName}}SliceToJSON(e []{{.EntityName}}) json.RawMessage {
     }
     return res
 }
-{{end}}
-{{end}}
-
 
 func New{{.EntityName}}WithRandomValues() {{.EntityName}} {
     rand.New(rand.NewSource((time.Now().UnixNano())))
