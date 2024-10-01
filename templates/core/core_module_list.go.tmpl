@@ -26,9 +26,15 @@ func (m *module) List(ctx context.Context,
 		return types.ListResponse{}, err
 	}
 
-	//fmt.Printf("query: %s \n", query)
+	//fmt.Printf("query: %s \n", query)		
 
-	rows, err := m.repository.DB.QueryContext(ctx, query)
+	// increase sort buffer size 
+	// TODO make this configurable 
+	txn, _ := m.repository.DB.Begin()
+	defer txn.Commit()
+	bufferRows, err := txn.QueryContext(ctx, "SET sort_buffer_size=2000000")
+	bufferRows.Close()
+	rows, err := txn.QueryContext(ctx, query)
 	if err != nil {
 		m.monitoring.Emit(monitoring.EmitRequest{
 			ActionIdentifier: "list_{{.EntityIdentifier}}_db",
@@ -41,8 +47,7 @@ func (m *module) List(ctx context.Context,
 			Error: err,
 		})
 		return types.ListResponse{}, err
-	}
-
+	}	
 	defer rows.Close()
 	var items []repogen.{{.EntityName}}
 	for rows.Next() {
