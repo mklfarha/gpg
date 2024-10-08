@@ -16,6 +16,7 @@ import (
 	"github.com/maykel/gpg/files"
 	"github.com/maykel/gpg/generator"
 	"github.com/maykel/gpg/generator/auth"
+	"github.com/maykel/gpg/generator/aws"
 	gcli "github.com/maykel/gpg/generator/cli"
 	"github.com/maykel/gpg/generator/core"
 	"github.com/maykel/gpg/generator/core/events"
@@ -248,6 +249,13 @@ func generateAPI(targetDir string, project entity.Project) {
 			Name: "auth",
 			Func: func() error {
 				return auth.GenerateAuth(ctx, targetDir, project)
+			},
+			Blocking: true,
+		},
+		{
+			Name: "aws",
+			Func: func() error {
+				return aws.GenerateAWSModule(ctx, targetDir, project)
 			},
 			Blocking: true,
 		},

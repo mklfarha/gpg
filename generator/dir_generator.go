@@ -30,6 +30,7 @@ var (
 	CUSTOM_DIR                = "custom"
 	CLI_DIR                   = "cli"
 	MONITORING_DIR            = "monitoring"
+	AWS_DIR                   = "aws"
 )
 
 var projectStructure = []string{
