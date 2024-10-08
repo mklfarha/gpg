@@ -32,4 +32,7 @@ func (i *Implementation) GetUserID(ctx context.Context, token string) (uuid.UUID
 	return uuid.Nil, err
 }
 
+func (i *Implementation) GetUserByID(ctx context.Context, token string, userID string) (*gocloak.User, error) {
+	return i.client.GetUserByID(ctx, token, i.config.Realm, userID)
+}
 
