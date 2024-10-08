@@ -198,7 +198,7 @@ func mapUpsertRequestToUpdateParams(req types.UpsertRequest, existing {{.Project
 				if req.{{$entityName}}.{{$field.Name}} == emptyReq.{{$entityName}}.{{$field.Name}} {
 			{{else}}
 				// raw json is a pointer
-				if req.{{$entityName}}.{{$field.Name}} != nil {
+				if req.{{$entityName}}.{{$field.Name}} == nil {
 			{{end}}
 		{{end}}
 			res.{{$field.Name}} = existing.{{$field.Name}}
