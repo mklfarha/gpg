@@ -71,8 +71,7 @@ func (c *AWSClient) UploadToS3(filename string, data []byte) (*s3manager.UploadO
 	return up, nil
 }
 
-func (c *AWSClient) FetchSecret(secretName string) (*secretsmanager.GetSecretValueOutput, error) {
-	// Create Secrets Manager client
+func (c *AWSClient) FetchSecret(secretName string) (*secretsmanager.GetSecretValueOutput, error) {	
 	svc := secretsmanager.New(c.session)
 
 	input := &secretsmanager.GetSecretValueInput{
@@ -81,6 +80,30 @@ func (c *AWSClient) FetchSecret(secretName string) (*secretsmanager.GetSecretVal
 	}
 
 	return svc.GetSecretValue(input)
+}
+
+func (c *AWSClient) CreateSecret(secretName string, secretContent string, KmsKeyId *string) (*secretsmanager.CreateSecretOutput, error) {
+	svc := secretsmanager.New(c.session)
+
+	input := &secretsmanager.CreateSecretInput{
+		Name:         &secretName,
+		KmsKeyId:     KmsKeyId,
+		SecretString: &secretContent,
+	}
+
+	return svc.CreateSecret(input)
+}
+
+func (c *AWSClient) UpdateSecret(secretName string, secretContent string, KmsKeyId *string) (*secretsmanager.UpdateSecretOutput, error) {
+	svc := secretsmanager.New(c.session)
+
+	input := &secretsmanager.UpdateSecretInput{
+		SecretId:     &secretName,
+		KmsKeyId:     KmsKeyId,
+		SecretString: &secretContent,
+	}
+
+	return svc.UpdateSecret(input)
 }
 
 func getAwsConfigFromProvider() (*config.AWS, error) {
