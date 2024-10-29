@@ -71,6 +71,21 @@ func (c *AWSClient) UploadToS3(filename string, data []byte) (*s3manager.UploadO
 	return up, nil
 }
 
+func (c *AWSClient) GetSignedURL(filename string, expire time.Duration) (*string, error) {
+	svc := s3.New(c.session)
+	bucket := c.config.Bucket
+	req, _ := svc.GetObjectRequest(&s3.GetObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(filename),
+	})
+	urlStr, err := req.Presign(expire)
+	if err != nil {
+		return nil, err
+	}
+
+	return &urlStr, nil
+}
+
 func (c *AWSClient) FetchSecret(secretName string) (*secretsmanager.GetSecretValueOutput, error) {	
 	svc := secretsmanager.New(c.session)
 
