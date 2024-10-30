@@ -59,8 +59,7 @@ func (c *AWSClient) UploadToS3(filename string, data []byte) (*s3manager.UploadO
 
 	//upload to the s3 bucket
 	up, err := uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(bucket),
-		ACL:    aws.String("public-read"),
+		Bucket: aws.String(bucket),		
 		Key:    aws.String(filename),
 		Body:   bytes.NewReader(data),
 	})
