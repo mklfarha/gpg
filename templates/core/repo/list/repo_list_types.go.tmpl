@@ -8,6 +8,10 @@ import (
 	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"	
 )
 
+type JoinParams struct {
+	JoinStatement string
+	JoinWhereClauses string
+}
 
 type ListEntity interface {
 	FieldIdentfierToTypeMap() map[string]entitytypes.FieldType
@@ -23,6 +27,7 @@ type ListRequest interface {
 	GetOrderBy() ordering.OrderBy
 	GetPageSize() int32
 	GetOffset() int64
+	GetJoinParams() *JoinParams
 }
 
 type SingleClauseRequest struct {
@@ -34,6 +39,7 @@ type SingleClauseRequest struct {
 	dependantFieldIdentifer string
 	isArray 				bool
 	arrayType 				entitytypes.FieldType
+	entity                  ListEntity
 }
 
 type SingleClauseResponse struct {

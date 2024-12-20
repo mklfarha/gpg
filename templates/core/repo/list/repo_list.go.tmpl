@@ -19,11 +19,14 @@ func New() *Implementation {
 	}
 }
 
+
+
 func (i *Implementation) BuildListEntityQuery(
 	ctx context.Context,
 	request ListRequest,
-	entity ListEntity,
-	onlyCount bool) (string, error) {
+	entity ListEntity,		
+	onlyCount bool, 	
+	) (string, error) {
 
 	if request.GetFilter().CheckedExpr == nil || request.GetFilter().CheckedExpr.Expr == nil {
 		if onlyCount {
@@ -66,6 +69,30 @@ func (i *Implementation) BuildListEntityQuery(
 
 	limit := buildLimit(request)
 
+	if (request.GetJoinParams() != nil) {
+		finalWhereClause := fmt.Sprintf("%s AND (%s)", whereClause, request.GetJoinParams().JoinWhereClauses)
+		if onlyCount {
+			return fmt.Sprintf(
+				"SELECT DISTINCT count(%s.%s) FROM %s %s %s WHERE %s",
+				entity.EntityIdentifier(),
+				entity.PrimaryKeyIdentifier(),
+				entity.EntityIdentifier(),
+				request.GetJoinParams().JoinStatement,
+				jsonTablesFinal,
+				finalWhereClause,
+			), nil
+		}
+		return fmt.Sprintf(
+			"SELECT DISTINCT %s.* FROM %s %s %s WHERE %s %s %s",
+			entity.EntityIdentifier(),
+			entity.EntityIdentifier(),
+			request.GetJoinParams().JoinStatement,
+			jsonTablesFinal,
+			finalWhereClause,
+			orderByClause,
+			limit,
+		), nil
+	}
 	if onlyCount {
 		return fmt.Sprintf(
 			"SELECT DISTINCT count(%s.%s) FROM %s %s WHERE %s",
@@ -147,6 +174,7 @@ func buildSingleClause(cex *expr.Expr_Call, entity ListEntity, declarations *fil
 		fieldIdentifier:         fieldIdentifier,
 		isDependant:             isDependant,
 		dependantFieldIdentifer: dependantField,
+		entity:                  entity,
 	}
 
 	fieldMap := entity.FieldIdentfierToTypeMap()

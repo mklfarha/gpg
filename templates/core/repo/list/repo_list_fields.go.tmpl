@@ -224,14 +224,14 @@ func buildLeftOperator(req SingleClauseRequest) string {
 	if req.isDependant {
 		return buildJSONExtract(req)
 	}
-	return req.fieldIdentifier
+	return fmt.Sprintf("%s.%s", req.entity.EntityIdentifier(), req.fieldIdentifier)
 }
 
 func buildJSONExtract(req SingleClauseRequest) string {
 	if req.isDependantMulti {
-		return fmt.Sprintf("JSON_EXTRACT(%s, '$[*].%s')", req.fieldIdentifier, req.dependantFieldIdentifer)
+		return fmt.Sprintf("JSON_EXTRACT(%s.%s, '$[*].%s')", req.entity.EntityIdentifier(), req.fieldIdentifier, req.dependantFieldIdentifer)
 	}
-	return fmt.Sprintf("JSON_EXTRACT(%s, '$.%s')", req.fieldIdentifier, req.dependantFieldIdentifer)
+	return fmt.Sprintf("JSON_EXTRACT(%s.%s, '$.%s')", req.entity.EntityIdentifier(), req.fieldIdentifier, req.dependantFieldIdentifer)
 }
 
 func resolveJSONTable(req SingleClauseRequest, sqlType string) (json_table_name, json_table string) {

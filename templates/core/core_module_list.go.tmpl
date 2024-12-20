@@ -7,12 +7,17 @@ import (
 	"{{.ProjectIdentifier}}/core/module/{{.EntityIdentifier}}/types"
 	repogen "{{.ProjectIdentifier}}/core/repository/gen"
 	"{{.ProjectIdentifier}}/monitoring" 
+	
 )
 
 func (m *module) List(ctx context.Context,
 	request types.ListRequest,
 	opts ...Option) (types.ListResponse, error) {
-	query, err := m.repository.BuildListEntityQuery(ctx, request, main_entity.{{.EntityName}}{}, false)
+	query, err := m.repository.BuildListEntityQuery(
+		ctx, 
+		request, 
+		main_entity.{{.EntityName}}{}, 
+		false)
 	if err != nil {
 		m.monitoring.Emit(monitoring.EmitRequest{
 			ActionIdentifier: "list_{{.EntityIdentifier}}_query",

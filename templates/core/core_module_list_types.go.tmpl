@@ -7,6 +7,7 @@ import (
 	"go.einride.tech/aip/filtering"
 	"go.einride.tech/aip/ordering"
 	"go.uber.org/zap/zapcore"
+	"{{.ProjectIdentifier}}/core/repository/list"
 )
 
 type ListRequest struct {
@@ -15,6 +16,7 @@ type ListRequest struct {
 	Filter      		  	filtering.Filter
 	FilteringDeclarations 	*filtering.Declarations
 	OrderBy     			ordering.OrderBy	
+	JoinParams 				*list.JoinParams
 }
 
 func (r ListRequest) MarshalLogObject(e zapcore.ObjectEncoder) error { 
@@ -51,6 +53,10 @@ func (r ListRequest) GetFilteringDeclarations() *filtering.Declarations {
 
 func (r ListRequest) GetOrderBy() ordering.OrderBy {
 	return r.OrderBy
+}
+
+func (r ListRequest) GetJoinParams() *list.JoinParams {
+	return r.JoinParams
 }
 
 type ListResponse struct {
