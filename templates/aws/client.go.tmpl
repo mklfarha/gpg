@@ -75,6 +75,13 @@ func (c *AWSClient) UploadToS3(filename string, data []byte) (*s3manager.UploadO
 func (c *AWSClient) GetSignedS3URL(filename string, expire time.Duration) (*string, error) {
 	svc := s3.New(c.session)
 	bucket := c.config.Bucket
+	_, err := svc.HeadObject(&s3.HeadObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(filename),
+	})
+	if err != nil {
+		return nil, err
+	}
 	req, _ := svc.GetObjectRequest(&s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(filename),
