@@ -15,7 +15,7 @@ import (
 	"{{.ProjectIdentifier}}/core/module/{{.EntityIdentifier}}/types"	
 	{{.ProjectIdentifier}}db "{{.ProjectIdentifier}}/core/repository/gen"   
 	{{$firstGen := true}}
-	{{$firstJSONMany := true}}
+	{{$firstJSON := true}}
 	{{$firstEnumMany := true}}
 	{{range $field := .Fields}}	
 		{{if eq $firstGen true}}
@@ -24,11 +24,11 @@ import (
 				{{$firstGen = false}}				
 			{{end}}			
 		{{end}}		
-		{{if eq $firstJSONMany true}}
-			{{if eq $field.JSONMany true}}
+		{{if eq $firstJSON true}}
+			{{if eq $field.JSON true }}
 				{{range $import := $imports}} {{if and (ne $import "time") (ne $import "github.com/gofrs/uuid")}} 
     			"{{$import}}" {{end}}{{end}}
-				{{$firstJSONMany = false}}
+				{{$firstJSON = false}}
 			{{end}}
 		{{end}}
 		{{if eq $firstEnumMany true}}
