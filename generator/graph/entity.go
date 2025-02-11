@@ -50,6 +50,7 @@ func generateEntities(ctx context.Context, graphDir string, project entity.Proje
 
 		entityTemplate := GraphEntityTemplate{
 			ProjectIdentifier: project.Identifier,
+			ProjectModule:     project.Module,
 			Identifier:        e.Identifier,
 			EntityType:        helpers.ToCamelCase(e.Identifier),
 			EntityTypePlural:  pl.Plural(helpers.ToCamelCase(e.Identifier)),
@@ -101,6 +102,7 @@ func generateJSONEntities(ctx context.Context, graphDir string, project entity.P
 				fields, _ := field.ResolveFieldsAndImports(project, f.JSONConfig.Fields, e, &ft)
 				jsonEntityTemplate := GraphEntityTemplate{
 					ProjectIdentifier: project.Identifier,
+					ProjectModule:     project.Module,
 					Identifier:        f.JSONConfig.Identifier,
 					EntityType:        ft.Type,
 					EntityTypePlural:  pl.Plural(ft.Type),

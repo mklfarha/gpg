@@ -15,6 +15,7 @@ type mapperModuleTemplate struct {
 	Package           string
 	EntityName        string
 	ProjectIdentifier string
+	ProjectModule     string
 	Fields            []field.Template
 	Imports           []string
 	HasArrayField     bool
@@ -31,6 +32,7 @@ func generateMapper(ctx context.Context, req coreSubModuleRequest) error {
 	mapperTemplate := mapperModuleTemplate{
 		Package:           req.Entity.Identifier,
 		ProjectIdentifier: req.Project.Identifier,
+		ProjectModule:     req.Project.Module,
 		EntityName:        helpers.ToCamelCase(req.Entity.Identifier),
 		Fields:            req.Fields,
 		Imports:           helpers.MapKeys(req.Imports),

@@ -17,6 +17,7 @@ type fetchModuleTemplate struct {
 	EntityName        string
 	EntityIdentifier  string
 	ProjectIdentifier string
+	ProjectModule     string
 	Select            repo.SchemaSelectStatement
 	CustomQuery       entity.CustomQuery
 	Fields            []field.Template
@@ -36,6 +37,7 @@ func generateSelects(ctx context.Context, req coreSubModuleRequest) error {
 		fetchTemplate := fetchModuleTemplate{
 			Package:           req.Entity.Identifier,
 			ProjectIdentifier: req.Project.Identifier,
+			ProjectModule:     req.Project.Module,
 			EntityIdentifier:  req.Entity.Identifier,
 			EntityName:        helpers.ToCamelCase(req.Entity.Identifier),
 			Select:            sel,

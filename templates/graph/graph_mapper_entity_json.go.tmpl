@@ -3,10 +3,10 @@ package mapper
 {{$mainEntityIdentifier := .Identifier}}
 {{$mainEntityType := .EntityType}}
 import (    
-    "{{.ProjectIdentifier}}/graph/model"    
-    "{{.ProjectIdentifier}}/core/entity/{{.Identifier}}"
+    "{{.ProjectModule}}/graph/model"    
+    "{{.ProjectModule}}/core/entity/{{.Identifier}}"
     {{if ne .JSON true}}
-    "{{.ProjectIdentifier}}/core/module/{{.Identifier}}/types"    
+    "{{.ProjectModule}}/core/module/{{.Identifier}}/types"    
     {{end}}
 )
 

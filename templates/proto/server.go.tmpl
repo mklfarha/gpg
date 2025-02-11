@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"{{.Identifier}}/core"
-	pb "{{.Identifier}}/idl/gen"
-	"{{.Identifier}}/monitoring"
+	"{{.Module}}/core"
+	pb "{{.Module}}/idl/gen"
+	"{{.Module}}/monitoring"
 
 	"go.uber.org/config"
 	"go.uber.org/fx"
@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 	{{ if ne .AuthImport ""}}
-	"{{.Identifier}}/auth"
+	"{{.Module}}/auth"
 	{{ end }}
 	
 )

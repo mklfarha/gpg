@@ -53,8 +53,10 @@ func GenerateCoreRepository(ctx context.Context, rootPath string, project entity
 		TemplateName: path.Join("core", "repo", "repository"),
 		Data: struct {
 			ProjectIdentifier string
+			ProjectModule     string
 		}{
 			ProjectIdentifier: project.Identifier,
+			ProjectModule:     project.Module,
 		},
 	})
 	if err != nil {

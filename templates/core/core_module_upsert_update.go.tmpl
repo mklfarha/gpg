@@ -2,22 +2,23 @@ package {{.Package}}
 
 {{$entityName := .EntityName}}
 {{$projectIdentifier := .ProjectIdentifier}}
+{{$projectModule := .ProjectModule}}
 {{$entityIdenfier := .EntityIdentifier}}
 {{$imports := .Imports}}
 import (
 	"context"
     "errors"
 		
-	"{{.ProjectIdentifier}}/monitoring"
-	"{{.ProjectIdentifier}}/core/module/{{.EntityIdentifier}}/types"	
-	{{.ProjectIdentifier}}db "{{.ProjectIdentifier}}/core/repository/gen"   
+	"{{.ProjectModule}}/monitoring"
+	"{{.ProjectModule}}/core/module/{{.EntityIdentifier}}/types"	
+	{{.ProjectIdentifier}}db "{{.ProjectModule}}/core/repository/gen"   
 	{{$firstGen := true}}
 	{{$firstJSON := true}}
 	{{$firstEnumMany := true}}
 	{{range $field := .Fields}}	
 		{{if eq $firstGen true}}
 			{{ if eq $field.GeneratedUpdateCustom true}}
-				"{{$projectIdentifier}}/custom"
+				"{{$projectModule}}/custom"
 				{{$firstGen = false}}				
 			{{end}}			
 		{{end}}		
@@ -30,7 +31,7 @@ import (
 		{{end}}
 		{{if eq $firstEnumMany true}}
 			{{if eq $field.EnumMany true}}
-				main_entity "{{$projectIdentifier}}/core/entity/{{$entityIdenfier}}"
+				main_entity "{{$projectModule}}/core/entity/{{$entityIdenfier}}"
 				{{$firstEnumMany = false}}
 			{{end}}
 		{{end}}
@@ -39,7 +40,7 @@ import (
 	"time"
 	{{end}}
 	{{if eq .HasArrayField true}}
-	"{{.ProjectIdentifier}}/core/entity/mapper"
+	"{{.ProjectModule}}/core/entity/mapper"
 	{{end}}
 	
 )

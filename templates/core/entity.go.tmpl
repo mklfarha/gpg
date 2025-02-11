@@ -8,9 +8,9 @@ import (
     
     "fmt"
     
-    "{{.ProjectIdentifier}}/core/entity/types"
+    "{{.ProjectModule}}/core/entity/types"
     {{ if and (ne (len .Fields) 0) (eq .UsesRandomValues true) }}
-    "{{.ProjectIdentifier}}/core/randomvalues"
+    "{{.ProjectModule}}/core/randomvalues"
     {{ end }}
     "math/rand"
     {{if eq $timeImport false}}

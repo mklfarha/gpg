@@ -76,6 +76,7 @@ func generateEntityProtoFile(
 		}
 		entityTemplate = ProtoEntityTemplate{
 			ProjectIdentifier:     project.Identifier,
+			ProjectModule:         project.Module,
 			ParentIdentifier:      parentIdentifier,
 			OrignalIdentifier:     e.Identifier,
 			FinalIdentifier:       finalIdentifier,
@@ -135,6 +136,7 @@ func generateProtoFiles(ctx context.Context, protoDir string, project entity.Pro
 		TemplateName: path.Join("proto", "proto_service"),
 		Data: ProtoServiceTemplate{
 			Identifier: project.Identifier,
+			Module:     project.Module,
 			Name:       helpers.ToCamelCase(project.Identifier),
 			Entities:   standaloneEntityTemplates,
 		},

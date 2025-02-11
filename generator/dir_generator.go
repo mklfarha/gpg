@@ -64,7 +64,7 @@ func initModule(ctx context.Context, rootPath string, project entity.Project) {
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	if !FileExists(path.Join(projectDir, "go.mod")) {
-		cmd := exec.Command("go", "mod", "init", project.Identifier)
+		cmd := exec.Command("go", "mod", "init", project.Module)
 		cmd.Dir = projectDir
 		cmd.Stdout = &out
 		cmd.Stderr = &stderr

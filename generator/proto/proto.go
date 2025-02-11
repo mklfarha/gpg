@@ -13,6 +13,7 @@ import (
 
 type ProtoEntityTemplate struct {
 	ProjectIdentifier     string
+	ProjectModule         string
 	ParentIdentifier      string
 	OrignalIdentifier     string
 	FinalIdentifier       string
@@ -50,6 +51,7 @@ type ProtoEnumTemplate struct {
 
 type ProtoServiceTemplate struct {
 	Identifier string
+	Module     string
 	Name       string
 	Entities   []ProtoEntityTemplate
 	AuthImport string

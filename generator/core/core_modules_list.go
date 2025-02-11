@@ -13,6 +13,7 @@ import (
 
 type listData struct {
 	ProjectIdentifier string
+	ProjectModule     string
 	EntityIdentifier  string
 	EntityName        string
 	EntityNamePlural  string
@@ -24,6 +25,7 @@ func generateList(ctx context.Context, req coreSubModuleRequest) error {
 	pl := pluralize.NewClient()
 	listData := listData{
 		ProjectIdentifier: req.Project.Identifier,
+		ProjectModule:     req.Project.Module,
 		EntityIdentifier:  req.Entity.Identifier,
 		EntityName:        helpers.ToCamelCase(req.Entity.Identifier),
 		EntityNamePlural:  pl.Plural(helpers.ToCamelCase(req.Entity.Identifier)),

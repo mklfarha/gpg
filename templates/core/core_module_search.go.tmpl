@@ -4,9 +4,9 @@ import (
     "context"
     "fmt"
 
-    "{{.ProjectIdentifier}}/core/module/{{.EntityIdentifier}}/types"
-    {{.ProjectIdentifier}}db "{{.ProjectIdentifier}}/core/repository/gen"
-    "{{.ProjectIdentifier}}/monitoring"
+    "{{.ProjectModule}}/core/module/{{.EntityIdentifier}}/types"
+    {{.ProjectIdentifier}}db "{{.ProjectModule}}/core/repository/gen"
+    "{{.ProjectModule}}/monitoring"
 )
 
 func (m *module) Search(

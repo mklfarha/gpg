@@ -7,7 +7,7 @@ package main
 		{{$userEntity = $entity}}
 	{{end}}
 {{end}}
-{{$projectIdentifier := .Identifier}}
+{{$projectIdentifier := .Module}}
 import (
 	"bytes"	
 	"encoding/json"
@@ -20,9 +20,9 @@ import (
 	"sort"   
 	"context"
 
-	"{{.Identifier}}/config"
-	"{{.Identifier}}/monitoring"
-	"{{.Identifier}}/core"
+	"{{.Module}}/config"
+	"{{.Module}}/monitoring"
+	"{{.Module}}/core"
 	{{range $entity := .Entities}}
 	"{{$projectIdentifier}}/core/entity/{{$entity.Identifier}}"
 	{{$entity.Identifier}}types "{{$projectIdentifier}}/core/module/{{$entity.Identifier}}/types"

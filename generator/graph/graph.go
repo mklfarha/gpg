@@ -16,6 +16,7 @@ import (
 
 type GraphEntityTemplate struct {
 	ProjectIdentifier string
+	ProjectModule     string
 	Identifier        string
 	EntityType        string
 	EntityTypePlural  string
@@ -35,6 +36,7 @@ type GraphEntityTemplate struct {
 
 type GraphQueriesTemplate struct {
 	ProjectIdentifier string
+	ProjectModule     string
 	Project           entity.Project
 	Entities          []GraphEntityTemplate
 	JSONEntities      []GraphEntityTemplate

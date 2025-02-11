@@ -1,10 +1,10 @@
 package {{.Package}}
 
 import (    
-    main_entity "{{.ProjectIdentifier}}/core/entity/{{.Package}}"
-    {{.ProjectIdentifier}}db "{{.ProjectIdentifier}}/core/repository/gen"  
+    main_entity "{{.ProjectModule}}/core/entity/{{.Package}}"
+    {{.ProjectIdentifier}}db "{{.ProjectModule}}/core/repository/gen"  
 	{{if eq .HasArrayField true}}
-		"{{.ProjectIdentifier}}/core/entity/mapper"
+		"{{.ProjectModule}}/core/entity/mapper"
 	{{end}}
 	{{range $import := .Imports}} {{if ne $import "time"}} 
     "{{$import}}" {{end}}{{end}}

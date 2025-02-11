@@ -3,10 +3,10 @@ package {{.Package}}
 import (
 	"context"    
     
-    "{{.ProjectIdentifier}}/monitoring"
-    "{{.ProjectIdentifier}}/core/module/{{.EntityIdentifier}}/types"
+    "{{.ProjectModule}}/monitoring"
+    "{{.ProjectModule}}/core/module/{{.EntityIdentifier}}/types"
     {{if ne .Select.IsPrimary true}}    
-    {{.ProjectIdentifier}}db "{{.ProjectIdentifier}}/core/repository/gen"{{end}}    
+    {{.ProjectIdentifier}}db "{{.ProjectModule}}/core/repository/gen"{{end}}    
 )
 
 func (m *module) {{.CustomQuery.Name}}(

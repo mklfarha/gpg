@@ -17,8 +17,10 @@ func generateRepositoryListCode(ctx context.Context, repoDir string, project ent
 		TemplateName: path.Join("core", "repo", "list", "repo_list"),
 		Data: struct {
 			ProjectIdentifier string
+			ProjectModule     string
 		}{
 			ProjectIdentifier: project.Identifier,
+			ProjectModule:     project.Module,
 		},
 	})
 	if err != nil {
@@ -31,8 +33,10 @@ func generateRepositoryListCode(ctx context.Context, repoDir string, project ent
 		TemplateName: path.Join("core", "repo", "list", "repo_list_fields"),
 		Data: struct {
 			ProjectIdentifier string
+			ProjectModule     string
 		}{
 			ProjectIdentifier: project.Identifier,
+			ProjectModule:     project.Module,
 		},
 	})
 	if err != nil {
@@ -45,8 +49,10 @@ func generateRepositoryListCode(ctx context.Context, repoDir string, project ent
 		TemplateName: path.Join("core", "repo", "list", "repo_list_types"),
 		Data: struct {
 			ProjectIdentifier string
+			ProjectModule     string
 		}{
 			ProjectIdentifier: project.Identifier,
+			ProjectModule:     project.Module,
 		},
 	})
 	if err != nil {

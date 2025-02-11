@@ -23,6 +23,7 @@ func generateQueries(ctx context.Context,
 		TemplateName: path.Join("graph", "graph_queries"),
 		Data: GraphQueriesTemplate{
 			ProjectIdentifier: project.Identifier,
+			ProjectModule:     project.Module,
 			Entities:          entityTemplates,
 		},
 		Funcs: template.FuncMap{
@@ -44,6 +45,7 @@ func generateQueries(ctx context.Context,
 		TemplateName: path.Join("graph", "graph_mutations"),
 		Data: GraphQueriesTemplate{
 			ProjectIdentifier: project.Identifier,
+			ProjectModule:     project.Module,
 			Entities:          entityTemplates,
 		},
 		DisableGoFormat: true,

@@ -2,6 +2,7 @@ package entity
 
 type Project struct {
 	Identifier string `json:"identifier"`
+	Module     string `json:"module"`
 	Render     Render `json:"render"`
 
 	Database DB       `json:"database"`

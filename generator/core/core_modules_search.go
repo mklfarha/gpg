@@ -17,6 +17,7 @@ func generateSearch(ctx context.Context, req coreSubModuleRequest) error {
 		searchTemplate := fetchModuleTemplate{
 			Package:           req.Entity.Identifier,
 			ProjectIdentifier: req.Project.Identifier,
+			ProjectModule:     req.Project.Module,
 			EntityIdentifier:  req.Entity.Identifier,
 			EntityName:        helpers.ToCamelCase(req.Entity.Identifier),
 			Imports:           helpers.MapKeys(req.Imports),

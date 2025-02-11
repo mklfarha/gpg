@@ -21,6 +21,7 @@ func generateProtoc(ctx context.Context, protoDir string, project entity.Project
 		TemplateName: path.Join("proto", "gen"),
 		Data: ProtoServiceTemplate{
 			Identifier: project.Identifier,
+			Module:     project.Module,
 			Name:       helpers.ToCamelCase(project.Identifier),
 			Entities:   standaloneEntities,
 		},

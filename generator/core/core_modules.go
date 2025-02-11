@@ -99,8 +99,10 @@ func GenerateCoreModules(ctx context.Context, rootPath string, project entity.Pr
 		TemplateName: path.Join("core", "random_values"),
 		Data: struct {
 			ProjectIdentifier string
+			ProjectModule     string
 		}{
 			ProjectIdentifier: project.Identifier,
+			ProjectModule:     project.Module,
 		},
 	})
 

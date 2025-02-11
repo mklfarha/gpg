@@ -33,6 +33,7 @@ func overrideGqlgenFiles(ctx context.Context,
 		TemplateName: path.Join("graph", "graph_queries_resolver"),
 		Data: GraphQueriesTemplate{
 			ProjectIdentifier: project.Identifier,
+			ProjectModule:     project.Module,
 			Project:           project,
 			Entities:          entityTemplates,
 		},
@@ -55,6 +56,7 @@ func overrideGqlgenFiles(ctx context.Context,
 		TemplateName: path.Join("graph", "graph_mutations_resolver"),
 		Data: GraphQueriesTemplate{
 			ProjectIdentifier: project.Identifier,
+			ProjectModule:     project.Module,
 			Entities:          entityTemplates,
 		},
 	})

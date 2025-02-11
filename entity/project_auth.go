@@ -52,11 +52,11 @@ func (p Project) AuthByType(t AuthType) (bool, Auth) {
 
 func (p Project) AuthImport() string {
 	if p.HasJWTAuth() && p.JWTAuth().Config.JWT != nil {
-		return fmt.Sprintf("auth \"%s/auth/jwtserver\"", p.Identifier)
+		return fmt.Sprintf("auth \"%s/auth/jwtserver\"", p.Module)
 	}
 
 	if p.HasKeycloakAuth() && p.KeycloakAuth().Config.Keycloak != nil {
-		return fmt.Sprintf("auth \"%s/auth/keycloak\"", p.Identifier)
+		return fmt.Sprintf("auth \"%s/auth/keycloak\"", p.Module)
 	}
 	return ""
 }

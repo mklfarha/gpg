@@ -1,8 +1,8 @@
 package custom 
 
 import (    
-    "{{.ProjectIdentifier}}/core/module/{{.EntityIdentifier}}/types"
-    {{.ProjectIdentifier}}db "{{.ProjectIdentifier}}/core/repository/gen"
+    "{{.ProjectModule}}/core/module/{{.EntityIdentifier}}/types"
+    {{.ProjectIdentifier}}db "{{.ProjectModule}}/core/repository/gen"
 )
 
 func {{.EntityName}}{{.Field.Name}}{{.FuncName}}Insert(req types.UpsertRequest) {{.Field.Type}} {

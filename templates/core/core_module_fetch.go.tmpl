@@ -3,11 +3,11 @@ package {{.Package}}
 import (
 	"context"    
     
-    "{{.ProjectIdentifier}}/core/module/{{.EntityIdentifier}}/types"
+    "{{.ProjectModule}}/core/module/{{.EntityIdentifier}}/types"
     {{if ne .Select.IsPrimary true}}
     "errors"
-    {{.ProjectIdentifier}}db "{{.ProjectIdentifier}}/core/repository/gen"{{end}}        
-    "{{.ProjectIdentifier}}/monitoring"    
+    {{.ProjectIdentifier}}db "{{.ProjectModule}}/core/repository/gen"{{end}}        
+    "{{.ProjectModule}}/monitoring"    
 )
 
 func (m *module) Fetch{{.Select.Name}}(

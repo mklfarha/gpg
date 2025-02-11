@@ -5,6 +5,8 @@ import "github.com/maykel/gpg/entity"
 type Template struct {
 	ProjectIdentifier string
 
+	ProjectModule string
+
 	// original identifier the one the user inputed
 	// this will be the column name
 	Identifier string

@@ -17,6 +17,7 @@ func generateServer(ctx context.Context, protoDir string, project entity.Project
 		TemplateName: path.Join("proto", "server"),
 		Data: ProtoServiceTemplate{
 			Identifier: project.Identifier,
+			Module:     project.Module,
 			Name:       helpers.ToCamelCase(project.Identifier),
 			AuthImport: project.AuthImport(),
 		},
@@ -32,6 +33,7 @@ func generateServer(ctx context.Context, protoDir string, project entity.Project
 		TemplateName: path.Join("proto", "server_auth"),
 		Data: ProtoServiceTemplate{
 			Identifier: project.Identifier,
+			Module:     project.Module,
 			Name:       helpers.ToCamelCase(project.Identifier),
 			AuthImport: project.AuthImport(),
 		},

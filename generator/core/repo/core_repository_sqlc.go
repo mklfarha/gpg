@@ -22,9 +22,11 @@ func generateRepositorySQLCode(ctx context.Context, repoDir string, project enti
 			TemplateName: path.Join("core", "repo", "repo_yaml"),
 			Data: struct {
 				ProjectIdentifier string
+				ProjectModule     string
 				Fields            map[string]string
 			}{
 				ProjectIdentifier: project.Identifier,
+				ProjectModule:     project.Module,
 				Fields:            helpers.FieldsToCamelCase(project.Entities),
 			},
 			DisableGoFormat: true,

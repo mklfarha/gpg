@@ -12,6 +12,7 @@ import (
 
 type CustomUpsert struct {
 	ProjectIdentifier string
+	ProjectModule     string
 	EntityName        string
 	EntityIdentifier  string
 	FuncName          string

@@ -4,23 +4,23 @@ package main
 import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	{{.Identifier}}config "{{.Identifier}}/config"
-	"{{.Identifier}}/core"
+	{{.Identifier}}config "{{.Module}}/config"
+	"{{.Module}}/core"
 
 	{{ if eq $enableProto true}}
-	pbserver "{{.Identifier}}/idl/server"		
+	pbserver "{{.Module}}/idl/server"		
 	{{end}}
 
 	{{.AuthImport}}
 
 	{{if eq $enableGraph true}}
-	"{{.Identifier}}/graph"
+	"{{.Module}}/graph"
 	{{end}}
 
-	"{{.Identifier}}/monitoring"
+	"{{.Module}}/monitoring"
 	
 	{{if eq .Events.Enabled true}}
-	"{{.Identifier}}/core/events"
+	"{{.Module}}/core/events"
 	{{end}}
 
 	{{if eq .KafkaEnabled true}}

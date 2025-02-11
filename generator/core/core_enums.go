@@ -59,6 +59,7 @@ func generateEnum(ctx context.Context,
 
 	enumTemplate := EnumTemplate{
 		ProjectIdentifier: project.Identifier,
+		ProjectModule:     project.Module,
 		Package:           pkg,
 		EnumName:          helpers.ToCamelCase(name),
 		EnumNameUpper:     strings.ToUpper(name),

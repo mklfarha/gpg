@@ -16,6 +16,7 @@ import (
 
 type EntityTemplate struct {
 	ProjectIdentifier    string
+	ProjectModule        string
 	Package              string
 	Imports              []string
 	EntityName           string
@@ -30,6 +31,7 @@ type EntityTemplate struct {
 
 type EnumTemplate struct {
 	ProjectIdentifier string
+	ProjectModule     string
 	Package           string
 	EnumName          string
 	EnumNameUpper     string
@@ -100,6 +102,7 @@ func resolveEntityTemplate(e entity.Entity, project entity.Project) (EntityTempl
 
 	tpl := EntityTemplate{
 		ProjectIdentifier:    project.Identifier,
+		ProjectModule:        project.Module,
 		Package:              e.Identifier,
 		EntityName:           helpers.ToCamelCase(e.Identifier),
 		Identifier:           e.Identifier,
@@ -132,6 +135,7 @@ func generateJSONEntities(ctx context.Context, entitiesDir string, e entity.Enti
 			fields, imports := field.ResolveFieldsAndImports(project, f.JSONConfig.Fields, e, &ft)
 			entityTemplate := EntityTemplate{
 				ProjectIdentifier: project.Identifier,
+				ProjectModule:     project.Module,
 				Package:           f.JSONConfig.Identifier,
 				Identifier:        f.JSONConfig.Identifier,
 				EntityName:        ft.Type,

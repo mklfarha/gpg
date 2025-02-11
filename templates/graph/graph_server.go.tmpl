@@ -1,20 +1,20 @@
 package graph
 
 import (	
-	"{{.Identifier}}/core"
-	"{{.Identifier}}/monitoring"
+	"{{.Module}}/core"
+	"{{.Module}}/monitoring"
 
 	"go.uber.org/config"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
     "github.com/99designs/gqlgen/graphql/handler"
-    "{{.Identifier}}/graph/generated"
+    "{{.Module}}/graph/generated"
     "net/http"
     "github.com/99designs/gqlgen/graphql/playground"
 
 	{{ if or (eq .HasBasicAuth true) (ne .AuthImport "") }}
-	"{{.Identifier}}/auth"  
+	"{{.Module}}/auth"  
 	{{ end }}
 	{{ if ne .AuthImport ""}}
 	"fmt"  

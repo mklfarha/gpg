@@ -52,7 +52,7 @@ func ResolveFieldsAndImports(project entity.Project, fields []entity.Field, e en
 		fieldTemplates[i] = fieldTemplate
 
 		if f.Type == entity.JSONFieldType && (f.JSONConfig.Reuse || len(f.JSONConfig.Fields) > 0) {
-			nestedEntityImport := fmt.Sprintf("%s/core/entity/%s", project.Identifier, f.JSONConfig.Identifier)
+			nestedEntityImport := fmt.Sprintf("%s/core/entity/%s", project.Module, f.JSONConfig.Identifier)
 			imports[nestedEntityImport] = struct{}{}
 		}
 	}

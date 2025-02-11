@@ -9,16 +9,16 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"go.uber.org/config"
 	"go.uber.org/fx"	
-	{{.Identifier}}config "{{.Identifier}}/config"
-	coretypes "{{.Identifier}}/core/types"
-    {{$projectIdentifier := .Identifier}}
+	{{.Identifier}}config "{{.Module}}/config"
+	coretypes "{{.Module}}/core/types"
+    {{$projectIdentifier := .Module}}
     {{range $entity := .Entities}}
     "{{$projectIdentifier}}/core/module/{{$entity.Identifier}}"	
     {{end}}	
-	"{{.Identifier}}/core/repository"
-	"{{.Identifier}}/monitoring"
+	"{{.Module}}/core/repository"
+	"{{.Module}}/monitoring"
 	{{if eq .Events.Enabled true}}
-	"{{.Identifier}}/core/events"
+	"{{.Module}}/core/events"
 	{{end}}
 	
 )

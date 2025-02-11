@@ -4,8 +4,8 @@ package mapper
 {{$uuidImport := false}}
 
 import (
-    main_entity "{{.ProjectIdentifier}}/core/entity/{{.OrignalIdentifier}}"
-    pb "{{.ProjectIdentifier}}/idl/gen"
+    main_entity "{{.ProjectModule}}/core/entity/{{.OrignalIdentifier}}"
+    pb "{{.ProjectModule}}/idl/gen"
     {{range $field := .Fields}}{{if and (eq $field.Type "time.Time") (eq $timestampImport false)}}
     "google.golang.org/protobuf/types/known/timestamppb" {{$timestampImport = true}} {{end}}    
     {{if and (eq $field.Type "uuid.UUID") (eq $uuidImport false)}}
