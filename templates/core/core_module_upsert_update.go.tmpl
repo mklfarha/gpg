@@ -184,36 +184,19 @@ func mapUpsertRequestToUpdateParams(req types.UpsertRequest, existing {{.Project
 	}
 
 	res := {{.ProjectIdentifier}}db.Update{{.EntityName}}Params{}
-	emptyReq := types.UpsertRequest{}
-
+	
 	{{range $field := .Fields}}
-		
-		{{if eq $field.JSONMany true}}
-			// json array
-			if len(req.{{$entityName}}.{{$field.Name}}) == 0 {
-		{{else if and (eq $field.JSON true) (ne $field.GenFieldType "RawJSONFieldType")  }}
-			if req.{{$entityName}}.{{$field.Name}}.ToJSON() == nil {
-		{{else}}		    
-			{{if and (ne $field.GenFieldType "ArrayFieldType") (ne $field.GenFieldType "MultiEnumFieldType") }}
-				// regular field
-				if req.{{$entityName}}.{{$field.Name}} == emptyReq.{{$entityName}}.{{$field.Name}} {
-			{{else}}
-				// raw json is a pointer
-				if req.{{$entityName}}.{{$field.Name}} == nil {
-			{{end}}
+				
+		{{ if eq $field.Generated true}} 
+		res.{{$field.Name}} = {{$field.GeneratedFuncUpdate}}{{$field.RepoToMapper}}
+		{{else}}
+		{{ if or (eq $field.JSON true) (eq $field.Array true) (eq $field.EnumMany true) (eq $field.GenFieldType "RawJSONFieldType")}}
+		res.{{$field.Name}} = {{$field.RepoToMapper}}
+		{{ else }}
+		res.{{$field.Name}} = req.{{$entityName}}.{{$field.Name}}{{$field.RepoToMapper}} 
+		{{end}}			
 		{{end}}
-			res.{{$field.Name}} = existing.{{$field.Name}}
-		} else {
-			{{ if eq $field.Generated true}} 
-			res.{{$field.Name}} = {{$field.GeneratedFuncUpdate}}{{$field.RepoToMapper}}
-			{{else}}
-			{{ if or (eq $field.JSON true) (eq $field.Array true) (eq $field.EnumMany true) (eq $field.GenFieldType "RawJSONFieldType")}}
-			res.{{$field.Name}} = {{$field.RepoToMapper}}
-			{{ else }}
-			res.{{$field.Name}} = req.{{$entityName}}.{{$field.Name}}{{$field.RepoToMapper}} 
-			{{end}}			
-			{{end}}
-		}
+		
 	{{end}}
 
 	return res
