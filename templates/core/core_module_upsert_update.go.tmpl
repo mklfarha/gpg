@@ -185,13 +185,17 @@ func mapUpsertRequestToUpdateParams(req types.UpsertRequest, existing {{.Project
 
 	res := {{.ProjectIdentifier}}db.Update{{.EntityName}}Params{}
 	
-	{{range $field := .Fields}}
-				
+	{{range $field := .Fields}}				
 		{{ if eq $field.Generated true}} 
 		res.{{$field.Name}} = {{$field.GeneratedFuncUpdate}}{{$field.RepoToMapper}}
 		{{else}}
 		{{ if or (eq $field.JSON true) (eq $field.Array true) (eq $field.EnumMany true) (eq $field.GenFieldType "RawJSONFieldType")}}
-		res.{{$field.Name}} = {{$field.RepoToMapper}}
+		res.{{$field.Name}} = {{$field.RepoToMapper}}	
+			{{if eq $field.GenFieldType "RawJSONFieldType"}}	
+				if res.{{$field.Name}} == nil {
+					res.{{$field.Name}} = []byte(`{}`)
+				}
+			{{end}}
 		{{ else }}
 		res.{{$field.Name}} = req.{{$entityName}}.{{$field.Name}}{{$field.RepoToMapper}} 
 		{{end}}			
