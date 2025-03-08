@@ -192,7 +192,7 @@ func mapUpsertRequestToUpdateParams(req types.UpsertRequest, existing {{.Project
 		{{ if or (eq $field.JSON true) (eq $field.Array true) (eq $field.EnumMany true) (eq $field.GenFieldType "RawJSONFieldType")}}
 		res.{{$field.Name}} = {{$field.RepoToMapper}}	
 			{{if eq $field.GenFieldType "RawJSONFieldType"}}	
-				if res.{{$field.Name}} == nil {
+				if string(res.{{$field.Name}}) == "" {
 					res.{{$field.Name}} = []byte(`{}`)
 				}
 			{{end}}
