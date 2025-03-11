@@ -38,6 +38,18 @@ func (m *module) List(ctx context.Context,
 	txn, _ := m.repository.DB.Begin()
 	defer txn.Commit()
 	bufferRows, err := txn.QueryContext(ctx, "SET sort_buffer_size=2000000")
+	if err != nil {
+		m.monitoring.Emit(monitoring.EmitRequest{
+			ActionIdentifier: "list_{{.EntityIdentifier}}_sort_buffer",
+			Message: "error in setting sort buffer for List{{.EntityName}}",
+			EntityIdentifier: "{{.EntityIdentifier}}",
+			Layer: monitoring.RepositoryServiceLayer,
+			Type: monitoring.EmitTypeError,
+			Data: request,
+			Error: err,
+		})
+		return types.ListResponse{}, err
+	}
 	bufferRows.Close()
 	rows, err := txn.QueryContext(ctx, query)
 	if err != nil {
