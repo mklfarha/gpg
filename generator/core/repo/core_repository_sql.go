@@ -97,7 +97,10 @@ func resolveSchemaFieldsAndIndexes(e entity.Entity) ([]SchemaField, []SchemaInde
 			ft := SchemaField{
 				Name: f.Identifier,
 				Type: resolveRepoFieldType(f),
-				Null: "NOT NULL",
+			}
+
+			if f.Required {
+				ft.Null = "NOT NULL"
 			}
 
 			if f.StorageConfig.Unique {
