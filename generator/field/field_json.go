@@ -22,12 +22,18 @@ func JSONFieldTemplate(f entity.Field, e entity.Entity, dependant bool) Template
 
 	if len(f.JSONConfig.Fields) == 0 && !f.JSONConfig.Reuse {
 		stringTemplate := StringFieldTemplate(f, e)
-		stringTemplate.Type = "string"
 		stringTemplate.GenFieldType = "RawJSONFieldType"
-		stringTemplate.GenRandomValue = "randomvalues.GetRandomRawJSONValue()"
+		if f.Required {
+			stringTemplate.GenRandomValue = "randomvalues.GetRandomRawJSONValue()"
+			stringTemplate.RepoToMapper = fmt.Sprintf("[]byte(req.%s.%s)", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier))
+			stringTemplate.RepoFromMapper = fmt.Sprintf("string(model.%s)", helpers.ToCamelCase(f.Identifier))
+		} else {
+			stringTemplate.GenRandomValue = "randomvalues.GetRandomRawJSONValuePtr()"
+			stringTemplate.RepoToMapper = fmt.Sprintf("[]byte(mapper.StringPtrToString(req.%s.%s))", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier))
+			stringTemplate.RepoFromMapper = fmt.Sprintf("mapper.StringToStringPtr(string(model.%s))", helpers.ToCamelCase(f.Identifier))
+		}
 		stringTemplate.JSONRaw = true
-		stringTemplate.RepoToMapper = fmt.Sprintf("[]byte(req.%s.%s)", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier))
-		stringTemplate.RepoFromMapper = fmt.Sprintf("string(model.%s)", helpers.ToCamelCase(f.Identifier))
+
 		return stringTemplate
 	}
 

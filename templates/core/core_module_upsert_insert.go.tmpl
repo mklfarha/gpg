@@ -42,7 +42,7 @@ import (
 	{{if eq .HasVersionField true}}
 	"time"
 	{{end}}
-	{{if eq .HasArrayField true}}
+	{{if or (eq .HasArrayField true) (eq .HasNullString true) (eq .HasNullUUID true)}}
 	"{{.ProjectModule}}/core/entity/mapper"
 	{{end}}	
 )
@@ -131,7 +131,7 @@ func mapUpsertRequestToInsertParams(req types.UpsertRequest) {{.ProjectIdentifie
 		{{ if eq $field.Generated true}} 
 		{{$field.Name}}: {{$field.GeneratedFuncInsert}}{{$field.RepoToMapper}},
 		{{else}}
-		{{ if or (eq $field.JSON true) (eq $field.Array true) (eq $field.EnumMany true) (eq $field.GenFieldType "RawJSONFieldType")}}
+		{{ if or (eq $field.JSON true) (eq $field.Array true) (eq $field.EnumMany true) (eq $field.GenFieldType "RawJSONFieldType") (and (eq $field.Required false) (eq $field.Type "*string")) (and (eq $field.Required false) (eq $field.Type "uuid.UUID"))}}
 			{{$field.Name}}: {{$field.RepoToMapper}}, 
 		{{ else }}
         	{{$field.Name}}: req.{{$entityName}}.{{$field.Name}}{{$field.RepoToMapper}}, 

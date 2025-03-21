@@ -20,8 +20,15 @@ func UUIDFieldTemplate(f entity.Field, e entity.Entity) Template {
 	template.GenRandomValue = "randomvalues.GetRandomUUIDValue()"
 	imp := "github.com/gofrs/uuid"
 	template.Import = &imp
-	template.RepoToMapper = ".String()"
-	template.RepoFromMapper = fmt.Sprintf("uuid.FromStringOrNil(model.%s)", helpers.ToCamelCase(f.Identifier))
+
+	if f.Required {
+		template.RepoToMapper = ".String()"
+		template.RepoFromMapper = fmt.Sprintf("uuid.FromStringOrNil(model.%s)", helpers.ToCamelCase(f.Identifier))
+	} else {
+		template.RepoToMapper = fmt.Sprintf("mapper.StringToSqlNullString(req.%s.%s.String())", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier))
+		template.RepoToMapperFetch = fmt.Sprintf("mapper.StringToSqlNullString(req.%s.String())", helpers.ToCamelCase(f.Identifier))
+		template.RepoFromMapper = fmt.Sprintf("uuid.FromStringOrNil(mapper.SqlNullStringToString(model.%s))", helpers.ToCamelCase(f.Identifier))
+	}
 
 	//graph
 	template.GraphName = strings.ReplaceAll(f.Identifier, "Uuid", "UUID")

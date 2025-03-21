@@ -101,7 +101,7 @@ func main() {
                     {{range $field := $userEntity.Fields}}                                               
                         {{if eq $field.Identifier "status"}}
                             {{$field.Identifier | ToCamelCase}}: user.Status(1),                                                
-                        {{else if eq (printf "%s" $field.Type) "string"}}
+                        {{else if and (eq (printf "%s" $field.Type) "string") (eq $field.Required true)}}
                             {{$field.Identifier | ToCamelCase}}: fields["{{$field.Identifier}}"].value,                        
                         {{end}}
                     {{end}}		

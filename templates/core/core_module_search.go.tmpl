@@ -1,5 +1,6 @@
 package {{.Package}}
-
+{{ $firstMapperImport := false }}
+{{ $projectModule := .ProjectModule}}
 import (
     "context"
     "fmt"
@@ -7,6 +8,11 @@ import (
     "{{.ProjectModule}}/core/module/{{.EntityIdentifier}}/types"
     {{.ProjectIdentifier}}db "{{.ProjectModule}}/core/repository/gen"
     "{{.ProjectModule}}/monitoring"
+    {{range $field := .SearchFields}}
+        {{- if and (eq $field.Type "*string") (eq $firstMapperImport false) }} {{$firstMapperImport = true}}
+            "{{$projectModule}}/core/entity/mapper"
+        {{end -}}
+    {{end}}
 )
 
 func (m *module) Search(
@@ -16,7 +22,9 @@ func (m *module) Search(
     offset int32,
 ) (types.Search{{.EntityName}}Response, error) {
     request := {{.ProjectIdentifier}}db.Search{{.EntityName}}Params{ {{range $field := .SearchFields}}
-            {{$field.Name}}: fmt.Sprintf("%%%s%%", query),{{end}}
+            {{ if eq $field.Type "string" -}}{{$field.Name}}: fmt.Sprintf("%%%s%%", query),{{end -}}
+            {{ if eq $field.Type "*string" -}}{{$field.Name}}: mapper.StringToSqlNullString(query),{{end -}}            
+            {{end}}
             Offset: offset,
             Limit: limit,            
         }

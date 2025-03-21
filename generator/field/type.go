@@ -64,8 +64,9 @@ type Template struct {
 	EnumMany bool
 
 	// repo mappers
-	RepoToMapper   string
-	RepoFromMapper string
+	RepoToMapper      string
+	RepoToMapperFetch string
+	RepoFromMapper    string
 
 	// graph mappers
 	GraphRequired              string

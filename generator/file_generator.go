@@ -52,7 +52,7 @@ func GenerateFile(ctx context.Context, req FileRequest) error {
 	if err != nil {
 		fmt.Printf("Template Error: %v\n ", req.TemplateName)
 		fmt.Printf("Template Error: %v\n ", err)
-		return fmt.Errorf("error with provided template: %w", err)
+		return fmt.Errorf("error with provided template (%s): %w", req.TemplateName, err)
 	}
 
 	// execute with data
@@ -60,7 +60,7 @@ func GenerateFile(ctx context.Context, req FileRequest) error {
 	err = t.Execute(&buf, req.Data)
 	if err != nil {
 		fmt.Printf("Execute Error: %v\n err:%v\n", req, err)
-		return fmt.Errorf("error executing template")
+		return fmt.Errorf("error executing template (%s): %w", req.TemplateName, err)
 	}
 
 	output := buf.Bytes()

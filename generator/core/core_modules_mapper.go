@@ -19,14 +19,26 @@ type mapperModuleTemplate struct {
 	Fields            []field.Template
 	Imports           []string
 	HasArrayField     bool
+	HasNullString     bool
+	HasNullUUID       bool
 }
 
 func generateMapper(ctx context.Context, req coreSubModuleRequest) error {
 	fmt.Printf("--[GPG] Generating core module mapper: %s\n", req.Entity.Identifier)
 	hasArrayField := false
+	hasNullString := false
+	hasNullUUID := false
 	for _, f := range req.Fields {
 		if f.InternalType == entity.ArrayFieldType {
 			hasArrayField = true
+		}
+
+		if f.Type == "*string" {
+			hasNullString = true
+		}
+
+		if !f.Required && f.InternalType == entity.UUIDFieldType {
+			hasNullUUID = true
 		}
 	}
 	mapperTemplate := mapperModuleTemplate{
@@ -37,6 +49,8 @@ func generateMapper(ctx context.Context, req coreSubModuleRequest) error {
 		Fields:            req.Fields,
 		Imports:           helpers.MapKeys(req.Imports),
 		HasArrayField:     hasArrayField,
+		HasNullString:     hasNullString,
+		HasNullUUID:       hasNullUUID,
 	}
 
 	return generator.GenerateFile(ctx, generator.FileRequest{

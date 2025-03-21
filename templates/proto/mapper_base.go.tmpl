@@ -55,3 +55,10 @@ func ProtoTimeSliceToTimeSlice(ts []*timestamppb.Timestamp) []time.Time {
     }
     return res
 }
+
+func StringPtrToString(s *string) string {
+    if s == nil {
+        return ""
+    }
+    return *s
+}

@@ -3,7 +3,7 @@ package {{.Package}}
 import (    
     main_entity "{{.ProjectModule}}/core/entity/{{.Package}}"
     {{.ProjectIdentifier}}db "{{.ProjectModule}}/core/repository/gen"  
-	{{if eq .HasArrayField true}}
+	{{if or (eq .HasArrayField true) (eq .HasNullString true) (eq .HasNullUUID true)}}
 		"{{.ProjectModule}}/core/entity/mapper"
 	{{end}}
 	{{range $import := .Imports}} {{if ne $import "time"}} 
