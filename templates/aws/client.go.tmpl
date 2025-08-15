@@ -54,6 +54,10 @@ func (c *AWSClient) Config() *config.AWS {
     return c.config
 }
 
+func (c *AWSClient) Session() *session.Session {
+	return c.session
+}
+
 func (c *AWSClient) UploadToS3(filename string, data []byte) (*s3manager.UploadOutput, error) {
 	uploader := s3manager.NewUploader(c.session)
 
