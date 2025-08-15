@@ -26,7 +26,7 @@ func serverHandlerUploadFunc() http.HandlerFunc {
             return
         }
 
-        awsClient, err := aws.New(nil)
+        awsClient, err := aws.New(aws.Params{})
 		if err != nil {
 			fmt.Printf("error creating aws client\n")
 			http.Error(w, "Internal Error", http.StatusInternalServerError)
