@@ -16,4 +16,8 @@ sql:
             engine: "mysql"
             go_type:              
               type: "int64"
+          - db_type: "json"
+            go_type:
+              type: "[]byte"  # workaround sqlc bug when reading null json columns
+            nullable: true
           
