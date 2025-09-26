@@ -50,7 +50,7 @@ func New(params Params) *grpc.Server {
 	log := params.Logger
 	s := grpc.NewServer(
 		{{ if ne .AuthImport ""}}
-		grpc.UnaryInterceptor(AuthUnaryServerInterceptor(params.Auth, params.Monitoring)),
+		grpc.UnaryInterceptor(AuthUnaryServerInterceptor(params.Auth, params.Monitoring, []string{})),
 		{{ end }}
 	)
 	params.Lifecycle.Append(fx.Hook{
