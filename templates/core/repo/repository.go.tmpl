@@ -24,6 +24,6 @@ func New(db *sql.DB) *Implementation {
 	}
 }
 
-func (i *Implementation) BuildListEntityQuery(ctx context.Context, request list.ListRequest, entity list.ListEntity, onlyCount bool) (string, error) {
-	return i.List.BuildListEntityQuery(ctx, request, entity, onlyCount)
+func (i *Implementation) BuildListEntityQuery(ctx context.Context, request list.ListRequest, entity list.ListEntity, onlyCount bool, includeColumns []string, excludeColumns []string) (string, error) {
+	return i.List.BuildListEntityQuery(ctx, request, entity, onlyCount, includeColumns, excludeColumns)
 }
