@@ -76,13 +76,11 @@ func (m *module) List(ctx context.Context,
 		{{range $field := .Fields}}
 		if len(optConfig.ListIncludeColumns) > 0 {
 			if slices.Contains(optConfig.ListIncludeColumns, "{{$field.Identifier}}") {
-				fields = append(fields, &i.{{$field.Name}})
-				continue
+				fields = append(fields, &i.{{$field.Name}})				
 			}
 		} else if len(optConfig.ListExcludeColumns) > 0 {
 			if !slices.Contains(optConfig.ListExcludeColumns, "{{$field.Identifier}}") {				
-				fields = append(fields, &i.{{$field.Name}})
-				continue
+				fields = append(fields, &i.{{$field.Name}})				
 			}
 		} else {
 			fields = append(fields, &i.{{$field.Name}})
