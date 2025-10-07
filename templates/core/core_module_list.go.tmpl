@@ -7,6 +7,7 @@ import (
 	"{{.ProjectModule}}/core/module/{{.EntityIdentifier}}/types"
 	repogen "{{.ProjectModule}}/core/repository/gen"
 	"{{.ProjectModule}}/monitoring" 
+	"slices"
 	
 )
 
@@ -71,9 +72,23 @@ func (m *module) List(ctx context.Context,
 	var items []repogen.{{.EntityName}}
 	for rows.Next() {
 		var i repogen.{{.EntityName}}
-		if err := rows.Scan( {{range $field := .Fields}}
-			&i.{{$field.Name}},{{end}}			
-		); err != nil {
+		fields := []any{}
+		{{range $field := .Fields}}
+		if len(optConfig.ListIncludeColumns) > 0 {
+			if slices.Contains(optConfig.ListIncludeColumns, "{{$field.Identifier}}") {
+				fields = append(fields, &i.{{$field.Name}})
+				continue
+			}
+		} else if len(optConfig.ListExcludeColumns) > 0 {
+			if !slices.Contains(optConfig.ListExcludeColumns, "{{$field.Identifier}}") {				
+				fields = append(fields, &i.{{$field.Name}})
+				continue
+			}
+		} else {
+			fields = append(fields, &i.{{$field.Name}})
+		}
+		{{end}}
+		if err := rows.Scan(fields...); err != nil {
 			m.monitoring.Emit(monitoring.EmitRequest{
 				ActionIdentifier: "list_{{.EntityIdentifier}}_scan",
 				Message: "error in scanning rows for List{{.EntityName}}",
