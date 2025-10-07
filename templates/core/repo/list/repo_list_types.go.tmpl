@@ -15,6 +15,7 @@ type JoinParams struct {
 
 type ListEntity interface {
 	FieldIdentfierToTypeMap() map[string]entitytypes.FieldType
+	OrderedFieldIdentifiers() []string
 	DependantFieldIdentifierToTypeMap() map[string]map[string]entitytypes.FieldType
 	EntityIdentifier() string
 	PrimaryKeyIdentifier() string

@@ -77,17 +77,11 @@ func (m *module) List(ctx context.Context,
 		if len(optConfig.ListIncludeColumns) > 0 {
 			if slices.Contains(optConfig.ListIncludeColumns, "{{$field.Identifier}}") {
 				fields = append(fields, &i.{{$field.Name}})				
-			} else {
-				var skip interface{}
-				fields = append(fields, &skip)				
-			}
+			} 
 		} else if len(optConfig.ListExcludeColumns) > 0 {
 			if !slices.Contains(optConfig.ListExcludeColumns, "{{$field.Identifier}}") {				
 				fields = append(fields, &i.{{$field.Name}})				
-			} else {
-				var skip interface{}
-				fields = append(fields, &skip)				
-			}
+			} 
 		} else {
 			fields = append(fields, &i.{{$field.Name}})
 		}
