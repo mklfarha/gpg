@@ -62,7 +62,7 @@ func (i *Implementation) BuildListEntityQuery(
 	var err error
 	whereClause := "1=1"
 	jsonTables := make(map[string]string)
-	if request.GetFilter().CheckedExpr == nil || request.GetFilter().CheckedExpr.Expr == nil {
+	if request.GetFilter().CheckedExpr != nil && request.GetFilter().CheckedExpr.Expr != nil {
 		whereClause, err = buildWhereClauses(
 			request.GetFilter().CheckedExpr.Expr,
 			entity,
