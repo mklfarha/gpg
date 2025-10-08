@@ -59,36 +59,26 @@ func (i *Implementation) BuildListEntityQuery(
 		}
 	}
 
+	var err error
+	whereClause := "1=1"
+	jsonTables := make(map[string]string)
 	if request.GetFilter().CheckedExpr == nil || request.GetFilter().CheckedExpr.Expr == nil {
-		if onlyCount {
-			return fmt.Sprintf(
-				"SELECT DISTINCT count(%s.%s) FROM %s",
-				entity.EntityIdentifier(),
-				entity.PrimaryKeyIdentifier(),
-				entity.EntityIdentifier(),				
-			), nil
-		} else {
-			return fmt.Sprintf(
-				"SELECT DISTINCT %s FROM %s limit 10",
-				columnsFinal,
-				entity.EntityIdentifier(),									
-			), nil
+		whereClause, err = buildWhereClauses(
+			request.GetFilter().CheckedExpr.Expr,
+			entity,
+			request.GetFilteringDeclarations(),
+			jsonTables)
+		if err != nil {
+			return "", err
 		}
 	}
 
-	jsonTables := make(map[string]string)	
-	whereClause, err := buildWhereClauses(
-		request.GetFilter().CheckedExpr.Expr,
-		entity,
-		request.GetFilteringDeclarations(),
-		jsonTables)
-	if err != nil {
-		return "", err
-	}
-
-	orderByClause, err := buildOrderByClause(request, entity, jsonTables)
-	if err != nil {
-		return "", err
+	orderByClause := ""
+	if len(request.GetOrderBy().Fields) > 0 {
+		orderByClause, err = buildOrderByClause(request, entity, jsonTables)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	jsonTablesSlice := []string{}
