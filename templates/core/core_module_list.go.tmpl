@@ -2,7 +2,7 @@ package {{.EntityIdentifier}}
 
 import (
 	"context"
-	//"fmt"
+	"fmt"
 	main_entity "{{.ProjectModule}}/core/entity/{{.EntityIdentifier}}"
 	"{{.ProjectModule}}/core/module/{{.EntityIdentifier}}/types"
 	repogen "{{.ProjectModule}}/core/repository/gen"
@@ -66,6 +66,7 @@ func (m *module) List(ctx context.Context,
 			ExtraData: map[string]string{"query":query},
 			Error: err,
 		})
+		fmt.Printf("error in executing query for List{{.EntityName}}: %v \n %v\n", query, err)
 		return types.ListResponse{}, err
 	}	
 	defer rows.Close()

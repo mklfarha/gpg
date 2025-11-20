@@ -91,7 +91,10 @@ func (i *Implementation) BuildListEntityQuery(
 	limit := buildLimit(request)
 
 	if (request.GetJoinParams() != nil) {
-		finalWhereClause := fmt.Sprintf("%s AND (%s)", whereClause, request.GetJoinParams().JoinWhereClauses)
+		finalWhereClause := whereClause
+		if (request.GetJoinParams().JoinWhereClauses != "") {
+			finalWhereClause = fmt.Sprintf("%s AND (%s)", whereClause, request.GetJoinParams().JoinWhereClauses)
+		}
 		if onlyCount {
 			return fmt.Sprintf(
 				"SELECT DISTINCT count(%s.%s) FROM %s %s %s WHERE %s",
