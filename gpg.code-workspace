@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../Dropbox/goprojectgen/goprojectgenweb"
+		}
+	],
+	"settings": {
+		"workbench.colorTheme": "Dark+"
+	}
+}
