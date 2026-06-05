@@ -27,6 +27,7 @@ type upsertModuleTemplate struct {
 	HasArrayField       bool
 	HasNullString       bool
 	HasNullUUID         bool
+	HasNullTime         bool
 }
 
 func generateUpsert(ctx context.Context, req coreSubModuleRequest) error {
@@ -35,6 +36,7 @@ func generateUpsert(ctx context.Context, req coreSubModuleRequest) error {
 	hasArrayField := false
 	hasNullString := false
 	hasNullUUID := false
+	hasNullTime := false
 	for _, f := range req.Fields {
 		if f.InternalType == entity.ArrayFieldType {
 			hasArrayField = true
@@ -45,6 +47,10 @@ func generateUpsert(ctx context.Context, req coreSubModuleRequest) error {
 
 		if !f.Required && f.InternalType == entity.UUIDFieldType {
 			hasNullUUID = true
+		}
+
+		if !f.Required && f.InternalType == entity.DateTimeFieldType {
+			hasNullTime = true
 		}
 	}
 	upsertTemplate := upsertModuleTemplate{
@@ -60,6 +66,7 @@ func generateUpsert(ctx context.Context, req coreSubModuleRequest) error {
 		HasArrayField:       hasArrayField,
 		HasNullString:       hasNullString,
 		HasNullUUID:         hasNullUUID,
+		HasNullTime:         hasNullTime,
 	}
 
 	versionField := VersionField(req.Fields)

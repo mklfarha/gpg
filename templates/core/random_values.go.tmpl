@@ -15,6 +15,11 @@ func GetRandomTimeValue() time.Time {
     return time.Now()
 }
 
+func GetRandomTimeValuePtr() *time.Time {
+    t := time.Now()
+    return &t
+}
+
 func GetRandomFloatValue() float64 {
     return rand.Float64()
 }

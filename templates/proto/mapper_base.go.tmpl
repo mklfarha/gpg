@@ -62,3 +62,18 @@ func StringPtrToString(s *string) string {
     }
     return *s
 }
+
+func TimePtrToTimestamppb(t *time.Time) *timestamppb.Timestamp {
+    if t == nil {
+        return nil
+    }
+    return timestamppb.New(*t)
+}
+
+func TimestamppbToTimePtr(t *timestamppb.Timestamp) *time.Time {
+    if t == nil {
+        return nil
+    }
+    ts := t.AsTime()
+    return &ts
+}

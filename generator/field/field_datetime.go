@@ -13,12 +13,21 @@ func DatetimeFieldTemplate(f entity.Field, e entity.Entity) Template {
 	template := BaseFieldTemplate(f, e)
 
 	//base
-	template.Type = "time.Time"
 	template.InternalType = entity.DateTimeFieldType
 	template.GenFieldType = "TimestampFieldType"
-	template.GenRandomValue = "randomvalues.GetRandomTimeValue()"
 	imp := "time"
 	template.Import = &imp
+
+	if f.Required {
+		template.Type = "time.Time"
+		template.GenRandomValue = "randomvalues.GetRandomTimeValue()"
+	} else {
+		template.Type = "*time.Time"
+		template.GenRandomValue = "randomvalues.GetRandomTimeValuePtr()"
+		template.RepoToMapper = fmt.Sprintf("mapper.TimePtrToSqlNullTime(req.%s.%s)", helpers.ToCamelCase(e.Identifier), helpers.ToCamelCase(f.Identifier))
+		template.RepoToMapperFetch = fmt.Sprintf("mapper.TimePtrToSqlNullTime(req.%s)", helpers.ToCamelCase(f.Identifier))
+		template.RepoFromMapper = fmt.Sprintf("mapper.SqlNullTimeToTimePtr(model.%s)", template.Name)
+	}
 
 	//graph
 	template.GraphInType = fmt.Sprintf("String%s", template.GraphRequired)
@@ -35,8 +44,13 @@ func DatetimeFieldTemplate(f entity.Field, e entity.Entity) Template {
 
 	//proto
 	template.ProtoType = "google.protobuf.Timestamp"
-	template.ProtoToMapper = fmt.Sprintf("timestamppb.New(e.%s)", helpers.ToCamelCase(f.Identifier))
-	template.ProtoFromMapper = fmt.Sprintf("m.Get%s().AsTime()", strcase.ToCamel(f.Identifier))
+	if f.Required {
+		template.ProtoToMapper = fmt.Sprintf("timestamppb.New(e.%s)", helpers.ToCamelCase(f.Identifier))
+		template.ProtoFromMapper = fmt.Sprintf("m.Get%s().AsTime()", strcase.ToCamel(f.Identifier))
+	} else {
+		template.ProtoToMapper = fmt.Sprintf("TimePtrToTimestamppb(e.%s)", helpers.ToCamelCase(f.Identifier))
+		template.ProtoFromMapper = fmt.Sprintf("TimestamppbToTimePtr(m.Get%s())", strcase.ToCamel(f.Identifier))
+	}
 
 	return template
 }
