@@ -21,8 +21,14 @@ func OptionsSingleFieldTemplate(f entity.Field, e entity.Entity, dependantEntity
 	template.GenRandomValue = fmt.Sprintf("randomvalues.GetRandomOptionValue[%s](%d)", template.Type, len(f.OptionValues))
 	template.Custom = true
 	template.Enum = true
-	template.RepoToMapper = ".ToInt64()"
-	template.RepoFromMapper = fmt.Sprintf("main_entity.%s(model.%s)", helpers.ToCamelCase(f.Identifier), helpers.ToCamelCase(f.Identifier))
+	if f.Required {
+		template.RepoToMapper = ".ToInt64()"
+		template.RepoFromMapper = fmt.Sprintf("main_entity.%s(model.%s)", helpers.ToCamelCase(f.Identifier), helpers.ToCamelCase(f.Identifier))
+	} else {
+		// optional enums map to a nullable INT column, which sqlc represents as sql.NullInt32
+		template.RepoToMapper = ".ToSqlNullInt32()"
+		template.RepoFromMapper = fmt.Sprintf("main_entity.%s(model.%s.Int32)", helpers.ToCamelCase(f.Identifier), helpers.ToCamelCase(f.Identifier))
+	}
 
 	//graph
 	template.GraphInType = fmt.Sprintf("String%s", template.GraphRequired)
