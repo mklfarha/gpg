@@ -71,14 +71,18 @@ func (c *AWSClient) UploadToS3(filename string, data []byte, ttl *time.Duration)
 	bucket := c.config.Bucket
 
 	input := &s3manager.UploadInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(filename),
-		Body:   bytes.NewReader(data),
+		Bucket:               aws.String(bucket),
+		Key:                  aws.String(filename),
+		Body:                 bytes.NewReader(data),
+		ServerSideEncryption: aws.String("aws:kms"),
+	}
+
+	if c.config.KmsKeyID != "" {
+		input.SSEKMSKeyId = aws.String(c.config.KmsKeyID)
 	}
 
 	if ttl != nil {
-		expires := time.Now().Add(*ttl)
-		input.Expires = &expires
+		input.Tagging = aws.String("autodelete=true")
 	}
 
 	//upload to the s3 bucket

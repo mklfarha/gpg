@@ -23,10 +23,11 @@ type DB struct {
 }
 
 type AWS struct {
-	Region string `yaml:"region"`
-	KeyID  string `yaml:"key_id"`
-	Secret string `yaml:"secret"`
-	Bucket string `yaml:"bucket"`
+	Region   string `yaml:"region"`
+	KeyID    string `yaml:"key_id"`
+	Secret   string `yaml:"secret"`
+	Bucket   string `yaml:"bucket"`
+	KmsKeyID string `yaml:"kms_key_id"`
 }
 
 func (db DB) Path() string {
